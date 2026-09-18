@@ -18,9 +18,13 @@ export default function MovieCard({
           className="movie-poster"
         />
 
+        <div className="poster-overlay" />
+
         <button
           type="button"
-          className="bookmark-button"
+          className={`bookmark-button ${
+            movie.isBookmarked ? "bookmarked" : ""
+          }`}
           onClick={() => onToggleBookmark(movie.id)}
           aria-label={
             movie.isBookmarked ? "북마크 해제" : "북마크 추가"
