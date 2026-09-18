@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "noEmitOnError": true,
+    "types": [],
+    "rootDir": ".",
+    "outDir": "./dist"
+  },
+  "include": [
+    "필수 미션/src/**/*.ts",
+    "선택 미션/src/**/*.ts"
+  ]
+}
