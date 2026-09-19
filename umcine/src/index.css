@@ -1,0 +1,12 @@
+:root {
+  font-family: Arial, "Noto Sans KR", "Malgun Gothic", sans-serif;
+  color: #181818;
+  background: #f8faff;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; }
+button { font: inherit; cursor: pointer; }
