@@ -1,0 +1,15 @@
+{
+  "name": "week1-typescript",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.24.0",
+  "scripts": {
+    "check": "tsc --noEmit",
+    "build": "tsc",
+    "start": "node \"dist/필수 미션/src/index.js\"",
+    "start:optional": "node \"dist/선택 미션/src/index.js\""
+  },
+  "devDependencies": {
+    "typescript": "6.0.3"
+  }
+}
