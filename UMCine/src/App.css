@@ -1,0 +1,103 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family:
+    Pretendard,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  background: #ffffff;
+  color: #17191e;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.movie-list-page {
+  width: 100%;
+  min-height: 100vh;
+  background: #f6f7f9;
+}
+
+/*
+  Figma
+  main.container
+  전체 너비: 1440px
+  좌우 padding: 80px
+  내부 너비: 1280px
+*/
+.movie-page {
+  width: 100%;
+  max-width: 1440px;
+  min-height: 1185px;
+
+  margin: 0 auto;
+  padding: 24px 80px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  background: #f6f7f9;
+}
+
+.movie-page-title {
+  margin: 0;
+
+  font-family:
+    Pretendard,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  font-size: 38px;
+  font-weight: 700;
+  line-height: 44px;
+  letter-spacing: -1.71px;
+
+  color: #17191e;
+}
+
+/*
+  화면이 1440px보다 작아질 때
+  좌우 padding 때문에 내용이 강제로 튀어나오는 것을 방지
+*/
+@media (max-width: 1200px) {
+  .movie-page {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+}
+
+@media (max-width: 768px) {
+  .movie-page {
+    min-height: auto;
+    padding: 20px;
+  }
+
+  .movie-page-title {
+    font-size: 30px;
+    line-height: 38px;
+    letter-spacing: -1px;
+  }
+}
