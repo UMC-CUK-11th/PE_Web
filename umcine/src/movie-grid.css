@@ -1,0 +1,100 @@
+main {
+  padding: 24px 80px;
+  background-color: #f6f7f9;
+}
+
+main h2 {
+  height: 44px;
+  padding: 0;
+  margin-bottom: 12px;
+  text-align: left;
+  font-size: 38px;
+  font-weight: bold;
+}
+
+#movie-grid-list {
+  display: grid;
+  grid-template-columns: repeat(5, 241px);
+  gap: 20px 18px;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+  justify-content: center;
+}
+
+/*1200px이하*/
+@media (max-width: 1200px) {
+  #movie-grid-list {
+    grid-template-columns: repeat(4, 241px);
+  }
+}
+
+/*1024px이하*/
+@media (max-width: 1024px) {
+  #movie-grid-list {
+    grid-template-columns: repeat(3, 241px);
+  }
+}
+
+/*768px이하*/
+@media (max-width: 768px) {
+  #movie-grid-list {
+    grid-template-columns: repeat(2, 241px);
+  }
+}
+
+/*480px이하*/
+@media (max-width: 480px) {
+  #movie-grid-list {
+    grid-template-columns: 241px;
+  }
+}
+
+.movie-grid-item {
+  position: relative;
+}
+
+.movie-grid-container {
+  position: relative;
+}
+
+.movie-gird-poster {
+  width: 241px;
+  height: 274px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.bookmark-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  top: 12px;
+  right: 8px;
+  border: none;
+  border-radius: 8px;
+  background-color: white;
+}
+
+.movie-grid-item p {
+  margin: 0;
+  padding: 0;
+  text-align: start;
+}
+
+#movie-grid-title {
+  height: 22px;
+  font-size: 14px;
+  font-weight: 800;
+  color: rgba(23, 25, 30, 1);
+  padding-top: 5px;
+}
+
+#movie-grid-releaseDate {
+  height: 14px;
+  font-size: 12px;
+  color: rgba(150, 157, 168, 1);
+}
