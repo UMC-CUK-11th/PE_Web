@@ -1,0 +1,27 @@
+.footer {
+  box-sizing: border-box;
+  width: 100%;
+  height: 57px;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+
+  padding: 0 80px;
+
+  background-color: #ffffff;
+  border-top: 1px solid #e3e6eb;
+
+  color: #8b95a1;
+  font-size: 10px;
+}
+
+.footer p {
+  margin: 0;
+}
+
+.tmdb-logo {
+  width: 30px;
+  height: auto;
+}
