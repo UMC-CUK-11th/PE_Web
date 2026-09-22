@@ -125,6 +125,7 @@ export function SearchPage() {
             >
             검색
             </button>
+            
         </form>
 
         {/* 검색어 없음 */}
