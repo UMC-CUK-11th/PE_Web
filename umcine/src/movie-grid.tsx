@@ -33,6 +33,8 @@ export default function MovieGrid() {
                 <button
                   className="bookmark-btn"
                   onClick={() => handleToggleBookmark(movie.id)}
+                  aria-label="Bookmark"
+                  aria-pressed={movie.isBookmarked}
                 >
                   <img
                     src={
@@ -40,7 +42,8 @@ export default function MovieGrid() {
                         ? "/icons/movie-icons/bookmark.svg"
                         : "/icons/movie-icons/bookmark-outline.svg"
                     }
-                    alt="Bookmark"
+                    alt=""
+                    aria-hidden="true"
                   />
                 </button>
               </div>
