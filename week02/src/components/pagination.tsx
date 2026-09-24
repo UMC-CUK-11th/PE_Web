@@ -1,7 +1,7 @@
 interface PaginationProps {
   currentPage: number;
   totalPages: number;
-  onPageChange?: (page: number) => void;
+  onPageChange: (page: number) => void;
 }
 
 export function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
@@ -15,7 +15,8 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
           className={page === currentPage ? "pagination__button pagination__button--active" : "pagination__button"}
           type="button"
           aria-current={page === currentPage ? "page" : undefined}
-          onClick={() => onPageChange?.(page)}
+          aria-label={`${page}페이지`}
+          onClick={() => onPageChange(page)}
         >
           {page}
         </button>

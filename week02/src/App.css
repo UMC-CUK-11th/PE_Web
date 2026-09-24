@@ -237,3 +237,14 @@ a:focus-visible { outline: 2px solid #2877eb; outline-offset: 2px; }
   .movie-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .site-footer__content span { display: none; }
 }
+
+@media (max-width: 420px) {
+  .site-header__content,
+  .movie-page__content,
+  .site-footer__content {
+    width: min(100% - 32px, 1200px);
+  }
+
+  .main-nav { gap: 24px; }
+  .movie-grid { grid-template-columns: 1fr; }
+}

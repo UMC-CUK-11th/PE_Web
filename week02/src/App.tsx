@@ -9,6 +9,7 @@ const initialBookmarks = movies.filter((movie) => movie.isBookmarked).map((movie
 
 export default function App() {
   const [bookmarkedMovieIds, setBookmarkedMovieIds] = useState<number[]>(initialBookmarks);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const handleBookmarkToggle = (movieId: number) => {
     setBookmarkedMovieIds((currentIds) =>
@@ -29,7 +30,11 @@ export default function App() {
             bookmarkedMovieIds={bookmarkedMovieIds}
             onBookmarkToggle={handleBookmarkToggle}
           />
-          <Pagination currentPage={1} totalPages={1} />
+          <Pagination
+            currentPage={currentPage}
+            totalPages={5}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </main>
       <footer className="site-footer">
