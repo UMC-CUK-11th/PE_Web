@@ -1,0 +1,236 @@
+/* =========================
+   전체 페이지
+========================= */
+
+.app {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 24px 24px 48px;
+}
+
+.page-title {
+  margin: 0 0 16px;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+
+/* =========================
+   Header
+========================= */
+
+.header {
+  width: 100%;
+  background-color: #ffffff;
+  border-bottom: 3px solid #6094eb;
+}
+
+.header-inner {
+  max-width: 1180px;
+  height: 64px;
+  margin: 0 auto;
+  padding: 0 24px;
+
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.logo img {
+  width: 26px;
+  height: 26px;
+}
+
+.logo strong {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  margin-left: 42px;
+}
+
+.header-nav a {
+  color: #444;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.header-actions {
+  margin-left: auto;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.search-button {
+  width: 36px;
+  height: 36px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  padding: 0;
+  border: 1px solid #dddddd;
+  border-radius: 6px;
+
+  background-color: #ffffff;
+  cursor: pointer;
+}
+
+.search-button img {
+  width: 17px;
+  height: 17px;
+}
+
+.login-button {
+  height: 36px;
+  padding: 0 14px;
+
+  border: none;
+  border-radius: 5px;
+
+  background-color: #536be8;
+  color: white;
+
+  font-size: 13px;
+  cursor: pointer;
+}
+
+
+/* =========================
+   영화 Grid
+========================= */
+
+.movie-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+
+  column-gap: 16px;
+  row-gap: 18px;
+}
+
+
+/* =========================
+   Movie Card
+========================= */
+
+.movie-card {
+  min-width: 0;
+}
+
+.poster-wrapper {
+  position: relative;
+
+  width: 100%;
+}
+
+.movie-poster {
+  display: block;
+
+  width: 100%;
+  aspect-ratio: 2 / 3;
+
+  object-fit: cover;
+
+  border-radius: 7px;
+}
+
+.movie-card h2 {
+  margin: 7px 0 4px;
+
+  overflow: hidden;
+
+  color: #222;
+  font-size: 13px;
+  font-weight: 600;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.movie-card p {
+  margin: 0;
+
+  color: #9a9ca2;
+  font-size: 11px;
+}
+
+
+/* =========================
+   Bookmark
+========================= */
+
+.bookmark-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+
+  width: 28px;
+  height: 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 1px solid #ffffff;
+  border-radius: 6px;
+
+  background-color: rgba(20, 20, 20, 0.8);
+
+  cursor: pointer;
+}
+
+.bookmark-button.active {
+  border-color: #536be8;
+  background-color: #536be8;
+}
+
+.bookmark-button img {
+  width: 20px;
+  height: 20px;
+  filter: invert(1);
+}
+
+
+/* =========================
+   Pagination
+========================= */
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  gap: 6px;
+
+  margin-top: 38px;
+}
+
+.pagination button {
+  width: 30px;
+  height: 30px;
+
+  padding: 0;
+
+  border: 1px solid #dddddd;
+  background-color: #ffffff;
+  color: #222222;
+
+  font-size: 12px;
+
+  cursor: pointer;
+}
