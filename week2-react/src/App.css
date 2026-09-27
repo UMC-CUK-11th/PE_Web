@@ -1,0 +1,205 @@
+#root {
+  min-height: 100vh;
+}
+
+.app {
+  min-height: 100vh;
+  background: #f7f8fa;
+  color: #191919;
+}
+
+.header {
+  height: 86px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.header-inner {
+  width: min(1210px, calc(100% - 64px));
+  height: 100%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.logo-icon {
+  display: flex;
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #191919;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.nav {
+  display: flex;
+  gap: 30px;
+  margin-left: 55px;
+}
+
+.nav a {
+  color: #737780;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.nav a.active {
+  color: #191919;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 6px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.search-button,
+.login-button {
+  border: none;
+  cursor: pointer;
+}
+
+.search-button {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 1px solid #e1e4e8;
+  border-radius: 9px;
+}
+
+.search-button img {
+  width: 20px;
+  height: 20px;
+}
+
+.login-button {
+  padding: 0 20px;
+  height: 42px;
+  background: #2878f0;
+  color: white;
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+.main {
+  width: min(1210px, calc(100% - 64px));
+  min-height: 760px;
+  margin: 0 auto;
+  padding: 28px 0 70px;
+}
+
+.main h1 {
+  margin: 0 0 22px;
+  font-size: 32px;
+  line-height: 1.2;
+}
+
+.movie-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  column-gap: 18px;
+  row-gap: 22px;
+}
+
+.movie-card {
+  min-width: 0;
+}
+
+.poster-wrapper {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 0.78;
+  border-radius: 10px;
+  background: #e5e7eb;
+}
+
+.movie-poster {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.bookmark-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+
+  width: 28px;
+  height: 28px;
+  padding: 5px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background-color: #191919;
+  border: 1px solid #ffffff;
+  border-radius: 6px;
+
+  cursor: pointer;
+}
+
+.bookmark-button.bookmarked {
+  background-color: #2878f0;
+  border-color: #2878f0;
+}
+
+.bookmark-button img {
+  width: 16px;
+  height: 16px;
+  display: block;
+
+  /* 북마크 모양을 흰색으로 */
+  filter: brightness(0) invert(1);
+}
+
+/* 선택된 북마크 아이콘 - 흰색 */
+.bookmark-button.bookmarked img {
+  filter: brightness(0) invert(1);
+}
+
+.movie-title {
+  margin: 10px 0 4px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.movie-date {
+  margin: 0;
+  color: #969ba3;
+  font-size: 12px;
+}
+
+.pagination {
+  display: none;
+}
+
+.footer {
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 max(32px, calc((100% - 1210px) / 2));
+  background: #ffffff;
+  border-top: 1px solid #e5e7eb;
+  color: #8b9098;
+  font-size: 11px;
+}
