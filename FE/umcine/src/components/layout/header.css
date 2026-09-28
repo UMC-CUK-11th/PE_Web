@@ -49,7 +49,7 @@ header {
   list-style: none;
 }
 
-.nav-list a {
+.nav-list .nav-btn {
   font-size: 14px;
   font-weight: 700;
   text-decoration: none;
@@ -57,7 +57,7 @@ header {
   transition: 0.3s;
 }
 
-.nav-list a:hover {
+.nav-list .nav-btn:hover {
   color: rgba(23, 25, 30, 1);
   text-decoration: underline;
 }
