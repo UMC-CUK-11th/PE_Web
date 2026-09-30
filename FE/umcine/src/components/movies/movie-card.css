@@ -1,0 +1,450 @@
+main {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #f8f9fa;
+}
+
+p,
+h2 {
+  margin: 0;
+  padding: 0;
+}
+
+/* =========================
+   영화 상단 배경
+========================= */
+
+#movie-card-header {
+  position: relative;
+  width: 100%;
+  height: 360px;
+  padding: 0;
+  overflow: hidden;
+  background-color: #222;
+}
+
+/* 배경 이미지 */
+
+#movie-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+  object-position: center;
+
+  z-index: 0;
+}
+
+/* 이미지 위 어두운 효과 */
+
+#movie-card-header::after {
+  content: "";
+
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 100%;
+
+  background: rgba(0, 0, 0, 0.35);
+
+  z-index: 1;
+}
+
+/* =========================
+   상단 영화 정보
+========================= */
+
+#movie-card-container {
+  position: relative;
+
+  width: 100%;
+  height: 100%;
+
+  padding: 0 80px;
+
+  box-sizing: border-box;
+
+  z-index: 2;
+}
+
+/* 영화 목록 */
+
+#movie-card-header-action {
+  position: absolute;
+
+  top: 25px;
+  left: 80px;
+
+  display: flex;
+  align-items: center;
+
+  width: auto;
+  height: 16px;
+
+  padding: 0;
+
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* 뒤로가기 아이콘 */
+
+#movie-card-back {
+  width: 24px;
+  height: 24px;
+
+  filter: invert(1);
+}
+
+/* 영화 제목 정보 */
+
+#movie-card-header-info {
+  position: absolute;
+
+  left: 80px;
+  bottom: 20px;
+
+  width: 800px;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 7px;
+
+  color: white;
+
+  text-align: left;
+}
+
+/* 영화 제목 */
+
+#movie-card-header-info h2 {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+/* 영문 제목 */
+
+#movie-card-header-info p:nth-child(2) {
+  font-size: 14px;
+}
+
+/* 개봉일 / 장르 / 러닝타임 */
+
+#movie-card-header-info p:nth-child(3) {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* =========================
+   영화 상세 영역
+========================= */
+
+#movie-card-contents {
+  display: flex;
+
+  width: 100%;
+
+  min-height: 516px;
+
+  padding: 22px 80px 40px;
+
+  box-sizing: border-box;
+
+  background-color: #f8f9fa;
+}
+
+/* 포스터 + 설명 */
+
+#movie-card-detail {
+  display: flex;
+
+  flex: 1;
+
+  gap: 30px;
+
+  padding-right: 30px;
+
+  box-sizing: border-box;
+}
+
+/* 포스터 */
+
+#movie-poster {
+  width: 181px;
+  height: 259px;
+
+  flex-shrink: 0;
+
+  object-fit: cover;
+
+  border-radius: 9px;
+
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* 영화 설명 */
+
+#movie-card-description {
+  padding-top: 0;
+
+  max-width: 600px;
+
+  text-align: left;
+}
+
+/* 설명 제목 */
+
+#movie-card-description h2 {
+  margin-bottom: 12px;
+
+  font-size: 20px;
+  font-weight: 700;
+
+  color: #17191c;
+}
+
+/* 설명 */
+
+#movie-card-description p {
+  max-width: 600px;
+
+  font-size: 13px;
+  line-height: 1.8;
+
+  color: #69707d;
+}
+
+/* =========================
+   즐겨찾기
+========================= */
+
+#bookmark-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 95px;
+  height: 37px;
+
+  margin-top: 12px;
+
+  border: none;
+  border-radius: 6px;
+
+  background-color: #2864e8;
+
+  color: white;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+#bookmark-button img {
+  width: 16px;
+  height: 16px;
+
+  margin-right: 6px;
+
+  filter: brightness(0) invert(1);
+}
+
+/* =========================
+   평점 영역
+========================= */
+
+#movie-card-rating {
+  width: 325px;
+
+  flex-shrink: 0;
+
+  padding-left: 28px;
+
+  border-left: 1px solid #e1e4e8;
+
+  box-sizing: border-box;
+
+  text-align: left;
+}
+
+#movie-card-rating h2 {
+  font-size: 18px;
+  font-weight: 700;
+
+  color: #17191c;
+}
+
+#movie-card-rating > p {
+  margin-top: 7px;
+
+  font-size: 11px;
+
+  color: #9aa0aa;
+}
+
+/* 별 */
+
+#star-list {
+  display: flex;
+
+  gap: 5px;
+
+  margin-top: 8px;
+}
+
+#star-list button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 35px;
+  height: 35px;
+
+  padding: 0;
+
+  border: 1px solid #dfe3e8;
+  border-radius: 6px;
+
+  background-color: white;
+
+  color: #687180;
+
+  font-size: 22px;
+
+  cursor: pointer;
+}
+
+/* 후기 입력 */
+
+#movie-card-rating textarea {
+  display: block;
+
+  width: 100%;
+  height: 91px;
+
+  margin-top: 8px;
+
+  padding: 12px;
+
+  box-sizing: border-box;
+
+  resize: none;
+
+  border: 1px solid #dfe3e8;
+  border-radius: 6px;
+
+  background-color: white;
+
+  font-family: inherit;
+  font-size: 11px;
+
+  outline: none;
+}
+
+#movie-card-rating textarea::placeholder {
+  color: #a3a9b3;
+}
+
+/* 평점 저장 */
+
+#rating-save-button {
+  width: 100%;
+  height: 37px;
+
+  margin-top: 9px;
+
+  border: none;
+  border-radius: 6px;
+
+  background-color: #17191c;
+
+  color: white;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+/* =========================
+   리뷰 영역
+========================= */
+
+#movie-card-review {
+  min-height: 100px;
+
+  border-top: 1px solid #e5e7eb;
+
+  background-color: #f8f9fa;
+}
+
+/* =========================
+   반응형
+========================= */
+
+@media (max-width: 900px) {
+  #movie-card-container {
+    padding: 0 40px;
+  }
+
+  #movie-card-header-action {
+    left: 40px;
+  }
+
+  #movie-card-header-info {
+    left: 40px;
+  }
+
+  #movie-card-contents {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+
+  #movie-card-detail {
+    gap: 20px;
+  }
+
+  #movie-card-rating {
+    width: 280px;
+  }
+}
+
+@media (max-width: 700px) {
+  #movie-card-header-info {
+    width: calc(100% - 80px);
+  }
+
+  #movie-card-header-info h2 {
+    font-size: 25px;
+  }
+
+  #movie-card-contents {
+    flex-direction: column;
+  }
+
+  #movie-card-detail {
+    padding-right: 0;
+  }
+
+  #movie-card-rating {
+    width: 100%;
+
+    margin-top: 30px;
+    padding-left: 0;
+    padding-top: 25px;
+
+    border-left: none;
+    border-top: 1px solid #e1e4e8;
+  }
+}
