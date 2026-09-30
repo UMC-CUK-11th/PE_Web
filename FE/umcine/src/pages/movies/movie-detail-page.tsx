@@ -1,8 +1,6 @@
-import {
-  Link,
-  useParams,
-} from "@tanstack/react-router";
+import { Link, useParams } from "@tanstack/react-router";
 
+import BookmarkButton from "../../components/movies/bookmark-button";
 import { movies } from "../../data/movie";
 
 export function MovieDetailPage() {
@@ -10,9 +8,7 @@ export function MovieDetailPage() {
     from: "/movies/$movieId",
   });
 
-  const movie = movies.find(
-    (item) => item.id === Number(movieId),
-  );
+  const movie = movies.find((item) => item.id === Number(movieId));
 
   if (!movie) {
     return (
@@ -43,7 +39,6 @@ export function MovieDetailPage() {
     <main className="min-h-screen bg-zinc-50">
       {/* Hero */}
       <section className="relative overflow-hidden bg-black">
-        {/* Backdrop */}
         <div className="absolute inset-0">
           <img
             src={movie.backdropPath}
@@ -57,7 +52,6 @@ export function MovieDetailPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/20" />
         </div>
 
-        {/* Hero Content */}
         <div className="relative mx-auto flex min-h-[520px] max-w-7xl items-end px-5 pb-12 pt-28 sm:px-8 lg:px-10 lg:pb-16">
           <div className="max-w-3xl">
             <Link
@@ -85,17 +79,21 @@ export function MovieDetailPage() {
 
               <span className="text-white/30">•</span>
 
-              <span>
-                {movie.genres.join(" · ")}
-              </span>
+              <span>{movie.genres.join(" · ")}</span>
             </div>
+
+            {/* Zustand Bookmark */}
+            <BookmarkButton
+              movieId={movie.id}
+              variant="text"
+              className="mt-7"
+            />
           </div>
         </div>
       </section>
 
-      {/* Detail Content */}
+      {/* Detail */}
       <section className="mx-auto grid max-w-7xl gap-10 px-5 py-12 sm:px-8 lg:grid-cols-[240px_1fr] lg:px-10 lg:py-16">
-        {/* Poster */}
         <div className="mx-auto w-full max-w-[240px] lg:mx-0">
           <img
             src={movie.posterPath}
@@ -104,7 +102,6 @@ export function MovieDetailPage() {
           />
         </div>
 
-        {/* Information */}
         <div className="flex flex-col justify-center">
           <p className="mb-3 text-xs font-bold tracking-[0.2em] text-zinc-400">
             UMCINE MOVIE
@@ -118,7 +115,6 @@ export function MovieDetailPage() {
             {movie.overview}
           </p>
 
-          {/* Genre */}
           <div className="mt-7 flex flex-wrap gap-2">
             {movie.genres.map((genre) => (
               <span
@@ -130,12 +126,9 @@ export function MovieDetailPage() {
             ))}
           </div>
 
-          {/* Meta */}
           <div className="mt-10 grid max-w-xl grid-cols-2 gap-4 sm:grid-cols-3">
             <div className="rounded-2xl border border-zinc-200 bg-white p-4">
-              <p className="text-xs font-medium text-zinc-400">
-                개봉일
-              </p>
+              <p className="text-xs font-medium text-zinc-400">개봉일</p>
 
               <p className="mt-2 text-sm font-bold text-zinc-900">
                 {movie.releaseDate}
@@ -143,9 +136,7 @@ export function MovieDetailPage() {
             </div>
 
             <div className="rounded-2xl border border-zinc-200 bg-white p-4">
-              <p className="text-xs font-medium text-zinc-400">
-                상영 시간
-              </p>
+              <p className="text-xs font-medium text-zinc-400">상영 시간</p>
 
               <p className="mt-2 text-sm font-bold text-zinc-900">
                 {movie.runtime}
@@ -153,9 +144,7 @@ export function MovieDetailPage() {
             </div>
 
             <div className="rounded-2xl border border-zinc-200 bg-white p-4">
-              <p className="text-xs font-medium text-zinc-400">
-                장르
-              </p>
+              <p className="text-xs font-medium text-zinc-400">장르</p>
 
               <p className="mt-2 text-sm font-bold text-zinc-900">
                 {movie.genres[0]}
