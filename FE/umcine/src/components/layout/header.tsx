@@ -2,10 +2,10 @@ import { Link } from "@tanstack/react-router";
 
 export function Header() {
   return (
-    <header className="flex items-center justify-between bg-white px-20 py-[21.5px] max-h-[91px] max-md:max-h-[151px] max-md:flex-col max-md:gap-10">
+    <header className="flex items-center justify-between bg-white px-20 py-[21.5px] max-h-[91px] max-md:max-h-[151px] max-md:flex-col max-md:gap-10 max-md:px-4">
       <nav
         id="navigator"
-        className="flex h-8 w-[308px] items-center justify-between max-md:order-1 max-md:flex-col max-md:gap-2.5"
+        className="flex h-8 w-[308px] items-center justify-between max-md:order-1 max-md:w-full max-md:max-w-[308px] max-md:flex-col max-md:gap-2.5"
       >
         <Link to="/">
           <img
@@ -39,7 +39,7 @@ export function Header() {
 
           <li>
             <Link
-              to="/"
+              to="."
               id="nav-myinfo"
               className="text-[14px] font-bold text-[rgba(96,103,116,1)] transition duration-300 hover:text-[rgba(23,25,30,1)] hover:underline"
             >

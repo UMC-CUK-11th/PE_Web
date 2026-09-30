@@ -1,15 +1,26 @@
 import { movies } from "../../data/movies";
 import { Link, useParams } from "@tanstack/react-router";
+import { useState } from "react";
+import { cn } from "../../utils/cn";
 
 export function MovieCard() {
   const { movieId } = useParams({ from: "/movies/$movieId" });
-  const movie = movies.find((item) => item.id === Number(movieId));
-
+  const [moviesState, setMoviesState] = useState(movies);
+  const movie = moviesState.find((item) => item.id === Number(movieId));
+  function handleToggleBookmark(movieId: number) {
+    setMoviesState((currentMovies) =>
+      currentMovies.map((movie) =>
+        movie.id === movieId
+          ? { ...movie, isBookmarked: !movie.isBookmarked }
+          : movie,
+      ),
+    );
+  }
   if (!movie) {
     return <main>영화를 찾을 수 없어요.</main>;
   }
   return (
-    <section className="w-full m-0 p-0 bg-[##F6F7F9]">
+    <section className="w-full m-0 p-0 bg-[#F6F7F9]">
       <div className="relative w-full h-90 p-0 overflow-hidden bg-[#222]">
         <div
           id="movie-card-container"
@@ -63,24 +74,41 @@ export function MovieCard() {
           />
 
           <div className="max-w-[600px] text-left">
-            <p className="max-w-[600px] text-[13px] leading-[1.8] text-[#69707d]">
-              {movie.genres.join(" · ")}
-            </p>
-            <p className="max-w-[600px] text-[13px] leading-[1.8] text-[#69707d]">
-              {movie.runtime}
-            </p>
-            <h2 className="mb-3 text-[20px] font-bold text-[#17191c]">
+            <h2 className="mb-3 text-[21px] font-bold text-[#17191c]">
               {movie.tagline}
             </h2>
-            <p className="max-w-[600px] text-[13px] leading-[1.8] text-[#69707d]">
+            <p className="mb-3 max-w-[600px] text-[14px] leading-[1.8] text-[#69707d]">
               {movie.overview}
+            </p>
+            <p className="h-5 max-w-[600px] text-[12px] leading-[1.8] text-[#69707d]">
+              {movie.genres.join(" · ")}
+            </p>
+            <p className="h-5 max-w-[600px] text-[12px] leading-[1.8] text-[#69707d]">
+              {movie.runtime}
             </p>
 
             <button
               id="bookmark-button"
-              className="w-4 h-4 mr-[6px] brightness-0 invert"
+              type="button"
+              className={cn(
+                "mr-[6px] mt-3 flex h-[42px] w-[107px] items-center justify-center gap-2 rounded-lg text-sm font-semibold text-white cursor-pointer",
+                movie.isBookmarked ? "bg-[#2563eb]" : "bg-black/60",
+              )}
+              onClick={() => handleToggleBookmark(movie.id)}
+              aria-label="즐겨찾기"
+              aria-pressed={movie.isBookmarked}
             >
-              <img src="/icons/movie-icons/bookmark.svg" alt="" />
+              <svg
+                className="h-4 w-4 shrink-0"
+                viewBox="0 0 24 24"
+                fill={movie.isBookmarked ? "currentColor" : "none"}
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M6 4h12v16l-6-4-6 4V4Z" />
+              </svg>
               즐겨찾기
             </button>
           </div>

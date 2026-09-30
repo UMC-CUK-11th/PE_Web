@@ -31,7 +31,8 @@ export function MovieGrid() {
         <p>표시할 영화가 없습니다.</p>
       ) : (
         <>
-          <ul className=" grid grid-cols-[241px] mt-6 min-sm:grid-cols-[repeat(2,241px)] min-md:grid-cols-[repeat(3,241px)] min-lg:grid-cols-[repeat(4,241px)] min-xl:grid-cols-[repeat(5,241px)] gap-x-5 gap-y-[18px] mx-auto p-0 list-none justify-center content-center ">
+          <ul className="mx-auto mt-6 grid grid-cols-[minmax(0,1fr)] min-[662px]:grid-cols-[repeat(2,241px)] min-[923px]:grid-cols-[repeat(3,241px)] min-[1184px]:grid-cols-[repeat(4,241px)] min-[1445px]:grid-cols-[repeat(5,241px)] justify-center justify-items-center gap-x-5 gap-y-[18px] p-0 list-none">
+            {" "}
             {currentMovies.map((movie: Movie) => (
               <li key={movie.id} className="relative">
                 {/* 포스터 + 북마크 */}
