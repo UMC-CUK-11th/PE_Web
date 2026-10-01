@@ -1,14 +1,8 @@
-import {
-  Link,
-  useNavigate,
-  useSearch,
-} from "@tanstack/react-router";
-import {
-  useEffect,
-  useState,
-  type SubmitEvent,
-} from "react";
+import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 
+import type { FormEvent } from "react";
+
+import BookmarkButton from "../../components/movies/bookmark-button";
 import { movies } from "../../data/movie";
 
 export function SearchPage() {
@@ -20,35 +14,28 @@ export function SearchPage() {
     from: "/search",
   });
 
-  const [searchText, setSearchText] = useState(query ?? "");
-
-  useEffect(() => {
-    setSearchText(query ?? "");
-  }, [query]);
-
-  const normalizedQuery =
-    query?.trim().toLowerCase() ?? "";
+  const normalizedQuery = query?.trim().toLowerCase() ?? "";
 
   const searchResults = normalizedQuery
     ? movies.filter(
         (movie) =>
           movie.title.toLowerCase().includes(normalizedQuery) ||
-          movie.originalTitle
-            .toLowerCase()
-            .includes(normalizedQuery),
+          movie.originalTitle.toLowerCase().includes(normalizedQuery),
       )
     : [];
 
-  function handleSubmit(
-    event: SubmitEvent<HTMLFormElement>,
-  ) {
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const nextQuery = searchText.trim();
+    const formData = new FormData(event.currentTarget);
+
+    const nextQuery = String(formData.get("query") ?? "").trim();
 
     navigate({
       search: nextQuery
-        ? { query: nextQuery }
+        ? {
+            query: nextQuery,
+          }
         : {},
     });
   }
@@ -57,25 +44,26 @@ export function SearchPage() {
     <main className="min-h-screen bg-zinc-50">
       <section className="mx-auto max-w-7xl px-5 pb-20 pt-10 sm:px-8 lg:px-10">
         {/* Hero */}
-                <div className="relative mb-10 overflow-hidden rounded-[32px] bg-zinc-950 px-7 py-12 text-white shadow-xl sm:px-12 sm:py-14">
-            <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/5 blur-3xl" />
-            <div className="absolute -bottom-24 left-1/3 h-56 w-56 rounded-full bg-zinc-500/10 blur-3xl" />
+        <div className="relative mb-10 overflow-hidden rounded-[32px] bg-zinc-950 px-7 py-12 text-white shadow-xl sm:px-12 sm:py-14">
+          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/5 blur-3xl" />
 
-            <div className="relative z-10">
-                <p className="mb-3 text-xs font-bold tracking-[0.28em] text-zinc-400">
-                UMCINE SEARCH
-                </p>
+          <div className="absolute -bottom-24 left-1/3 h-56 w-56 rounded-full bg-zinc-500/10 blur-3xl" />
 
-                <h1 className="text-3xl font-black tracking-[-0.04em] sm:text-4xl">
-                어떤 영화를 찾고 있나요?
-                </h1>
+          <div className="relative z-10">
+            <p className="mb-3 text-xs font-bold tracking-[0.28em] text-zinc-400">
+              UMCINE SEARCH
+            </p>
 
-                <p className="mt-4 max-w-xl text-sm leading-6 text-zinc-400 sm:text-base">
-                영화 제목이나 원제를 검색하고 원하는 작품의
-                상세 정보를 확인해보세요.
-                </p>
-            </div>
-            </div>
+            <h1 className="text-3xl font-black tracking-[-0.04em] sm:text-4xl">
+              어떤 영화를 찾고 있나요?
+            </h1>
+
+            <p className="mt-4 max-w-xl text-sm leading-6 text-zinc-400 sm:text-base">
+              영화 제목이나 원제를 검색하고 원하는 작품의 상세 정보를
+              확인해보세요.
+            </p>
+          </div>
+        </div>
 
         {/* Search Bar */}
         <form
@@ -83,57 +71,50 @@ export function SearchPage() {
           className="mx-auto mb-10 flex max-w-3xl items-center gap-2 rounded-2xl border border-zinc-200 bg-white p-2 shadow-sm transition-shadow focus-within:shadow-md"
         >
           <div className="flex flex-1 items-center gap-3 px-3">
-            <span
-              className="text-xl text-zinc-400"
-              aria-hidden="true"
-            >
+            <span className="text-xl text-zinc-400" aria-hidden="true">
               🔍
             </span>
 
             <input
+              key={query ?? ""}
+              name="query"
               aria-label="검색어"
               type="search"
-              value={searchText}
-              onChange={(event) =>
-                setSearchText(event.target.value)
-              }
+              defaultValue={query ?? ""}
               placeholder="영화 제목 또는 원제를 검색해보세요"
               className="w-full bg-transparent py-3 text-sm text-zinc-900 outline-none placeholder:text-zinc-400 sm:text-base"
             />
           </div>
 
-            <button
+          <button
             type="submit"
             className="
-                shrink-0
-                rounded-xl
-                bg-zinc-950
-                px-6
-                py-3
-                text-sm
-                font-bold
-                text-white
-                shadow-sm
-                transition
-                duration-200
-                hover:-translate-y-0.5
-                hover:bg-zinc-800
-                hover:shadow-md
-                active:translate-y-0
-                active:scale-[0.98]
+              shrink-0
+              rounded-xl
+              bg-zinc-950
+              px-6
+              py-3
+              text-sm
+              font-bold
+              text-white
+              shadow-sm
+              transition
+              duration-200
+              hover:-translate-y-0.5
+              hover:bg-zinc-800
+              hover:shadow-md
+              active:translate-y-0
+              active:scale-[0.98]
             "
-            >
+          >
             검색
-            </button>
-            
+          </button>
         </form>
 
         {/* 검색어 없음 */}
         {!normalizedQuery ? (
           <div className="flex min-h-[300px] flex-col items-center justify-center rounded-3xl border border-dashed border-zinc-300 bg-white px-6 text-center">
-            <div className="mb-4 text-5xl">
-              🎬
-            </div>
+            <div className="mb-4 text-5xl">🎬</div>
 
             <h2 className="text-xl font-bold text-zinc-900">
               찾고 싶은 영화를 검색해보세요
@@ -164,20 +145,17 @@ export function SearchPage() {
               </span>
             </div>
 
-            {/* 결과 없음 */}
+            {/* 검색 결과 없음 */}
             {searchResults.length === 0 ? (
               <div className="flex min-h-[300px] flex-col items-center justify-center rounded-3xl bg-white px-6 text-center shadow-sm">
-                <div className="mb-4 text-5xl">
-                  🥲
-                </div>
+                <div className="mb-4 text-5xl">🥲</div>
 
                 <h3 className="text-xl font-bold text-zinc-900">
                   검색 결과가 없어요
                 </h3>
 
                 <p className="mt-2 text-sm text-zinc-500">
-                  다른 영화 제목이나 원제로 다시
-                  검색해보세요.
+                  다른 영화 제목이나 원제로 다시 검색해보세요.
                 </p>
               </div>
             ) : (
@@ -186,8 +164,14 @@ export function SearchPage() {
                 {searchResults.map((movie) => (
                   <li
                     key={movie.id}
-                    className="group overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl"
+                    className="group relative overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl"
                   >
+                    {/* Bookmark */}
+                    <BookmarkButton
+                      movieId={movie.id}
+                      className="absolute right-4 top-4 z-10"
+                    />
+
                     {/* Poster */}
                     <Link
                       to="/movies/$movieId"
@@ -244,10 +228,7 @@ export function SearchPage() {
                         className="mt-auto flex items-center justify-center rounded-xl bg-zinc-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800"
                       >
                         상세 정보 보기
-                        <span
-                          className="ml-2"
-                          aria-hidden="true"
-                        >
+                        <span className="ml-2" aria-hidden="true">
                           →
                         </span>
                       </Link>
