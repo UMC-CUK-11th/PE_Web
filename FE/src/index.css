@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+/* 넓은 화면은 3열, 중간 화면은 2열, 좁은 화면은 1열이에요. */
+.movie-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+@media (max-width: 1023px) {
+  .movie-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 639px) {
+  .movie-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.page-button {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: white;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.page-button.active-page {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: white;
+}
+
+.page-button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
