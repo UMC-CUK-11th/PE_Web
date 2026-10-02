@@ -1,15 +1,15 @@
 import { useState } from "react";
-import "./App.css";
+import { Route, Routes } from "react-router-dom";
 import { Header } from "./components/header";
-import { MovieGrid } from "./components/movie-grid";
-import { Pagination } from "./components/pagination";
 import { movies } from "./data/movie";
+import { MovieDetailPage } from "./pages/movie-detail-page";
+import { MovieListPage } from "./pages/movie-list-page";
+import { SearchPage } from "./pages/search-page";
 
 const initialBookmarks = movies.filter((movie) => movie.isBookmarked).map((movie) => movie.id);
 
 export default function App() {
   const [bookmarkedMovieIds, setBookmarkedMovieIds] = useState<number[]>(initialBookmarks);
-  const [currentPage, setCurrentPage] = useState(1);
 
   const handleBookmarkToggle = (movieId: number) => {
     setBookmarkedMovieIds((currentIds) =>
@@ -19,29 +19,25 @@ export default function App() {
     );
   };
 
+  const sharedProps = {
+    bookmarkedMovieIds,
+    onBookmarkToggle: handleBookmarkToggle,
+  };
+
   return (
-    <div className="app-shell" id="top">
+    <div className="flex min-h-screen flex-col bg-[#f7f8fa] text-[#202124]" id="top">
       <Header />
-      <main className="movie-page">
-        <div className="movie-page__content">
-          <h1>영화 목록</h1>
-          <MovieGrid
-            movies={movies}
-            bookmarkedMovieIds={bookmarkedMovieIds}
-            onBookmarkToggle={handleBookmarkToggle}
-          />
-          <Pagination
-            currentPage={currentPage}
-            totalPages={5}
-            onPageChange={setCurrentPage}
-          />
-        </div>
-      </main>
-      <footer className="site-footer">
-        <div className="site-footer__content">
-          <img src="/images/logos/tmdb-logo.svg" alt="TMDB" />
+      <Routes>
+        <Route path="/" element={<MovieListPage {...sharedProps} />} />
+        <Route path="/search" element={<SearchPage />} />
+        <Route path="/movies/:movieId" element={<MovieDetailPage {...sharedProps} />} />
+        <Route path="*" element={<MovieDetailPage {...sharedProps} />} />
+      </Routes>
+      <footer className="mt-auto h-14 shrink-0 border-t border-[#e1e4e8] bg-white">
+        <div className="mx-auto flex h-full w-[min(calc(100%-48px),1200px)] items-center justify-end gap-1 text-[10px] text-[#7f8792] max-[420px]:w-[calc(100%-32px)]">
+          <img className="mr-0.5 w-[23px]" src="/images/logos/tmdb-logo.svg" alt="TMDB" />
           <span>This product uses the TMDB API but is not endorsed or certified by</span>
-          <a href="https://www.themoviedb.org/" target="_blank" rel="noreferrer">TMDB.</a>
+          <a className="underline" href="https://www.themoviedb.org/" target="_blank" rel="noreferrer">TMDB.</a>
         </div>
       </footer>
     </div>
