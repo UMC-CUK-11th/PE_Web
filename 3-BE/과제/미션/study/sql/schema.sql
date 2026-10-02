@@ -1,0 +1,32 @@
+CREATE DATABASE IF NOT EXISTS umc_week03 CHARACTER SET utf8mb4;
+USE umc_week03;
+
+CREATE TABLE users (
+  user_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  nickname VARCHAR(30) NOT NULL
+);
+
+CREATE TABLE category (
+  category_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE book (
+  book_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  category_id BIGINT NOT NULL,
+  title VARCHAR(100) NOT NULL,
+  description TEXT,
+  is_available BOOLEAN NOT NULL DEFAULT TRUE,
+  FOREIGN KEY (category_id) REFERENCES category(category_id)
+);
+
+CREATE TABLE rental (
+  rental_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  user_id BIGINT NOT NULL,
+  book_id BIGINT NOT NULL,
+  rented_at DATETIME NOT NULL,
+  due_at DATETIME NOT NULL,
+  returned_at DATETIME NULL,
+  FOREIGN KEY (user_id) REFERENCES users(user_id),
+  FOREIGN KEY (book_id) REFERENCES book(book_id)
+);
