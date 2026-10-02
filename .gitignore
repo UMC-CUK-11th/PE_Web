@@ -1,7 +1,25 @@
+# Dependencies
 node_modules/
-.npm-cache/
+.pnpm-store/
+
+# Build outputs
 dist/
+build/
+
+# Gradle local cache
+.gradle/
+
+# IDE settings
+.idea/
+*.iml
+
+# TanStack Router local cache
+.tanstack/
+
+# TypeScript build info
 *.tsbuildinfo
+
+# Environment variables
 .env
 .env.*
 !.env.example
