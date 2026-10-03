@@ -1,10 +1,10 @@
-package com.wjsguddnr.week3_firstAPI;
+package com.wjsguddnr.umclib;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class Week3FirstApiApplicationTests {
+class UmcLibApplicationTests {
 
 	@Test
 	void contextLoads() {

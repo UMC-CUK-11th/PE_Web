@@ -1,4 +1,4 @@
-package com.wjsguddnr.week3_firstAPI.repository;
+package com.wjsguddnr.umclib.repository;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;

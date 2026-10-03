@@ -1,6 +1,6 @@
-package com.wjsguddnr.week3_firstAPI.service;
+package com.wjsguddnr.umclib.service;
 
-import com.wjsguddnr.week3_firstAPI.repository.RentalRepository;
+import com.wjsguddnr.umclib.repository.RentalRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;

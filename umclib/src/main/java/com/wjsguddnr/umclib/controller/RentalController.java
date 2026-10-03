@@ -1,6 +1,6 @@
-package com.wjsguddnr.week3_firstAPI.controller;
+package com.wjsguddnr.umclib.controller;
 
-import com.wjsguddnr.week3_firstAPI.service.RentalService;
+import com.wjsguddnr.umclib.service.RentalService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
