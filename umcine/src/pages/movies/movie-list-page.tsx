@@ -4,18 +4,7 @@ import { Pagination } from "../../components/movies/pagination";
 import { movies as initialMovies } from "../../data/movies";
 
 export function MovieListPage() {
-  const [movies, setMovies] = useState(initialMovies);
   const [currentPage, setCurrentPage] = useState(1);
-
-  function handleToggleBookmark(movieId: number) {
-    setMovies((currentMovies) =>
-      currentMovies.map((movie) =>
-        movie.id === movieId
-          ? { ...movie, isBookmarked: !movie.isBookmarked }
-          : movie,
-      ),
-    );
-  }
 
   return (
     <main className="mx-auto flex min-h-[1185px] w-full max-w-[1440px] flex-col gap-5 bg-[#f6f7f9] px-20 py-6 max-[1200px]:px-10 max-[768px]:min-h-0 max-[768px]:p-5">
@@ -23,10 +12,7 @@ export function MovieListPage() {
         영화 목록
       </h1>
 
-      <MovieGrid
-        movies={movies}
-        onToggleBookmark={handleToggleBookmark}
-      />
+      <MovieGrid movies={initialMovies} />
       <Pagination
         currentPage={currentPage}
         totalPages={5}
