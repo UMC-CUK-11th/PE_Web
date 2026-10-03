@@ -3,14 +3,14 @@ import MovieCard from "./movie-card";
 
 interface MovieGridProps {
   movies: Movie[];
-  onToggleBookmark: (movieId: number) => void;
+  cardSize?: "default" | "large";
 }
 
-export default function MovieGrid({ movies, onToggleBookmark }: MovieGridProps) {
+export default function MovieGrid({ movies, cardSize = "default" }: MovieGridProps) {
   return (
-    <section aria-label="영화 목록" className="movie-grid">
+    <section aria-label="영화 목록" className="movie-grid" data-card-size={cardSize}>
       {movies.map((movie) => (
-        <MovieCard key={movie.id} movie={movie} onToggleBookmark={onToggleBookmark} />
+        <MovieCard key={movie.id} movie={movie} />
       ))}
     </section>
   );
