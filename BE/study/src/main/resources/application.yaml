@@ -3,7 +3,15 @@ spring:
     name: "umc-study"
 
   datasource:
+    # 접속 정보는 코드에 비밀번호를 적지 않고 IntelliJ 실행 환경 변수에서 받습니다.
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${DB_URL}
     username: ${DB_USER}
     password: ${DB_PW}
+
+  jpa:
+    hibernate:
+      # 기존 테이블을 자동 변경하지 않고 엔티티 매핑과 일치하는지만 검사합니다.
+      ddl-auto: validate
+    # DB 조회가 필요한 작업은 Service의 @Transactional 범위 안에서 끝냅니다.
+    open-in-view: false

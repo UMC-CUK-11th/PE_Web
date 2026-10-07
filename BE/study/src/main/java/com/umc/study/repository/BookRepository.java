@@ -1,43 +1,26 @@
-// src/main/java/.../repository/BookRepository.java
 package com.umc.study.repository;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Repository;
+import com.umc.study.domain.Book;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
-import java.util.Map;
 
-@Repository // 스프링 컨테이너에 "나 창고지기 부품이야!"라고 등록
-@RequiredArgsConstructor
-public class BookRepository {
+/**
+ * Book Entity의 조회와 저장을 담당하는 DB 창구입니다.
+ * JpaRepository가 기본 CRUD SQL을 생성하고, 메서드 이름으로 추가 조회 조건을 표현합니다.
+ */
+public interface BookRepository extends JpaRepository<Book, Long> {
 
-    // 2단계에서 준비된 스프링의 DB 통신 도구(JdbcTemplate) 주입
-    private final JdbcTemplate jdbcTemplate;
+    // 응답 변환에서 categoryName을 사용하므로 Category를 같은 조회 흐름에서 함께 가져옵니다.
+    @EntityGraph(attributePaths = "category")
+    List<Book> findAllByOrderByBookIdDesc();
 
-    public List<Map<String, Object>> findAll() {
-        String sql = "SELECT * FROM book";
+    @EntityGraph(attributePaths = "category")
+    List<Book> findAllByTitleContainingOrderByBookIdDesc(String keyword);
 
-        // 쿼리를 실행하고 결과를 List<Map> 형태의 날것 데이터로 긁어옵니다.
-        // Map의 Key는 '컬럼명(title)', Value는 '실제 데이터(달빛 도서관)'가 됩니다.
-        return jdbcTemplate.queryForList(sql);
-    }
+    @EntityGraph(attributePaths = "category")
+    List<Book> findAllByCategory_CategoryIdOrderByBookIdDesc(Long categoryId);
 
-    public List<Map<String, Object>> findByCategoryId(Long categoryId) {
-        String sql = "SELECT * FROM book WHERE category_id = ?";
-        return jdbcTemplate.queryForList(sql, categoryId);
-    }
-
-    public void save(Map<String, Object> body){
-        // book_id는 AUTO_INCREMENT이므로 생략, is_available은 기본 true로 삽입
-        String sql = "INSERT INTO book (category_id, title, description, is_available) VALUES (?, ?, ?, true)";
-
-        // SQL 뒤에 파라미터를 차례대로 넘겨주면 ? 자리에 순서대로 안전하게 바인딩됩니다.
-        jdbcTemplate.update(
-                sql,
-                body.get("categoryId"),
-                body.get("title"),
-                body.get("description")
-        );
-    }
+    boolean existsByTitle(String title);
 }

@@ -1,5 +1,6 @@
 import { Link, useParams } from "@tanstack/react-router";
 import { useState } from "react";
+import { BookmarkButton } from "../../components/bookmark-button";
 import { movies } from "../../data/movie";
 import { cn } from "../../utils/cn";
 
@@ -60,10 +61,7 @@ export function MovieDetailPage() {
             <dd>{movie.runtime}</dd>
           </dl>
           <p className="mt-5 max-w-2xl text-xs leading-6 text-[#5f626a]">{movie.overview}</p>
-          <button className="mt-5 h-8 rounded bg-[#2563eb] px-4 text-[10px] font-bold text-white transition hover:bg-[#1d4ed8]" type="button">
-            <img className="mr-1.5 inline size-3.5 invert" src={`${iconPath}/bookmark-outline.svg`} alt="" />
-            보관하기
-          </button>
+          <BookmarkButton movieId={movie.id} movieTitle={movie.title} variant="detail" />
         </article>
 
         <aside className="h-fit border-t border-[#e2e3e7] pt-6 md:mt-8 md:border-l md:border-t-0 md:pl-7 md:pt-0" aria-label="별점 남기기">
