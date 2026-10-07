@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { cn } from "../../utils/cn";
+import { BookmarkButton } from "../bookmark-button";
 import type { Movie } from "../../types/movie";
 
 interface MovieCardProps {
@@ -23,7 +23,7 @@ export default function MovieCard(props: MovieCardProps) {
           />
         </Link>
 
-        <button
+        {/* <button
           // 공통 class와 북마크 상태에 따라 달라지는 class를 cn으로 조합한다.
           className={cn(
             "absolute right-2 top-2 flex h-7 w-7 cursor-pointer items-center justify-center rounded-[6px] border p-0",
@@ -45,7 +45,8 @@ export default function MovieCard(props: MovieCardProps) {
             }
             alt=""
           />
-        </button>
+        </button> */}
+        <BookmarkButton movieId={props.movie.id} />
       </div>
 
       <h2 className="mb-[4px] mt-[7px] overflow-hidden text-ellipsis whitespace-nowrap text-[13px] font-semibold text-[#222]">

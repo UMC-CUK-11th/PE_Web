@@ -1,6 +1,8 @@
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useState, type SubmitEvent } from "react";
 import { movies } from "../../data/movies";
+//4주차 추가 코드
+import { BookmarkButton } from "../../components/bookmark-button";
 
 export function SearchPage() {
   // /search?query=... 에서 검증된 query 값을 읽는다.
@@ -121,6 +123,8 @@ export function SearchPage() {
                           <p className="mb-0 mt-3 line-clamp-3 text-[12px] leading-5 text-[#666b74]">
                             {movie.overview}
                           </p>
+
+                          <BookmarkButton movieId={movie.id} />
 
                           {/* 검색 결과에서도 해당 영화의 상세 route로 이동한다. */}
                           <Link
