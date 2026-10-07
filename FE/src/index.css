@@ -1,10 +1,16 @@
 @import "tailwindcss";
 
-/* 넓은 화면은 3열, 중간 화면은 2열, 좁은 화면은 1열이에요. */
+/* 화면이 좁아지면 5열 → 3열 → 2열 → 1열로 바뀌어요. */
 .movie-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 20px;
+}
+
+@media (max-width: 1279px) {
+  .movie-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 1023px) {
@@ -13,8 +19,21 @@
   }
 }
 
+.movie-grid[data-card-size="large"] {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 1023px) {
+  .movie-grid[data-card-size="large"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 639px) {
   .movie-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .movie-grid[data-card-size="large"] {
     grid-template-columns: minmax(0, 1fr);
   }
 }

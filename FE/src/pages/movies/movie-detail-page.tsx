@@ -1,5 +1,6 @@
 import { Link, useParams } from "@tanstack/react-router";
 import { movies } from "../../data/movies";
+import BookmarkButton from "../../components/movies/bookmark-button";
 
 export function MovieDetailPage() {
   // 주소의 번호표를 읽고, 같은 id를 가진 영화를 찾아요.
@@ -25,7 +26,10 @@ export function MovieDetailPage() {
           <span aria-hidden="true">←</span> 영화 목록
         </Link>
         <div className="flex flex-col gap-8 sm:flex-row sm:gap-10">
-          <img src={movie.posterPath} alt={`${movie.title} 포스터`} className="aspect-[2/3] w-48 shrink-0 self-start rounded-xl object-cover shadow-md sm:w-60" />
+          <div className="relative w-48 shrink-0 self-start sm:w-60">
+            <img src={movie.posterPath} alt={`${movie.title} 포스터`} className="aspect-[2/3] w-full rounded-xl object-cover shadow-md" />
+            <BookmarkButton movieId={movie.id} movieTitle={movie.title} />
+          </div>
           <div className="min-w-0 py-2">
             <h1 className="text-3xl leading-tight font-bold break-keep sm:text-4xl">{movie.title}</h1>
             <p className="mt-3 text-lg text-slate-500">{movie.originalTitle}</p>
