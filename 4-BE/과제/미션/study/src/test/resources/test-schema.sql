@@ -1,0 +1,13 @@
+CREATE TABLE IF NOT EXISTS category (
+  category_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS book (
+  book_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  category_id BIGINT NOT NULL,
+  title VARCHAR(100) NOT NULL,
+  description TEXT,
+  is_available BOOLEAN NOT NULL DEFAULT TRUE,
+  FOREIGN KEY (category_id) REFERENCES category(category_id)
+);
