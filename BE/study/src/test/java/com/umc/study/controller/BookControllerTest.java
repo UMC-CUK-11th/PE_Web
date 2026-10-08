@@ -15,6 +15,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -85,6 +87,45 @@ class BookControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("INVALID_REQUEST"))
                 .andExpect(jsonPath("$.fieldErrors.title").exists());
+    }
+
+    @Test
+    void 앞뒤_공백을_제거한_제목이_100자면_등록을_허용한다() throws Exception {
+        String normalizedTitle = "가".repeat(100);
+        BookResponse response = new BookResponse(6L, normalizedTitle, null, "문학", true);
+        when(bookService.createBook(any(CreateBookRequest.class))).thenReturn(response);
+
+        mockMvc.perform(post("/books")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "categoryId": 1,
+                                  "title": "  %s  ",
+                                  "description": null
+                                }
+                                """.formatted(normalizedTitle)))
+                .andExpect(status().isCreated());
+
+        verify(bookService).createBook(argThat(request ->
+                request.title().equals(normalizedTitle) && request.title().length() == 100
+        ));
+    }
+
+    @Test
+    void 공백을_제거해도_제목이_101자면_400을_반환한다() throws Exception {
+        String tooLongTitle = "가".repeat(101);
+
+        mockMvc.perform(post("/books")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "categoryId": 1,
+                                  "title": "  %s  ",
+                                  "description": null
+                                }
+                                """.formatted(tooLongTitle)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors.title").value("제목은 100자 이하여야 합니다."));
     }
 
     @Test

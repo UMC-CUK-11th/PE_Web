@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { safeLocalStorage } from "../utils/safe-storage";
 
 interface BookmarkStore {
   bookmarkedMovieIds: number[];
@@ -23,7 +24,8 @@ export const useBookmarkStore = create<BookmarkStore>()(
     }),
     {
       name: "umcine-bookmark-store",
-      storage: createJSONStorage(() => localStorage),
+      // Web Storage가 실패하면 안전한 어댑터가 메모리 저장소로 대신 동작합니다.
+      storage: createJSONStorage(() => safeLocalStorage),
       partialize: (state) => ({
         bookmarkedMovieIds: state.bookmarkedMovieIds,
       }),
@@ -34,7 +36,7 @@ export const useBookmarkStore = create<BookmarkStore>()(
           ...currentState,
           bookmarkedMovieIds: Array.isArray(savedState?.bookmarkedMovieIds)
             ? savedState.bookmarkedMovieIds.filter(isValidMovieId)
-            : [],
+            : currentState.bookmarkedMovieIds,
         };
       },
     },

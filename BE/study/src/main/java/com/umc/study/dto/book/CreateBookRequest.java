@@ -20,4 +20,13 @@ public record CreateBookRequest(
 
         String description
 ) {
+    /**
+     * Jackson이 DTO를 만들 때 제목을 먼저 정규화합니다.
+     * 이후 Bean Validation과 Service가 모두 실제 저장값과 같은 제목을 사용합니다.
+     */
+    public CreateBookRequest {
+        if (title != null) {
+            title = title.trim();
+        }
+    }
 }

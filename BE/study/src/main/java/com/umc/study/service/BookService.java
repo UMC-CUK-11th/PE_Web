@@ -51,18 +51,18 @@ public class BookService {
         Category category = categoryRepository.findById(request.categoryId())
                 .orElseThrow(() -> new CategoryNotFoundException(request.categoryId()));
 
-        String normalizedTitle = request.title().trim();
-        if (bookRepository.existsByTitle(normalizedTitle)) {
-            throw new DuplicateBookTitleException(normalizedTitle);
+        String title = request.title();
+        if (bookRepository.existsByTitle(title)) {
+            throw new DuplicateBookTitleException(title);
         }
 
-        Book book = new Book(category, normalizedTitle, request.description());
+        Book book = new Book(category, title, request.description());
 
         try {
             // saveAndFlush로 INSERT를 이 지점에서 실행해 DB UNIQUE 위반도 409로 바꿀 수 있습니다.
             return BookResponse.from(bookRepository.saveAndFlush(book));
         } catch (DataIntegrityViolationException exception) {
-            throw new DuplicateBookTitleException(normalizedTitle, exception);
+            throw new DuplicateBookTitleException(title, exception);
         }
     }
 }
