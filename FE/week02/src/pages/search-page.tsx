@@ -1,5 +1,6 @@
 import { type FormEvent, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { BookmarkButton } from "../components/bookmark-button";
 import { movies } from "../data/movie";
 
 export function SearchPage() {
@@ -83,10 +84,13 @@ export function SearchPage() {
                   <Link className="shrink-0" to={`/movies/${movie.id}`}>
                     <img className="h-[168px] w-[112px] rounded-md object-cover" src={movie.posterPath} alt={`${movie.title} 포스터`} />
                   </Link>
-                  <div className="min-w-0 pt-1">
-                    <h3 className="mb-2 text-base font-bold">
-                      <Link className="text-inherit no-underline" to={`/movies/${movie.id}`}>{movie.title}</Link>
-                    </h3>
+                  <div className="min-w-0 flex-1 pt-1">
+                    <div className="mb-2 flex items-start justify-between gap-3">
+                      <h3 className="text-base font-bold">
+                        <Link className="text-inherit no-underline" to={`/movies/${movie.id}`}>{movie.title}</Link>
+                      </h3>
+                      <BookmarkButton movieId={movie.id} movieTitle={movie.title} />
+                    </div>
                     <p className="mb-3 flex flex-wrap gap-x-2 text-xs text-[#9298a1]">
                       <span>{movie.originalTitle}</span>
                       <span>{movie.releaseDate}</span>

@@ -1,14 +1,10 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { BookmarkButton } from "../components/bookmark-button";
 import { movies } from "../data/movie";
 import { cn } from "../utils/cn";
 
-interface MovieDetailPageProps {
-  bookmarkedMovieIds: number[];
-  onBookmarkToggle: (movieId: number) => void;
-}
-
-export function MovieDetailPage({ bookmarkedMovieIds, onBookmarkToggle }: MovieDetailPageProps) {
+export function MovieDetailPage() {
   const { movieId } = useParams();
   const movie = movies.find(({ id }) => String(id) === movieId);
   const [rating, setRating] = useState(0);
@@ -26,8 +22,6 @@ export function MovieDetailPage({ bookmarkedMovieIds, onBookmarkToggle }: MovieD
       </main>
     );
   }
-
-  const isBookmarked = bookmarkedMovieIds.includes(movie.id);
 
   return (
     <main className="flex-1">
@@ -56,18 +50,7 @@ export function MovieDetailPage({ bookmarkedMovieIds, onBookmarkToggle }: MovieD
         <div className="pt-1">
           <h2 className="text-xl font-extrabold">{movie.tagline}</h2>
           <p className="mt-4 text-sm leading-7 text-[#676f79]">{movie.overview}</p>
-          <button
-            className={cn(
-              "mt-6 inline-flex h-11 cursor-pointer items-center gap-2 rounded-lg border-0 bg-[#2877eb] px-5 text-sm font-bold text-white",
-              isBookmarked && "bg-[#185fc7]",
-            )}
-            type="button"
-            aria-pressed={isBookmarked}
-            onClick={() => onBookmarkToggle(movie.id)}
-          >
-            <img className="size-5" src={isBookmarked ? "/icons/bookmark.svg" : "/icons/bookmark-outline.svg"} alt="" />
-            {isBookmarked ? "즐겨찾기 해제" : "즐겨찾기"}
-          </button>
+          <BookmarkButton className="mt-6" movieId={movie.id} movieTitle={movie.title} />
         </div>
 
         <aside className="border-l border-[#dfe3e8] pl-8 max-[900px]:col-span-2 max-[900px]:border-l-0 max-[900px]:border-t max-[900px]:pt-6 max-[900px]:pl-0 max-sm:col-span-1">
