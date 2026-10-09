@@ -1,17 +1,12 @@
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
 import type { Movie } from "../types/movie";
-import { cn } from "../utils/cn";
+import { BookmarkButton } from "./bookmark-button";
 
 interface MovieCardProps {
   movie: Movie;
 }
 
-const iconPath = "/icons/movie-icons/movie-icons";
-
 export function MovieCard({ movie }: MovieCardProps) {
-  const [isBookmarked, setIsBookmarked] = useState(movie.isBookmarked);
-
   return (
     <article className="group min-w-0">
       <div className="relative aspect-[2/3] overflow-hidden rounded-[4px] bg-[#dedfe3] shadow-[0_3px_12px_rgba(23,24,28,0.08)]">
@@ -27,22 +22,7 @@ export function MovieCard({ movie }: MovieCardProps) {
             alt={`${movie.title} 포스터`}
           />
         </Link>
-        <button
-          className={cn(
-            "absolute right-2 top-2 grid size-7 cursor-pointer place-items-center rounded-[3px] border border-white/50 bg-black/75 transition hover:bg-black",
-            isBookmarked && "border-[#2563eb] bg-[#2563eb] hover:bg-[#1d4ed8]",
-          )}
-          type="button"
-          aria-label={`${movie.title} ${isBookmarked ? '북마크 해제' : '북마크 추가'}`}
-          aria-pressed={isBookmarked}
-          onClick={() => setIsBookmarked((current) => !current)}
-        >
-          <img
-            className="size-4 invert"
-            src={`${iconPath}/${isBookmarked ? "bookmark.svg" : "bookmark-outline.svg"}`}
-            alt=""
-          />
-        </button>
+        <BookmarkButton movieId={movie.id} movieTitle={movie.title} />
       </div>
 
       <div className="pt-2.5">

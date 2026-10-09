@@ -19,7 +19,11 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+	// JPA는 엔티티와 Repository를 통해 반복적인 CRUD SQL 생성을 맡습니다.
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	// @Valid와 @NotBlank 같은 Bean Validation 어노테이션을 실제 요청 검사에 사용합니다.
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.mysql:mysql-connector-j'
 	annotationProcessor 'org.projectlombok:lombok'

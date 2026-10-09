@@ -1,5 +1,6 @@
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useState, type SubmitEvent } from "react";
+import { BookmarkButton } from "../../components/bookmark-button";
 import { movies } from "../../data/movies";
 
 const searchIcon = "/icons/movie-icons/movie-icons/search.svg";
@@ -76,6 +77,9 @@ function SearchPageContent({ query }: SearchPageContentProps) {
                       <Link className="mt-2 inline-block text-[10px] font-bold text-[#2563eb] no-underline hover:underline" to="/movies/$movieId" params={{ movieId: String(movie.id) }}>
                         상세 보기 →
                       </Link>
+                      <div>
+                        <BookmarkButton movieId={movie.id} movieTitle={movie.title} variant="search" />
+                      </div>
                     </div>
                   </article>
                 </li>
