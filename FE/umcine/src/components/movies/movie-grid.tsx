@@ -4,10 +4,14 @@ import type { Movie } from "../../types/movie";
 import { Link } from "@tanstack/react-router";
 import { cn } from "../../utils/cn";
 import { Pagination } from "./pagination";
-
+import { readBookmarkIds, saveBookmarkIds } from "../../utils/bookmark-storage";
 export function MovieGrid() {
-  const [moviesState, setBookmark] = useState(movies);
+  const [bookmarkIds, setBookmarkIds] = useState<number[]>(readBookmarkIds);
   const [currentPage, setCurrentPage] = useState(1);
+  const moviesState = movies.map((movie) => ({
+    ...movie,
+    isBookmarked: bookmarkIds.includes(movie.id),
+  }));
   const moviesPerPage = 10;
   const totalPages = Math.ceil(moviesState.length / moviesPerPage);
   const startIndex = (currentPage - 1) * moviesPerPage;
@@ -16,13 +20,11 @@ export function MovieGrid() {
     startIndex + moviesPerPage,
   );
   function handleToggleBookmark(movieId: number) {
-    setBookmark((currentMovies) =>
-      currentMovies.map((movie) =>
-        movie.id === movieId
-          ? { ...movie, isBookmarked: !movie.isBookmarked }
-          : movie,
-      ),
-    );
+    const nextIds = bookmarkIds.includes(movieId)
+      ? bookmarkIds.filter((id) => id !== movieId)
+      : [...bookmarkIds, movieId];
+    setBookmarkIds(nextIds);
+    saveBookmarkIds(nextIds);
   }
   return (
     <section className="py-6 px-20 bg-[#f6f7f9] ">
@@ -48,7 +50,6 @@ export function MovieGrid() {
                       className="w-[241px] h-[274px] rounded-[10px] object-cover"
                     />
                   </Link>
-
                   {/* 북마크 버튼 */}
                   <button
                     className={cn(

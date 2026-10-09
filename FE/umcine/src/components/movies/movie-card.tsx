@@ -1,21 +1,11 @@
 import { movies } from "../../data/movies";
 import { Link, useParams } from "@tanstack/react-router";
-import { useState } from "react";
-import { cn } from "../../utils/cn";
+import { BookmarkButton } from "../bookmark-button";
 
 export function MovieCard() {
   const { movieId } = useParams({ from: "/movies/$movieId" });
-  const [moviesState, setMoviesState] = useState(movies);
-  const movie = moviesState.find((item) => item.id === Number(movieId));
-  function handleToggleBookmark(movieId: number) {
-    setMoviesState((currentMovies) =>
-      currentMovies.map((movie) =>
-        movie.id === movieId
-          ? { ...movie, isBookmarked: !movie.isBookmarked }
-          : movie,
-      ),
-    );
-  }
+  const movie = movies.find((item) => item.id === Number(movieId));
+
   if (!movie) {
     return <main>영화를 찾을 수 없어요.</main>;
   }
@@ -87,30 +77,7 @@ export function MovieCard() {
               {movie.runtime}
             </p>
 
-            <button
-              id="bookmark-button"
-              type="button"
-              className={cn(
-                "mr-[6px] mt-3 flex h-[42px] w-[107px] items-center justify-center gap-2 rounded-lg text-sm font-semibold text-white cursor-pointer",
-                movie.isBookmarked ? "bg-[#2563eb]" : "bg-black/60",
-              )}
-              onClick={() => handleToggleBookmark(movie.id)}
-              aria-label="즐겨찾기"
-              aria-pressed={movie.isBookmarked}
-            >
-              <svg
-                className="h-4 w-4 shrink-0"
-                viewBox="0 0 24 24"
-                fill={movie.isBookmarked ? "currentColor" : "none"}
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M6 4h12v16l-6-4-6 4V4Z" />
-              </svg>
-              즐겨찾기
-            </button>
+            <BookmarkButton movieId={movie.id} variant="detail" />
           </div>
         </div>
 
