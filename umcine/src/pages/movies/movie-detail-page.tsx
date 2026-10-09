@@ -1,11 +1,11 @@
 import { Link, useParams } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
+import { BookmarkButton } from "../../components/movies/bookmark-button";
 import { movies } from "../../data/movies";
 
 export function MovieDetailPage() {
   const { movieId } = useParams({ from: "/movies/$movieId" });
   const movie = movies.find((item) => item.id === Number(movieId));
-  const [isBookmarked, setIsBookmarked] = useState(movie?.isBookmarked ?? false);
   const [rating, setRating] = useState(0);
   const [savedRating, setSavedRating] = useState<number | null>(null);
 
@@ -87,23 +87,9 @@ export function MovieDetailPage() {
             {movie.title}에서 펼쳐지는 새로운 이야기와 인물들의 선택을 만나보세요.
           </p>
 
-          <button
-            className="mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-lg border-0 bg-[#3159c9] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#2649ad] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3159c9]"
-            type="button"
-            aria-pressed={isBookmarked}
-            onClick={() => setIsBookmarked((value) => !value)}
-          >
-            <img
-              className="h-5 w-5 brightness-0 invert"
-              src={
-                isBookmarked
-                  ? "/movie-icons/bookmark.svg"
-                  : "/movie-icons/bookmark-outline.svg"
-              }
-              alt=""
-            />
-            {isBookmarked ? "즐겨찾기 해제" : "즐겨찾기"}
-          </button>
+          <div className="relative mt-5 h-10 w-10">
+            <BookmarkButton movieId={movie.id} />
+          </div>
         </div>
 
         <aside className="border-t border-[#e3e6eb] pt-6 lg:border-t-0 lg:border-l lg:pt-1 lg:pl-8">

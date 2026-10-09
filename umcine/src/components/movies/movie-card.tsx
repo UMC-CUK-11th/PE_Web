@@ -1,16 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import type { Movie } from "../../types/movie";
-import { cn } from "../../utils/cn";
+import { BookmarkButton } from "./bookmark-button";
 
 interface MovieCardProps {
   movie: Movie;
-  onToggleBookmark: (movieId: number) => void;
 }
 
-export function MovieCard({
-  movie,
-  onToggleBookmark,
-}: MovieCardProps) {
+export function MovieCard({ movie }: MovieCardProps) {
   return (
     <article className="flex w-full min-w-0 flex-col gap-1 overflow-visible">
       <div className="relative h-[274px] w-full shrink-0 overflow-hidden rounded-[10px] bg-[#f6f7f9] max-[900px]:aspect-[241.6/274] max-[900px]:h-auto max-[600px]:rounded-lg">
@@ -26,26 +22,7 @@ export function MovieCard({
           />
         </Link>
 
-        <button
-          className={cn(
-            "absolute top-2 right-2 z-[2] m-0 flex h-6 w-6 cursor-pointer items-center justify-center overflow-hidden rounded-md border-0 bg-[rgba(23,25,30,0.8)] p-0",
-            movie.isBookmarked && "bg-[#3182f6]",
-          )}
-          type="button"
-          aria-label={movie.isBookmarked ? "북마크 해제" : "북마크 추가"}
-          aria-pressed={movie.isBookmarked}
-          onClick={() => onToggleBookmark(movie.id)}
-        >
-          <img
-            className="pointer-events-none block h-[18px] max-h-[18px] w-[14px] max-w-[14px] object-contain"
-            src={
-              movie.isBookmarked
-                ? "/movie-icons/bookmark.svg"
-                : "/movie-icons/bookmark-outline.svg"
-            }
-            alt=""
-          />
-        </button>
+        <BookmarkButton movieId={movie.id} />
       </div>
 
       <div className="flex w-full min-w-0 flex-col">

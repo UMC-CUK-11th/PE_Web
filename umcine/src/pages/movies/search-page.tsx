@@ -1,6 +1,7 @@
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import type { FormEvent } from "react";
 import { Footer } from "../../components/layout/footer";
+import { BookmarkButton } from "../../components/movies/bookmark-button";
 import { movies } from "../../data/movies";
 
 export function SearchPage() {
@@ -86,7 +87,7 @@ export function SearchPage() {
                 <ul className="mt-4 grid list-none grid-cols-1 gap-x-8 p-0 md:grid-cols-2">
                   {searchResults.map((movie) => (
                     <li
-                      className="grid min-h-[218px] grid-cols-[104px_minmax(0,1fr)] gap-4 border-b border-[#e3e6eb] py-4 sm:grid-cols-[126px_minmax(0,1fr)] sm:gap-5"
+                      className="relative grid min-h-[218px] grid-cols-[104px_minmax(0,1fr)] gap-4 border-b border-[#e3e6eb] py-4 sm:grid-cols-[126px_minmax(0,1fr)] sm:gap-5"
                       key={movie.id}
                     >
                       <Link
@@ -123,6 +124,8 @@ export function SearchPage() {
                           상세 보기 →
                         </Link>
                       </div>
+
+                      <BookmarkButton movieId={movie.id} />
                     </li>
                   ))}
                 </ul>
