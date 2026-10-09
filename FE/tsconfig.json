@@ -1,4 +1,6 @@
 {
+  // 이 파일은 TypeScript 검사 설정의 시작점이다.
+  // 브라우저 앱 코드와 Vite 설정 코드를 각각의 tsconfig로 나누어 검사한다.
   "files": [],
   "references": [
     { "path": "./tsconfig.app.json" },

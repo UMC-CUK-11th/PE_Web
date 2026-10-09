@@ -1,4 +1,6 @@
 {
+  // 이 파일은 브라우저 화면이 아닌 vite.config.ts를 검사하는 설정이다.
+  // Vite 설정은 Node.js 환경에서 실행되므로 앱 코드와 타입 환경을 분리한다.
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
     "target": "es2023",

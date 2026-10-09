@@ -1,1 +1,3 @@
+/* 이 파일은 앱 전체에 적용할 CSS의 시작점이다.
+   Tailwind CSS를 한 번만 불러오고, 화면별 스타일은 컴포넌트의 className에 작성한다. */
 @import "tailwindcss";

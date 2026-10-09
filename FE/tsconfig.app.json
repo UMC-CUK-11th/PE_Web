@@ -1,4 +1,6 @@
 {
+  // 이 파일은 src 폴더의 React·TypeScript 코드에 적용할 검사 규칙이다.
+  // 브라우저 API와 JSX 타입을 켜고, 사용하지 않는 변수 같은 실수를 확인한다.
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "target": "es2023",
