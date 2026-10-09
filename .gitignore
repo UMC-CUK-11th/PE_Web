@@ -1,0 +1,14 @@
+node_modules/
+dist/
+build/
+.gradle/
+.tanstack/
+.idea/
+.vscode/
+.env
+.env.*
+*.local
+*.log
+*.class
+*.tsbuildinfo
+.DS_Store
