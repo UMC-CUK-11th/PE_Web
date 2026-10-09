@@ -1,5 +1,8 @@
 import { Link, useParams } from "@tanstack/react-router";
 import { movies } from "../../data/movies";
+//4주차 코드 추가
+import { BookmarkButton } from "../../components/bookmark-button";
+
 
 export function MovieDetailPage() {
   // /movies/$movieId의 동적 path param 값을 읽는다.
@@ -64,6 +67,8 @@ export function MovieDetailPage() {
           <p className="m-0 text-[13px] leading-6 text-[#6e737d]">
             {movie.overview}
           </p>
+          {/* 4주차 미션 코드 추가 */}
+          <BookmarkButton movieId={movie.id} />
 
           <div className="mt-6 grid grid-cols-1 gap-4 text-[12px] sm:grid-cols-3">
             <div>
