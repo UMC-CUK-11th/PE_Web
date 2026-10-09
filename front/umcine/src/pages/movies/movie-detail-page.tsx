@@ -1,10 +1,13 @@
 import { Link, useParams } from "@tanstack/react-router";
-import { useState } from "react";
 import { movies } from "../../data/movies";
 import type { Movie } from "../../types/movie";
+import { useBookmarkStore } from "../../stores/bookmark-store";
 
 function DetailSummary({ movie }: { movie: Movie }) {
-  const [isBookmarked, setIsBookmarked] = useState(movie.isBookmarked);
+  const isBookmarked = useBookmarkStore((state) =>
+    state.bookmarkedMovieIds.includes(movie.id),
+  );
+  const toggleBookmark = useBookmarkStore((state) => state.toggleBookmark);
 
   return (
     <div className="pt-[3px]">
@@ -15,7 +18,7 @@ function DetailSummary({ movie }: { movie: Movie }) {
         className="mt-3 inline-flex h-[26px] items-center gap-1 rounded bg-[#2f65dd] px-2 text-[10px] font-bold text-white"
         type="button"
         aria-pressed={isBookmarked}
-        onClick={() => setIsBookmarked((current) => !current)}
+        onClick={() => toggleBookmark(movie.id)}
       >
         <img
           className="h-3 w-3 invert"

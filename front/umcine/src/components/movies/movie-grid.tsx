@@ -3,20 +3,13 @@ import { MovieCard } from "./movie-card";
 
 interface MovieGridProps {
   movies: Movie[];
-  bookmarks: Record<number, boolean>;
-  onBookmarkToggle: (movieId: number) => void;
 }
 
-export function MovieGrid({ movies, bookmarks, onBookmarkToggle }: MovieGridProps) {
+export function MovieGrid({ movies }: MovieGridProps) {
   return (
     <section id="movie-list" className="grid grid-cols-2 gap-x-3 gap-y-3 sm:grid-cols-3 md:grid-cols-5 md:gap-x-4" aria-label="영화 목록">
       {movies.map((movie) => (
-        <MovieCard
-          key={movie.id}
-          movie={movie}
-          isBookmarked={bookmarks[movie.id]}
-          onBookmarkToggle={onBookmarkToggle}
-        />
+        <MovieCard key={movie.id} movie={movie} />
       ))}
     </section>
   );
