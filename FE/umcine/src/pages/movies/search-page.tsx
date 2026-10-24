@@ -1,9 +1,14 @@
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 
-import type { FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
+import { searchMovies } from "../../api/movies/search-movies";
+import type { TmdbMovieListResponse } from "../../api/movies/models";
+import RequestStatus from "../../components/movies/request-status";
+import MovieImage from "../../components/movies/movie-image";
+import { getTmdbPosterUrl } from "../../utils/movies/tmdb-image";
+import Pagination from "../../components/movies/pagination";
 
 import BookmarkButton from "../../components/movies/bookmark-button";
-import { movies } from "../../data/movie";
 
 export function SearchPage() {
   const { query } = useSearch({
@@ -15,14 +20,6 @@ export function SearchPage() {
   });
 
   const normalizedQuery = query?.trim().toLowerCase() ?? "";
-
-  const searchResults = normalizedQuery
-    ? movies.filter(
-        (movie) =>
-          movie.title.toLowerCase().includes(normalizedQuery) ||
-          movie.originalTitle.toLowerCase().includes(normalizedQuery),
-      )
-    : [];
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -127,119 +124,176 @@ export function SearchPage() {
             </p>
           </div>
         ) : (
-          <>
-            {/* Result Header */}
-            <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <p className="mb-1 text-sm font-medium text-zinc-500">
-                  Search Result
-                </p>
-
-                <h2 className="text-2xl font-bold text-zinc-950">
-                  ‘{query}’ 검색 결과
-                </h2>
-              </div>
-
-              <span className="rounded-full bg-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700">
-                영화 {searchResults.length}편
-              </span>
-            </div>
-
-            {/* 검색 결과 없음 */}
-            {searchResults.length === 0 ? (
-              <div className="flex min-h-[300px] flex-col items-center justify-center rounded-3xl bg-white px-6 text-center shadow-sm">
-                <div className="mb-4 text-5xl">🥲</div>
-
-                <h3 className="text-xl font-bold text-zinc-900">
-                  검색 결과가 없어요
-                </h3>
-
-                <p className="mt-2 text-sm text-zinc-500">
-                  다른 영화 제목이나 원제로 다시 검색해보세요.
-                </p>
-              </div>
-            ) : (
-              /* Movie Grid */
-              <ul className="grid list-none grid-cols-1 gap-6 p-0 md:grid-cols-2 xl:grid-cols-3">
-                {searchResults.map((movie) => (
-                  <li
-                    key={movie.id}
-                    className="group relative overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl"
-                  >
-                    {/* Bookmark */}
-                    <BookmarkButton
-                      movieId={movie.id}
-                      className="absolute right-4 top-4 z-10"
-                    />
-
-                    {/* Poster */}
-                    <Link
-                      to="/movies/$movieId"
-                      params={{
-                        movieId: String(movie.id),
-                      }}
-                      className="block overflow-hidden"
-                    >
-                      <img
-                        src={movie.posterPath}
-                        alt={`${movie.title} 포스터`}
-                        className="aspect-[2/3] w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-                      />
-                    </Link>
-
-                    {/* Movie Info */}
-                    <div className="flex min-h-[280px] flex-col p-5">
-                      <div className="mb-4">
-                        <p className="mb-2 text-xs font-semibold tracking-wide text-zinc-400">
-                          {movie.releaseDate}
-                        </p>
-
-                        <h3 className="text-xl font-bold leading-tight text-zinc-950">
-                          {movie.title}
-                        </h3>
-
-                        <p className="mt-1 text-sm text-zinc-500">
-                          {movie.originalTitle}
-                        </p>
-                      </div>
-
-                      {/* Genre */}
-                      <div className="mb-4 flex flex-wrap gap-2">
-                        {movie.genres.map((genre) => (
-                          <span
-                            key={genre}
-                            className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-600"
-                          >
-                            {genre}
-                          </span>
-                        ))}
-                      </div>
-
-                      {/* Overview */}
-                      <p className="mb-6 line-clamp-3 text-sm leading-6 text-zinc-600">
-                        {movie.overview}
-                      </p>
-
-                      <Link
-                        to="/movies/$movieId"
-                        params={{
-                          movieId: String(movie.id),
-                        }}
-                        className="mt-auto flex items-center justify-center rounded-xl bg-zinc-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800"
-                      >
-                        상세 정보 보기
-                        <span className="ml-2" aria-hidden="true">
-                          →
-                        </span>
-                      </Link>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </>
+          <SearchResults key={normalizedQuery} query={normalizedQuery} />
         )}
       </section>
     </main>
+  );
+}
+
+function SearchResults({ query }: { query: string }) {
+  const [page, setPage] = useState(1);
+  return (
+    <SearchResultPage
+      key={page}
+      query={query}
+      page={page}
+      onPageChange={setPage}
+    />
+  );
+}
+function SearchResultPage({
+  query,
+  page,
+  onPageChange,
+}: {
+  query: string;
+  page: number;
+  onPageChange: (page: number) => void;
+}) {
+  const [data, setData] = useState<TmdbMovieListResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    const controller = new AbortController();
+    searchMovies({ query, page, signal: controller.signal })
+      .then((response) => {
+        if (!controller.signal.aborted) setData(response);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted)
+          setErrorMessage("검색 결과를 불러오지 못했어요.");
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setIsLoading(false);
+      });
+    return () => controller.abort();
+  }, [query, page, attempt]);
+  function retry() {
+    setErrorMessage("");
+    setIsLoading(true);
+    setAttempt((value) => value + 1);
+  }
+  if (isLoading || errorMessage)
+    return (
+      <RequestStatus loading={isLoading} error={errorMessage} onRetry={retry} />
+    );
+  const searchResults = data?.results ?? [];
+  return (
+    <>
+      {/* Result Header */}
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="mb-1 text-sm font-medium text-zinc-500">
+            Search Result
+          </p>
+
+          <h2 className="text-2xl font-bold text-zinc-950">
+            ‘{query}’ 검색 결과
+          </h2>
+        </div>
+
+        <span className="rounded-full bg-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700">
+          영화 {data?.total_results ?? 0}편
+        </span>
+      </div>
+
+      {/* 검색 결과 없음 */}
+      {searchResults.length === 0 ? (
+        <div className="flex min-h-[300px] flex-col items-center justify-center rounded-3xl bg-white px-6 text-center shadow-sm">
+          <div className="mb-4 text-5xl">🥲</div>
+
+          <h3 className="text-xl font-bold text-zinc-900">
+            검색 결과가 없어요
+          </h3>
+
+          <p className="mt-2 text-sm text-zinc-500">
+            다른 영화 제목이나 원제로 다시 검색해보세요.
+          </p>
+        </div>
+      ) : (
+        /* Movie Grid */
+        <ul className="grid list-none grid-cols-1 gap-6 p-0 md:grid-cols-2 xl:grid-cols-3">
+          {searchResults.map((movie) => (
+            <li
+              key={movie.id}
+              className="group relative overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl"
+            >
+              {/* Bookmark */}
+              <BookmarkButton
+                movieId={movie.id}
+                className="absolute right-4 top-4 z-10"
+              />
+
+              {/* Poster */}
+              <Link
+                to="/movies/$movieId"
+                params={{
+                  movieId: String(movie.id),
+                }}
+                className="block overflow-hidden"
+              >
+                <MovieImage
+                  src={getTmdbPosterUrl(movie.poster_path)}
+                  alt={`${movie.title} 포스터`}
+                  className="aspect-[2/3] w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                />
+              </Link>
+
+              {/* Movie Info */}
+              <div className="flex min-h-[280px] flex-col p-5">
+                <div className="mb-4">
+                  <p className="mb-2 text-xs font-semibold tracking-wide text-zinc-400">
+                    {movie.release_date || "개봉일 미정"}
+                  </p>
+
+                  <h3 className="text-xl font-bold leading-tight text-zinc-950">
+                    {movie.title}
+                  </h3>
+
+                  <p className="mt-1 text-sm text-zinc-500">
+                    {movie.original_title}
+                  </p>
+                </div>
+
+                {/* Genre */}
+                <div className="mb-4 flex flex-wrap gap-2">
+                  <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-600">
+                    ★ {movie.vote_average.toFixed(1)} · 평가{" "}
+                    {movie.vote_count.toLocaleString()}개
+                  </span>
+                </div>
+
+                {/* Overview */}
+                <p className="mb-6 line-clamp-3 text-sm leading-6 text-zinc-600">
+                  {movie.overview}
+                </p>
+
+                <Link
+                  to="/movies/$movieId"
+                  params={{
+                    movieId: String(movie.id),
+                  }}
+                  className="mt-auto flex items-center justify-center rounded-xl bg-zinc-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800"
+                >
+                  상세 정보 보기
+                  <span className="ml-2" aria-hidden="true">
+                    →
+                  </span>
+                </Link>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+      {data && (
+        <Pagination
+          currentPage={data.page}
+          totalPages={data.total_pages}
+          onPageChange={onPageChange}
+        />
+      )}
+    </>
   );
 }
