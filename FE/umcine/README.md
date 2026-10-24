@@ -1,3 +1,25 @@
+# UMCine — Week 05
+
+기존 React + TypeScript + Vite 화면에 TMDB 목록/검색/상세 API를 연결했습니다. 패키지 관리는 pnpm을 사용합니다.
+
+```powershell
+pnpm install --frozen-lockfile
+```
+
+`.env.example`을 참고해 로컬 `.env.local`의 `VITE_TMDB_ACCESS_TOKEN`을 입력하세요. 실제 환경 파일은 Git에서 제외됩니다. TMDB 토큰이 비어 있으면 영화 요청 화면에 설정 오류를 표시합니다. 환경 파일 변경 후 개발 서버를 재시작하세요.
+
+```powershell
+pnpm dev
+pnpm lint
+pnpm build
+```
+
+`http://localhost:5173`에서 영화 목록, `/search?query=스파이더맨`에서 검색, `/movies/550`에서 상세를 확인합니다. `/api-test`는 별도 Nest 영화 서버의 세 API를 직접 호출하는 확인 화면입니다. 백엔드 실행/DB 준비 방법은 [영화 서버 README](../../BE/movie/README.md)를 참고하세요. 이 링크는 저장소 루트 기준 `BE/movie/README.md`입니다.
+
+전체 변경 파일, 검증 결과와 남은 실제 API/DB 검증 항목은 [5주차 구현 보고](../../WEEK05.md)에 있습니다.
+
+---
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

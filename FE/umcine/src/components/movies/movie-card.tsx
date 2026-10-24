@@ -1,10 +1,12 @@
+import MovieImage from "./movie-image";
+import { getTmdbPosterUrl } from "../../utils/movies/tmdb-image";
 import { Link } from "@tanstack/react-router";
 
-import type { Movie } from "../../types/movie";
+import type { TmdbMovieListItem } from "../../api/movies/models";
 import BookmarkButton from "./bookmark-button";
 
 interface MovieCardProps {
-  movie: Movie;
+  movie: TmdbMovieListItem;
 }
 
 export default function MovieCard({ movie }: MovieCardProps) {
@@ -33,8 +35,8 @@ export default function MovieCard({ movie }: MovieCardProps) {
           }}
           className="block"
         >
-          <img
-            src={movie.posterPath}
+          <MovieImage
+            src={getTmdbPosterUrl(movie.poster_path)}
             alt={`${movie.title} 포스터`}
             className="
               aspect-[2/3]
@@ -73,7 +75,7 @@ export default function MovieCard({ movie }: MovieCardProps) {
       {/* Movie Information */}
       <div className="flex min-h-[180px] flex-col p-4">
         <p className="mb-1 text-xs font-medium text-zinc-400">
-          {movie.releaseDate}
+          {movie.release_date || "개봉일 미정"}
         </p>
 
         <Link
@@ -98,34 +100,21 @@ export default function MovieCard({ movie }: MovieCardProps) {
         </Link>
 
         <p className="mt-1 truncate text-sm text-zinc-400">
-          {movie.originalTitle}
+          {movie.original_title}
         </p>
 
         <div className="mt-3 flex items-center gap-2 text-xs text-zinc-500">
-          <span>{movie.releaseDate}</span>
+          <span>{movie.release_date || "개봉일 미정"}</span>
 
           <span className="text-zinc-300">•</span>
 
-          <span>{movie.runtime}</span>
+          <span>{`★ ${movie.vote_average.toFixed(1)}`}</span>
         </div>
 
         <div className="mt-auto flex flex-wrap gap-1.5 pt-4">
-          {movie.genres.map((genre) => (
-            <span
-              key={genre}
-              className="
-                rounded-full
-                bg-zinc-100
-                px-2.5
-                py-1
-                text-[11px]
-                font-medium
-                text-zinc-600
-              "
-            >
-              {genre}
-            </span>
-          ))}
+          <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-xs text-zinc-600">
+            평가 {movie.vote_count.toLocaleString()}개
+          </span>
         </div>
       </div>
     </article>

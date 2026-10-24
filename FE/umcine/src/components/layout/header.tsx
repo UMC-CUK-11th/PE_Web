@@ -25,6 +25,11 @@ export default function Header() {
         </Link>
 
         {/* Navigation */}
+        {import.meta.env.DEV && (
+          <Link to="/api-test" className="text-xs font-medium text-zinc-500">
+            API 확인
+          </Link>
+        )}
         <nav className="flex items-center gap-2 rounded-2xl bg-zinc-100 p-1.5">
           <Link
             to="/"
