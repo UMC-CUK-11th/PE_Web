@@ -18,7 +18,7 @@ export const useBookmarkStore = create<BookmarkStore>()(
         })),
     }),
     {
-      name: "umcine-bookmark-store",
+      name: "umcine-tmdb-bookmark-store",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         bookmarkedMovieIds: state.bookmarkedMovieIds,
