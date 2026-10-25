@@ -1,3 +1,4 @@
+import { MovieImage } from "./movie-image";
 import { Link } from "@tanstack/react-router";
 import type { Movie } from "../../types/movie";
 import { BookmarkButton } from "../bookmark-button";
@@ -16,7 +17,7 @@ export default function MovieCard({
           to="/movies/$movieId"
           params={{ movieId: String(movie.id) }}
         >
-          <img
+          <MovieImage
             className="block w-full rounded-[8px]"
             src={movie.posterPath}
             alt={`${movie.title} 포스터`}

@@ -1,10 +1,18 @@
 import { Link, useParams } from "@tanstack/react-router";
-import { movies } from "../../data/movies";
+import { useCallback } from "react";
+import { getMovieDetail } from "../../api/movies/get-movie-detail";
+import { toMovie } from "../../api/movies/models";
+import { useMovieRequest } from "../../hooks/use-movie-request";
+import { MovieImage } from "../../components/movies/movie-image";
 import { BookmarkButton } from "../../components/bookmark-button";
 
 export function MovieDetailPage() {
   const { movieId } = useParams({ from: "/movies/$movieId" });
-  const movie = movies.find((item) => item.id === Number(movieId));
+  const request = useCallback((signal: AbortSignal) => getMovieDetail(movieId, signal), [movieId]);
+  const { data, error, loading } = useMovieRequest(movieId, request);
+  if (loading) return <main className="mx-auto max-w-6xl px-6 py-10" role="status">영화 정보를 불러오는 중이에요.</main>;
+  if (error) return <main className="mx-auto max-w-6xl px-6 py-10"><p role="alert">{error}</p><Link to="/">영화 목록으로</Link></main>;
+  const movie = data ? toMovie(data) : undefined;
 
   if (!movie) {
     return <main>영화를 찾을 수 없어요.</main>;
@@ -13,13 +21,13 @@ export function MovieDetailPage() {
  return (
   <main className="bg-[#f7f8fa]">
     <section className="relative h-[360px] overflow-hidden">
-      <img
+      <MovieImage
         src={movie.backdropPath}
         alt=""
         aria-hidden="true"
         className="h-full w-full object-cover"
       />
-      <div className="absolute inset-0 bg-black/45" />
+      <div className="pointer-events-none absolute inset-0 bg-black/20" />
     </section>
 
     <section className="mx-auto max-w-6xl px-6 py-10">
@@ -32,7 +40,7 @@ export function MovieDetailPage() {
 
       <div className="flex flex-col gap-8 sm:flex-row">
         <div className="relative w-[220px] shrink-0 self-start">
-          <img
+          <MovieImage
             src={movie.posterPath}
             alt={`${movie.title} 포스터`}
             className="w-[220px] rounded-xl object-cover"
