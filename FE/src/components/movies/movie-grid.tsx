@@ -1,8 +1,8 @@
-import type { Movie } from "../../types/movie";
+import type { MovieCardModel } from "../../utils/movies/movie-adapter";
 import MovieCard from "./movie-card";
 
 interface MovieGridProps {
-  movies: Movie[];
+  movies: MovieCardModel[];
   cardSize?: "default" | "large";
 }
 
