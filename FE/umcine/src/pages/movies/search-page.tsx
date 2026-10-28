@@ -1,21 +1,51 @@
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { useState, type SubmitEvent } from "react";
-import { movies } from "../../data/movies";
+import { useEffect, useState, type SubmitEvent } from "react";
+import { searchMovies } from "../../api/movies/search-movies";
+import type { TmdbMovieListItem } from "../../api/movies/models";
+import { getTmdbPosterUrl } from "../../utils/movies/tmdb-image";
 
 export function SearchPage() {
-  const { query } = useSearch({ from: "/search" });
+  const { query = "" } = useSearch({ from: "/search" });
   const navigate = useNavigate({ from: "/search" });
   const [searchText, setSearchText] = useState(query ?? "");
 
-  const normalizedQuery = query?.trim().toLowerCase() ?? "";
+  const [movies, setMovies] = useState<TmdbMovieListItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const searchResults = normalizedQuery
-    ? movies.filter(
-        (movie) =>
-          movie.title.toLowerCase().includes(normalizedQuery) ||
-          movie.originalTitle.toLowerCase().includes(normalizedQuery),
-      )
-    : [];
+  const normalizedQuery = query.trim();
+
+  useEffect(() => {
+    let ignore = false;
+    const normalizedQuery = query.trim();
+
+    // 검색어가 바뀌면 이전 요청의 결과를 비우고 새 요청 상태로 전환해요.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMovies([]);
+    setErrorMessage(null);
+
+    if (!normalizedQuery) {
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+
+    searchMovies({ query: normalizedQuery })
+      .then((response) => {
+        if (!ignore) setMovies(response.results);
+      })
+      .catch(() => {
+        if (!ignore) setErrorMessage("검색 결과를 불러오지 못했어요.");
+      })
+      .finally(() => {
+        if (!ignore) setIsLoading(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [query]);
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -134,23 +164,31 @@ export function SearchPage() {
             <h2 className="text-[20px] font-bold">‘{query}’ 검색 결과</h2>
 
             <p className="text-[13px] text-[#969DAA]">
-              영화 {searchResults.length}편 · 1페이지
+              영화 {movies.length}편 · 1페이지
             </p>
           </div>
 
-          {searchResults.length === 0 ? (
+          {isLoading ? (
+            <p role="status" className="py-20 text-center text-[#969DAA]">
+              검색 결과를 불러오는 중이에요.
+            </p>
+          ) : errorMessage ? (
+            <p role="alert" className="py-20 text-center text-[#969DAA]">
+              {errorMessage}
+            </p>
+          ) : movies.length === 0 ? (
             <p className="py-20 text-center text-[#969DAA]">
               검색 결과가 없어요.
             </p>
           ) : (
             <ul className="grid grid-cols-1 lg:grid-cols-2 gap-x-10">
-              {searchResults.map((movie) => (
+              {movies.map((movie) => (
                 <li
                   key={movie.id}
                   className="flex min-h-[260px] gap-5 border-b border-[#D9DDE5] py-6"
                 >
                   <img
-                    src={movie.posterPath}
+                    src={getTmdbPosterUrl(movie.poster_path) ?? undefined}
                     alt={`${movie.title} 포스터`}
                     className="h-[210px] w-[140px] shrink-0 rounded-lg object-cover"
                   />
@@ -161,8 +199,8 @@ export function SearchPage() {
                     </h3>
 
                     <div className="mt-2 flex text-[14px] text-[#969DAA] text-left">
-                      <p>{movie.originalTitle}</p>
-                      <p>{movie.releaseDate}</p>
+                      <p>{movie.original_title}</p>
+                      <p>{movie.release_date}</p>
                     </div>
 
                     <p className="mt-2 mb-[20px] sm:mb-[30px] md:mb-[40px] xl:mb-[50px] line-clamp-3 text-[14px] leading-4 text-[#606774] text-left">

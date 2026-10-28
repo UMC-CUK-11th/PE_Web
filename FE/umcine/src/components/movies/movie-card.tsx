@@ -1,14 +1,20 @@
-import { movies } from "../../data/movies";
-import { Link, useParams } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
+import type { TmdbMovieDetail } from "../../api/movies/models";
+import {
+  getTmdbBackdropUrl,
+  getTmdbPosterUrl,
+} from "../../utils/movies/tmdb-image";
 import { BookmarkButton } from "../bookmark-button";
 
-export function MovieCard() {
-  const { movieId } = useParams({ from: "/movies/$movieId" });
-  const movie = movies.find((item) => item.id === Number(movieId));
+interface MovieCardProps {
+  movie: TmdbMovieDetail;
+}
 
-  if (!movie) {
-    return <main>영화를 찾을 수 없어요.</main>;
-  }
+export function MovieCard({ movie }: MovieCardProps) {
+  const runtime =
+    typeof movie.runtime === "number"
+      ? `${Math.floor(movie.runtime / 60)}시간 ${movie.runtime % 60}분`
+      : "상영 시간 정보가 없어요.";
   return (
     <section className="w-full m-0 p-0 bg-[#F6F7F9]">
       <div className="relative w-full h-90 p-0 overflow-hidden bg-[#222]">
@@ -36,13 +42,13 @@ export function MovieCard() {
             <h2 className="text-[32px] font-bold leading-[1.3] max-[700px]:text-[25px]">
               {movie.title}
             </h2>
-            <p className="text-[14px]">{movie.originalTitle}</p>
-            <p className="text-[13px] font-semibold">{movie.releaseDate}</p>
+            <p className="text-[14px]">{movie.original_title}</p>
+            <p className="text-[13px] font-semibold">{movie.release_date}</p>
           </div>
         </div>
 
         <img
-          src={movie.backdropPath}
+          src={getTmdbBackdropUrl(movie.backdrop_path) ?? undefined}
           alt=""
           id="movie-backdrop"
           className="absolute top-0 left-0 z-0 w-full h-full object-cover object-center"
@@ -58,7 +64,7 @@ export function MovieCard() {
           className="flex flex-1 gap-[30px] pr-[30px] box-border max-[900px]:gap-5 max-[700px]:pr-0"
         >
           <img
-            src={movie.posterPath}
+            src={getTmdbPosterUrl(movie.poster_path) ?? undefined}
             alt={`${movie.title} 포스터`}
             className="w-[181px] h-[259px] shrink-0 object-cover rounded-[9px] shadow-[0_12px_25px_rgba(0,0,0,0.15)]"
           />
@@ -71,10 +77,10 @@ export function MovieCard() {
               {movie.overview}
             </p>
             <p className="h-5 max-w-[600px] text-[12px] leading-[1.8] text-[#69707d]">
-              {movie.genres.join(" · ")}
+              {movie.genres.map((genre) => genre.name).join(", ")}
             </p>
             <p className="h-5 max-w-[600px] text-[12px] leading-[1.8] text-[#69707d]">
-              {movie.runtime}
+              {runtime}
             </p>
 
             <BookmarkButton movieId={movie.id} variant="detail" />
