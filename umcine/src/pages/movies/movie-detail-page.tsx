@@ -1,21 +1,75 @@
 import { Link, useParams } from '@tanstack/react-router';
-import { useState } from 'react';
-import { movies, useBookmarks } from '../../data/movies';
+import { useEffect, useState } from 'react';
+import { getMovieDetail } from '../../api/movies/get-movie-detail';
+import type { TmdbMovieDetail } from '../../api/movies/models';
+import { useBookmarks } from '../../data/movies';
+import { getMovieDetailErrorMessage } from '../../utils/movies/get-movie-detail-error-message';
 
 export function MovieDetailPage() {
   const { movieId } = useParams({ from: '/movies/$movieId' });
-  const { isBookmarked, toggleBookmark } = useBookmarks();
-  const movie = movies.find((item) => item.id === Number(movieId));
+  const parsedMovieId = Number(movieId);
 
+  const { isBookmarked, toggleBookmark } = useBookmarks();
+
+  const [movie, setMovie] = useState<TmdbMovieDetail | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
 
-  if (!movie) {
+  useEffect(() => {
+    let ignore = false;
+
+    async function loadMovieDetail() {
+      setMovie(null);
+      setErrorMessage(null);
+
+      if (!Number.isInteger(parsedMovieId) || parsedMovieId <= 0) {
+        setErrorMessage('올바르지 않은 영화 번호예요.');
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
+
+      try {
+        const response = await getMovieDetail(parsedMovieId);
+
+        if (!ignore) {
+          setMovie(response);
+        }
+      } catch (error: unknown) {
+        if (!ignore) {
+          setErrorMessage(getMovieDetailErrorMessage(error));
+        }
+      } finally {
+        if (!ignore) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadMovieDetail();
+
+    return () => {
+      ignore = true;
+    };
+  }, [parsedMovieId]);
+
+  if (isLoading) {
+    return (
+      <main className='min-h-[calc(100vh-72px)] w-full bg-gray-100 px-6 py-20 text-center'>
+        영화 정보를 불러오는 중이에요.
+      </main>
+    );
+  }
+
+  if (errorMessage || !movie) {
     return (
       <main className='min-h-[calc(100vh-72px)] w-full bg-gray-100'>
         <div className='px-6 py-20 text-center sm:px-20'>
           <h2 className='mb-4 text-xl font-bold text-gray-900'>
-            영화를 찾을 수 없습니다.
+            {errorMessage ?? '영화 정보를 불러오지 못했어요.'}
           </h2>
           <Link
             to='/'
@@ -30,15 +84,22 @@ export function MovieDetailPage() {
 
   const bookmarked = isBookmarked(movie.id);
 
+  const runtimeText =
+    typeof movie.runtime === 'number'
+      ? `${Math.floor(movie.runtime / 60)}시간 ${movie.runtime % 60}분`
+      : '상영 시간 정보가 없어요.';
+
   return (
     <main className='min-h-[calc(100vh-72px)] w-full bg-gray-100'>
       {/* 영화 배경 영역 */}
       <section className='relative h-[360px] overflow-hidden text-white'>
-        <img
-          src={movie.backdropPath}
-          alt=''
-          className='h-full w-full object-cover'
-        />
+        {movie.backdrop_path && (
+          <img
+            src={`https://image.tmdb.org/t/p/w1280${movie.backdrop_path}`}
+            alt=''
+            className='h-full w-full object-cover'
+          />
+        )}
 
         <div className='absolute inset-0 bg-gradient-to-b from-black/20 to-black/75' />
 
@@ -55,14 +116,14 @@ export function MovieDetailPage() {
               {movie.title}
             </h1>
 
-            <p className='my-2 text-sm'>{movie.originalTitle}</p>
+            <p className='my-2 text-sm'>{movie.original_title}</p>
 
             <p className='m-0 text-sm leading-7'>
-              {movie.releaseDate}
+              {movie.release_date}
               <span> · </span>
-              {movie.genres.join(' · ')}
+              {movie.genres.map((genre) => genre.name).join(', ')}
               <span> · </span>
-              {movie.runtime}
+              {runtimeText}
             </p>
           </div>
         </div>
@@ -72,11 +133,13 @@ export function MovieDetailPage() {
       <section className='grid grid-cols-1 gap-6 bg-gray-50 px-6 py-6 min-[481px]:grid-cols-[120px_minmax(0,1fr)] min-[901px]:grid-cols-[160px_minmax(0,1fr)_280px] min-[901px]:px-16'>
         {/* 포스터 */}
         <div className='flex justify-center min-[481px]:block'>
-          <img
-            src={movie.posterPath}
-            alt={`${movie.title} 포스터`}
-            className='block w-[160px] rounded-lg min-[481px]:w-[120px] min-[901px]:w-[160px]'
-          />
+          {movie.poster_path && (
+            <img
+              src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+              alt={`${movie.title} 포스터`}
+              className='block w-[160px] rounded-lg min-[481px]:w-[120px] min-[901px]:w-[160px]'
+            />
+          )}
         </div>
 
         {/* 영화 소개 */}
