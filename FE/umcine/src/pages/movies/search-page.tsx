@@ -1,5 +1,6 @@
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { useEffect, useState, type SubmitEvent } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useState, type SubmitEvent } from "react";
 
 import { searchMovies } from "../../api/movies/search-movies";
 import type { TmdbMovieListItem } from "../../api/movies/models";
@@ -8,51 +9,24 @@ export function SearchPage() {
   const { query } = useSearch({ from: "/search" });
   const navigate = useNavigate({ from: "/search" });
   
-  // 폼 입력 상태
-  const [searchText, setSearchText] = useState(query ?? "");
-
-  // API 데이터 및 통신 상태 관리
-  const [movies, setMovies] = useState<TmdbMovieListItem[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  // URL query 변경 시 검색어 입력창 동기화
-  useEffect(() => {
-    setSearchText(query ?? "");
-  }, [query]);
-
-  // URL query 변경 감지 및 API 호출 (네트워크 요청)
-  useEffect(() => {
-    let ignore = false;
-    const normalizedQuery = query?.trim() ?? "";
-
-    setMovies([]);
-    setErrorMessage(null);
-
-    if (!normalizedQuery) {
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
-
-    searchMovies({ query: normalizedQuery })
-      .then((response) => {
-        if (!ignore) setMovies(response.results);
-      })
-      .catch(() => {
-        if (!ignore) setErrorMessage("검색 결과를 불러오지 못했어요.");
-      })
-      .finally(() => {
-        if (!ignore) setIsLoading(false);
-      });
-
-    return () => {
-      ignore = true;
-    };
-  }, [query]);
-
   const normalizedQuery = query?.trim() ?? "";
+
+  // 폼 입력 상태 (URL query가 바뀌면 입력창도 맞춰요)
+  const [searchText, setSearchText] = useState(query ?? "");
+  const [syncedQuery, setSyncedQuery] = useState(query);
+  if (query !== syncedQuery) {
+    setSyncedQuery(query);
+    setSearchText(query ?? "");
+  }
+
+  // 검색어를 query key에 넣어 검색어마다 캐시를 따로 저장하고, 검색어가 있을 때만 요청해요.
+  const searchQuery = useQuery({
+    queryKey: ["movies", "search", { query: normalizedQuery }],
+    queryFn: () => searchMovies({ query: normalizedQuery }),
+    enabled: normalizedQuery.length > 0,
+  });
+
+  const movies: TmdbMovieListItem[] = searchQuery.data?.results ?? [];
   const ITEMS_PER_PAGE = 15; 
   const totalPages = Math.ceil(movies.length / ITEMS_PER_PAGE);
 
@@ -91,11 +65,11 @@ export function SearchPage() {
           </div>
 
           {/* 상태(Loading, Error, Empty, Success)에 따른 조건부 렌더링 */}
-          {isLoading ? (
+          {searchQuery.isLoading ? (
             <p className="py-[45px] text-center text-[10px] text-[#8e949e]">검색 결과를 불러오는 중입니다...</p>
-          ) : errorMessage ? (
-            <p className="py-[45px] text-center text-[10px] text-[#ef4444]">{errorMessage}</p>
-          ) : movies.length === 0 ? (
+          ) : searchQuery.isError ? (
+            <p className="py-[45px] text-center text-[10px] text-[#ef4444]">검색 결과를 불러오지 못했어요.</p>
+          ) : searchQuery.isSuccess && movies.length === 0 ? (
             <p className="py-[45px] text-center text-[10px] text-[#8e949e]">검색 결과가 없어요.</p>
           ) : (
             <ul className="grid grid-cols-2 gap-x-[42px] max-[700px]:grid-cols-1">
