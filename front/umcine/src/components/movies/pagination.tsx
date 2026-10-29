@@ -11,9 +11,23 @@ export function Pagination({ currentPage, pageCount, onPageChange }: PaginationP
     return null;
   }
 
+  const firstPage = Math.max(1, Math.min(currentPage - 2, pageCount - 4));
+  const visiblePages = Array.from(
+    { length: Math.min(5, pageCount) },
+    (_, index) => firstPage + index,
+  );
+
   return (
     <nav className="mt-10 flex justify-center gap-2" aria-label="영화 페이지">
-      {Array.from({ length: pageCount }, (_, index) => index + 1).map((page) => (
+      <button
+        className="h-[34px] min-w-[34px] cursor-pointer rounded-md border border-[#dce0e6] bg-white px-2 text-[#3f4651] disabled:cursor-default disabled:opacity-40"
+        type="button"
+        disabled={currentPage === 1}
+        onClick={() => onPageChange(currentPage - 1)}
+      >
+        이전
+      </button>
+      {visiblePages.map((page) => (
         <button
           key={page}
           className={cn(
@@ -27,6 +41,14 @@ export function Pagination({ currentPage, pageCount, onPageChange }: PaginationP
           {page}
         </button>
       ))}
+      <button
+        className="h-[34px] min-w-[34px] cursor-pointer rounded-md border border-[#dce0e6] bg-white px-2 text-[#3f4651] disabled:cursor-default disabled:opacity-40"
+        type="button"
+        disabled={currentPage === pageCount}
+        onClick={() => onPageChange(currentPage + 1)}
+      >
+        다음
+      </button>
     </nav>
   );
 }

@@ -1,8 +1,11 @@
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { useState, type SubmitEvent } from "react";
-import { movies } from "../../data/movies";
+import { useEffect, useState, type SubmitEvent } from "react";
+import { searchMovies } from "../../api/movies/search-movies";
+import type { TmdbMovieListItem } from "../../api/movies/models";
+import { TmdbFooter } from "../../components/layout/tmdb-footer";
 import { cn } from "../../utils/cn";
 import { BookmarkButton } from "../../components/movies/bookmark-button";
+import { getTmdbPosterUrl } from "../../utils/tmdb-image";
 
 interface SearchFormProps {
   initialQuery: string;
@@ -39,17 +42,81 @@ function SearchForm({ initialQuery, hasQuery }: SearchFormProps) {
   );
 }
 
+function SearchResults({ query }: { query: string }) {
+  const [results, setResults] = useState<TmdbMovieListItem[]>([]);
+  const [totalResults, setTotalResults] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    let ignore = false;
+
+    searchMovies({ query })
+      .then((response) => {
+        if (!ignore) {
+          setResults(response.results);
+          setTotalResults(response.total_results);
+        }
+      })
+      .catch(() => {
+        if (!ignore) setErrorMessage("검색 결과를 불러오지 못했어요.");
+      })
+      .finally(() => {
+        if (!ignore) setIsLoading(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [query]);
+
+  return (
+    <section className="mt-2" aria-live="polite">
+      <div className="flex items-baseline justify-between border-b border-[#dfe2e7] pb-1.5">
+        <h2 className="text-[15px] leading-[1.2] font-extrabold tracking-[-0.6px] text-[#252a34]">‘{query}’ 검색 결과</h2>
+        {!isLoading && !errorMessage && <p className="text-[11px] text-[#8a909a]">영화 {totalResults}편</p>}
+      </div>
+      {isLoading ? (
+        <p role="status" className="py-[68px] text-center text-sm text-[#747b86]">검색 중이에요.</p>
+      ) : errorMessage ? (
+        <p role="alert" className="py-[68px] text-center text-sm text-[#747b86]">{errorMessage}</p>
+      ) : results.length === 0 ? (
+        <p className="py-[68px] text-center text-sm text-[#747b86]">검색 결과가 없어요.</p>
+      ) : (
+        <ul className="grid grid-cols-1 gap-x-7 md:grid-cols-2">
+          {results.map((movie) => {
+            const posterUrl = getTmdbPosterUrl(movie.poster_path);
+
+            return (
+              <li className="flex min-w-0 gap-[14px] border-b border-[#e2e5e9] py-4" key={movie.id}>
+                <div className="relative h-[118px] w-20 shrink-0 rounded bg-[#dfe2e8]">
+                  {posterUrl ? (
+                    <img className="h-full w-full rounded object-cover" src={posterUrl} alt={`${movie.title} 포스터`} />
+                  ) : (
+                    <span className="grid h-full place-items-center text-center text-[10px] text-[#687080]">포스터 없음</span>
+                  )}
+                  <BookmarkButton movie={movie} className="top-1 right-1" />
+                </div>
+                <div className="min-w-0 pt-0.5">
+                  <h3 className="overflow-hidden text-ellipsis whitespace-nowrap text-[13px] font-extrabold tracking-[-0.4px] text-[#272c36]">{movie.title}</h3>
+                  <p className="text-[10px] text-[#8b919b]">{movie.original_title} · {movie.release_date ? movie.release_date.replaceAll("-", ".") : "개봉일 미정"}</p>
+                  <p className="mt-[7px] line-clamp-2 text-[10px] leading-[1.45] text-[#666d78]">{movie.overview || "줄거리 정보가 없어요."}</p>
+                  <Link className="mt-2 inline-block text-[10px] font-bold text-[#2865e7] no-underline" to="/movies/$movieId" params={{ movieId: String(movie.id) }}>
+                    상세 보기 <span aria-hidden="true">→</span>
+                  </Link>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </section>
+  );
+}
+
 export function SearchPage() {
   const { query } = useSearch({ from: "/search" });
-
-  const normalizedQuery = query?.trim().toLowerCase() ?? "";
-  const searchResults = normalizedQuery
-    ? movies.filter(
-        (movie) =>
-          movie.title.toLowerCase().includes(normalizedQuery) ||
-          movie.originalTitle.toLowerCase().includes(normalizedQuery),
-      )
-    : [];
+  const normalizedQuery = query?.trim() ?? "";
 
   return (
     <div className="flex min-h-[calc(100vh-56px)] flex-col bg-[#f6f7f9]">
@@ -59,45 +126,11 @@ export function SearchPage() {
       )}>
         {normalizedQuery && <h1 className="mb-2 text-[22px] leading-[1.35] font-extrabold tracking-[-1px] text-[#20252e]">영화 검색</h1>}
         {!normalizedQuery && <h2 className="mb-[22px] text-center text-[26px] leading-[1.3] font-extrabold tracking-[-1px] text-[#252a34]">어떤 영화를 찾고 있나요?</h2>}
-        <SearchForm key={query ?? ""} initialQuery={query ?? ""} hasQuery={Boolean(normalizedQuery)} />
+        <SearchForm key={`form-${query ?? ""}`} initialQuery={query ?? ""} hasQuery={Boolean(normalizedQuery)} />
 
-        {normalizedQuery && (
-          <section className="mt-2" aria-live="polite">
-            <div className="flex items-baseline justify-between border-b border-[#dfe2e7] pb-1.5">
-              <h2 className="text-[15px] leading-[1.2] font-extrabold tracking-[-0.6px] text-[#252a34]">‘{query}’ 검색 결과</h2>
-              <p className="text-[11px] text-[#8a909a]">영화 {searchResults.length}편</p>
-            </div>
-            {searchResults.length === 0 ? (
-              <p className="py-[68px] text-center text-sm text-[#747b86]">검색 결과가 없어요.</p>
-            ) : (
-              <ul className="grid grid-cols-1 gap-x-7 md:grid-cols-2">
-                {searchResults.map((movie) => (
-                  <li className="flex min-w-0 gap-[14px] border-b border-[#e2e5e9] py-4" key={movie.id}>
-                    <div className="relative h-[118px] w-20 shrink-0">
-                      <img className="h-full w-full rounded object-cover" src={movie.posterPath} alt={`${movie.title} 포스터`} />
-                      <BookmarkButton movie={movie} className="top-1 right-1" />
-                    </div>
-                    <div className="min-w-0 pt-0.5">
-                      <h3 className="overflow-hidden text-ellipsis whitespace-nowrap text-[13px] font-extrabold tracking-[-0.4px] text-[#272c36]">{movie.title}</h3>
-                      <p className="text-[10px] text-[#8b919b]">{movie.originalTitle} · {movie.releaseDate}</p>
-                      <p className="mt-[7px] line-clamp-2 text-[10px] leading-[1.45] text-[#666d78]">{movie.overview}</p>
-                      <Link className="mt-2 inline-block text-[10px] font-bold text-[#2865e7] no-underline" to="/movies/$movieId" params={{ movieId: String(movie.id) }}>
-                        상세 보기 <span aria-hidden="true">→</span>
-                      </Link>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-        )}
+        {normalizedQuery && <SearchResults key={`results-${normalizedQuery}`} query={normalizedQuery} />}
       </main>
-      {normalizedQuery && (
-        <footer className="flex min-h-9 items-center justify-center gap-2 border-t border-[#e7e9ed] bg-white px-6 text-center text-[10px] text-[#8a9099] md:justify-end md:px-12">
-          <img className="w-[22px]" src="/images/logos/tmdb-logo.svg" alt="TMDB" />
-          <span>This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
-        </footer>
-      )}
+      <TmdbFooter />
     </div>
   );
 }

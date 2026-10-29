@@ -6,6 +6,13 @@ import "./index.css";
 
 const router = createRouter({ routeTree });
 
+const memberApiCheckParams = new URLSearchParams(window.location.search);
+if (import.meta.env.DEV && memberApiCheckParams.get("check-member-api") === "1") {
+  void import("./examples/check-member-api").then(({ checkMemberApi }) => {
+    checkMemberApi(memberApiCheckParams);
+  });
+}
+
 declare module "@tanstack/react-router" {
   interface Register {
     router: typeof router;

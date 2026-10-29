@@ -1,9 +1,8 @@
-import type { Movie } from "../../types/movie";
 import { useBookmarkStore } from "../../stores/bookmark-store";
 import { cn } from "../../utils/cn";
 
 interface BookmarkButtonProps {
-  movie: Movie;
+  movie: { id: number; title: string };
   className?: string;
 }
 
