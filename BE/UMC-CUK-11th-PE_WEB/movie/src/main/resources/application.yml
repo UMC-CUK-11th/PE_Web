@@ -1,9 +1,10 @@
 spring:
   application:
     name: movie
-  # 프로젝트 루트의 .env(DB_PASSWORD=...)를 읽어옵니다. IntelliJ 환경 변수로 넣어도 됩니다.
+  # src/main/resources/.env(DB_PASSWORD=...)를 classpath에서 읽어서 실행 위치(IntelliJ/Gradle)와 무관하게 동작합니다.
+  # .env는 .gitignore에 포함되어 커밋되지 않습니다. 환경 변수 DB_PASSWORD로 넣어도 됩니다.
   config:
-    import: optional:file:.env[.properties]
+    import: optional:classpath:.env[.properties]
   datasource:
     url: jdbc:mysql://localhost:3306/umc_movie
     username: root
