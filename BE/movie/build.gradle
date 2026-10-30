@@ -1,0 +1,38 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.5.0'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+group = 'com.umc'
+version = '0.0.1-SNAPSHOT'
+java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
+repositories { mavenCentral() }
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    runtimeOnly 'com.mysql:mysql-connector-j'
+    testRuntimeOnly 'com.h2database:h2'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+tasks.named('test') { useJUnitPlatform() }
+
+// IntelliJ의 Gradle 실행 버튼도 run-local.ps1과 같은 로컬 DB 설정을 사용한다.
+tasks.named('bootRun') {
+    def localEnv = file('.env.local')
+    if (localEnv.exists()) {
+        localEnv.eachLine('UTF-8') { line ->
+            def entry = line =~ /^\s*(DB_URL|DB_USER|DB_PASSWORD|PORT)\s*=(.*)$/
+            if (entry.matches()) {
+                def value = entry.group(2).trim()
+                if (value.length() >= 2 && ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'")))) {
+                    value = value.substring(1, value.length() - 1)
+                }
+                environment entry.group(1), value
+            }
+        }
+    }
+}

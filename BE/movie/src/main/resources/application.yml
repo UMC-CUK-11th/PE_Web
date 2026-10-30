@@ -1,0 +1,20 @@
+spring:
+  config:
+    import:
+      - optional:file:./movie/.env.local[.properties]
+      - optional:file:./.env.local[.properties]
+  application:
+    name: umc-movie
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/umc_movie?serverTimezone=Asia/Seoul&characterEncoding=UTF-8}
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  mvc:
+    problemdetails:
+      enabled: true
+server:
+  port: ${PORT:8080}

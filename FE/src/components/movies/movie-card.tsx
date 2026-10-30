@@ -1,14 +1,16 @@
 // 이 파일은 영화 한 편의 포스터·제목·개봉일을 카드로 표시한다.
 // 영화 배열을 반복하는 MovieGrid와 분리해 카드 모양과 링크를 재사용한다.
 import { Link } from "@tanstack/react-router";
-import type { Movie } from "../../types/movie";
+import type { TmdbMovieListItem } from "../../api/movies/models";
+import { getTmdbPosterUrl } from "../../utils/movies/tmdb-image";
 import { BookmarkButton } from "./bookmark-button";
 
 interface MovieCardProps {
-  movie: Movie;
+  movie: TmdbMovieListItem;
 }
 
 export function MovieCard({ movie }: MovieCardProps) {
+  const posterUrl = getTmdbPosterUrl(movie.poster_path);
   return (
     <article className="overflow-hidden rounded-lg bg-[#1f2128]">
       <div className="relative aspect-[2/3] w-full">
@@ -16,12 +18,13 @@ export function MovieCard({ movie }: MovieCardProps) {
         <Link
           to="/movies/$movieId"
           params={{ movieId: String(movie.id) }}
+          className="block h-full"
         >
-          <img
-            src={movie.posterPath}
+          {posterUrl ? <img
+            src={posterUrl}
             alt={`${movie.title} 포스터`}
             className="block h-full w-full object-cover"
-          />
+          /> : <div className="flex h-full items-center justify-center bg-gray-700 text-gray-300">이미지 없음</div>}
         </Link>
 
         {/* 버튼은 같은 영화 ID를 사용해 카드와 상세 화면의 상태를 공유한다. */}
@@ -42,7 +45,7 @@ export function MovieCard({ movie }: MovieCardProps) {
           </Link>
         </h3>
         <p className="text-[13px] text-gray-400">
-          개봉일: {movie.releaseDate}
+          개봉일: {movie.release_date || "정보 없음"}
         </p>
       </div>
     </article>
