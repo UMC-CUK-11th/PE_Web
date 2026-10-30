@@ -30,6 +30,9 @@ export function Header() {
         >
           영화 검색
         </Link>
+        <Link to="/members" activeProps={{ "aria-current": "page", className: "font-bold text-[#e50914]" }}>
+          회원 · 평점
+        </Link>
       </nav>
     </header>
   );
