@@ -29,7 +29,7 @@ export function Header() {
             영화
           </Link>
           <span className="hidden sm:inline">랭킹</span>
-          <span className="hidden sm:inline">내 정보</span>
+          <Link className="transition-colors hover:text-[#17181c]" to="/members">회원·평점</Link>
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
