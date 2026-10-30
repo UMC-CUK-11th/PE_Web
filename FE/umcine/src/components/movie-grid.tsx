@@ -1,10 +1,10 @@
-import type { Movie } from "../types/movie";
+import type { MovieCardData } from "../utils/movies/to-movie-card";
 import type { CardSize } from "../stores/display-preferences-store";
 import { cn } from "../utils/cn";
 import { MovieCard } from "./movie-card";
 
 interface MovieGridProps {
-  movies: Movie[];
+  movies: MovieCardData[];
   cardSize?: CardSize;
 }
 
