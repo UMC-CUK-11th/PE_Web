@@ -1,7 +1,7 @@
 import { Link, useParams } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { getMovieDetail } from "../../api/movies/get-movie-detail";
-import type { TmdbMovieDetail } from "../../api/movies/models";
 import {
   getTmdbPosterUrl,
   getTmdbBackdropUrl,
@@ -9,11 +9,12 @@ import {
 import { useBookmarkStore } from "../../stores/bookmark-store";
 
 export function MovieDetailPage() {
-  const { movieId } = useParams({ from: "/movies/$movieId" });
+  const { movieId: movieIdParam } = useParams({
+    from: "/movies/$movieId",
+  });
 
-  const [movie, setMovie] = useState<TmdbMovieDetail | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const movieId = Number(movieIdParam);
+  const isValidMovieId = Number.isInteger(movieId) && movieId > 0;
 
   const bookmarkedMovieIds = useBookmarkStore(
     (state) => state.bookmarkedMovieIds,
@@ -24,36 +25,25 @@ export function MovieDetailPage() {
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState("");
 
-  useEffect(() => {
-    let ignore = false;
+  // TanStack Query로 영화 상세 정보 조회
+  const movieDetailQuery = useQuery({
+    queryKey: ["movies", "detail", movieId],
+    queryFn: () => getMovieDetail(movieId),
+    enabled: isValidMovieId,
+    staleTime: 30 * 1000,
+  });
 
-    async function loadMovieDetail() {
-      try {
-        const response = await getMovieDetail(Number(movieId));
+  // 잘못된 영화 ID
+  if (!isValidMovieId) {
+    return (
+      <main className="flex min-h-[500px] items-center justify-center bg-[#f7f8fa]">
+        올바르지 않은 영화 번호예요.
+      </main>
+    );
+  }
 
-        if (!ignore) {
-          setMovie(response);
-          setErrorMessage(null);
-        }
-      } catch {
-        if (!ignore) {
-          setErrorMessage("영화 정보를 불러오지 못했어요.");
-        }
-      } finally {
-        if (!ignore) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    loadMovieDetail();
-
-    return () => {
-      ignore = true;
-    };
-  }, [movieId]);
-
-  if (isLoading) {
+  // 로딩 상태
+  if (movieDetailQuery.isPending) {
     return (
       <main className="flex min-h-[500px] items-center justify-center bg-[#f7f8fa]">
         영화 정보를 불러오는 중이에요.
@@ -61,13 +51,16 @@ export function MovieDetailPage() {
     );
   }
 
-  if (errorMessage) {
+  // 오류 상태
+  if (movieDetailQuery.isError) {
     return (
       <main className="flex min-h-[500px] items-center justify-center bg-[#f7f8fa] text-red-500">
-        {errorMessage}
+        영화 정보를 불러오지 못했어요.
       </main>
     );
   }
+
+  const movie = movieDetailQuery.data;
 
   if (!movie) {
     return (
