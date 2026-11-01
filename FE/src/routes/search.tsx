@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SearchPage } from "../pages/movies/search-page";
-
+import { parsePage } from "../utils/movies/page";
 export const Route = createFileRoute("/search")({
-  // 주소에 적힌 검색어가 문자열인지 확인해요.
-  validateSearch: (search): { query?: string } => ({
+  validateSearch: (search): { query?: string; page?: number } => ({
     query: typeof search.query === "string" ? search.query : undefined,
+    page: parsePage(search.page),
   }),
   component: SearchPage,
 });
