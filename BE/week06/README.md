@@ -1,5 +1,7 @@
 # 6주차 백엔드 미션
 
+[API 명세·Postman 캡처 순서·핵심 코드·트러블 슈팅](docs/SUBMISSION.md) / [Postman 컬렉션](docs/week06.postman_collection.json)
+
 5주차 영화 API를 확장한 Java 21 / Spring Boot 프로젝트입니다.
 
 ## 5주차 이후 변경 사항
