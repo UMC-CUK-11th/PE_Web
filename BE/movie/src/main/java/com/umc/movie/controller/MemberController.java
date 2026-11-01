@@ -5,6 +5,11 @@ import com.umc.movie.dto.NicknameCheckResponse;
 import com.umc.movie.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import com.umc.movie.dto.ApiResponse;
+import com.umc.movie.dto.MemberResponse;
+import com.umc.movie.dto.SignUpRequest;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,5 +30,14 @@ public class MemberController {
       @PathVariable String email
   ) {
     return memberService.checkEmail(email);
+  }
+
+  @PostMapping
+  public ResponseEntity<ApiResponse<MemberResponse>> signUp(
+      @Valid @RequestBody SignUpRequest request
+  ) {
+    MemberResponse response = memberService.signUp(request);
+    return ResponseEntity.status(201)
+        .body(ApiResponse.created("회원가입에 성공했습니다.", response));
   }
 }
