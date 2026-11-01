@@ -1,5 +1,6 @@
 // src/dto/rating-response.dto.ts
-import { Rating } from "../entity/rating.entity.js";
+
+import { Rating } from '../entity/rating.entity.js';
 
 export class RatingResponseDto {
   ratingId: number;
