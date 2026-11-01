@@ -12,3 +12,7 @@ build/
 *.class
 *.tsbuildinfo
 .DS_Store
+
+!FE/.env.example
+
+!BE/movie/.env.example

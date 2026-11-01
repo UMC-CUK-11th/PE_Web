@@ -1,6 +1,9 @@
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { useState, type SubmitEvent } from "react";
-import { movies } from "../../data/movies";
+import { useCallback, useState, type SubmitEvent } from "react";
+import { searchMovies } from "../../api/movies/search-movies";
+import { toMovie } from "../../api/movies/models";
+import { useMovieRequest } from "../../hooks/use-movie-request";
+import { MovieImage } from "../../components/movies/movie-image";
 import { BookmarkButton } from "../../components/bookmark-button";
 
 export function SearchPage() {
@@ -14,15 +17,10 @@ export function SearchPage() {
     setSearchText(query ?? "");
   }
 
-  const normalizedQuery = query?.trim().toLowerCase() ?? "";
-  const searchResults = normalizedQuery
-    ? movies.filter(
-        (movie) =>
-          movie.title.toLowerCase().includes(normalizedQuery) ||
-          movie.originalTitle.toLowerCase().includes(normalizedQuery),
-      )
-    : [];
-
+  const normalizedQuery = query?.trim() ?? "";
+  const request = useCallback((signal: AbortSignal) => searchMovies(normalizedQuery, signal), [normalizedQuery]);
+  const { data, error, loading } = useMovieRequest(normalizedQuery, request, Boolean(normalizedQuery));
+  const searchResults = data?.results.map(toMovie) ?? [];
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const nextQuery = searchText.trim();
@@ -60,10 +58,10 @@ export function SearchPage() {
         </h2>
 
         <p className="mb-6 text-gray-500">
-          영화 {searchResults.length}편
+          영화 {data?.total_results ?? 0}편
         </p>
 
-        {searchResults.length === 0 ? (
+        {loading ? <p role="status">검색 중이에요.</p> : error ? <p role="alert">{error}</p> : searchResults.length === 0 ? (
           <p className="text-gray-500">검색 결과가 없어요.</p>
         ) : (
           <ul className="space-y-6">
@@ -73,7 +71,7 @@ export function SearchPage() {
                 className="flex gap-5 rounded-xl bg-white p-4 shadow-sm"
               >
                 <div className="relative w-32 shrink-0 self-start">
-                  <img
+                  <MovieImage
                     src={movie.posterPath}
                     alt={`${movie.title} 포스터`}
                     className="w-32 rounded-lg object-cover"
