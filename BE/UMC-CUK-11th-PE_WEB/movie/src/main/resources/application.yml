@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: movie
+  # 프로젝트 루트의 .env(DB_PASSWORD=...)를 읽어옵니다. IntelliJ 환경 변수로 넣어도 됩니다.
+  config:
+    import: optional:file:.env[.properties]
+  datasource:
+    url: jdbc:mysql://localhost:3306/umc_movie
+    username: root
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
