@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="BackgroundAgentGlobalSettings">
+    <option name="selectedModelId" value="auto" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="e3d6023e-04c0-4964-9d32-ba5fa34e2238" name="변경" comment="">
+      <change beforePath="$PROJECT_DIR$/../README.md" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CopilotPersistence">
+    <persistenceIdMap>
+      <entry key="_C:/Users/82106/OneDrive/바탕 화면/학교/동아리/UMC/11th/BE" value="3LBrdz3Mbkliht03loHimg4lblv" />
+    </persistenceIdMap>
+  </component>
+  <component name="DatabaseLocalColorSettings">
+    <colors>
+      <entry key="e1c60cfc-9d18-420a-926f-b60aaa3e68f7" value="" />
+    </colors>
+  </component>
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$/UMC-CUK-11th-PE_WEB/UMC11th_workbook">
+      <ProjectState />
+    </projectState>
+    <projectState path="$PROJECT_DIR$/UMC-CUK-11th-PE_WEB/movie">
+      <ProjectState />
+    </projectState>
+  </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <task path="$PROJECT_DIR$/UMC-CUK-11th-PE_WEB/UMC11th_workbook">
+          <activation />
+        </task>
+        <projects_view>
+          <tree_state>
+            <expand>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="movie" type="f1a62948:ProjectNode" />
+              </path>
+            </expand>
+            <select />
+          </tree_state>
+        </projects_view>
+      </state>
+    </system>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
+  <component name="NextEditCompletionFeaturesState">
+    <decayedCancelled>
+      <entry key="MS100" value="1.7661410284912105" />
+      <entry key="MS500" value="4.7075402012667915" />
+      <entry key="S2" value="8.070391556073188" />
+      <entry key="S5" value="11.009897134503094" />
+      <entry key="S10" value="16.788436062391874" />
+      <entry key="S30" value="40.448370849986574" />
+      <entry key="S60" value="61.25396923247806" />
+      <entry key="M2" value="81.4307407894303" />
+      <entry key="M5" value="100.87390164829262" />
+      <entry key="M10" value="109.95707382033497" />
+      <entry key="M15" value="114.06535803323472" />
+      <entry key="M30" value="121.37398897327313" />
+      <entry key="H1" value="130.09852945360123" />
+      <entry key="H2" value="138.13193641409526" />
+      <entry key="H4" value="143.7894620303483" />
+      <entry key="D1" value="149.67161985248026" />
+      <entry key="W1" value="150.80685109505177" />
+    </decayedCancelled>
+    <decayedSelected>
+      <entry key="MS100" value="0.0" />
+      <entry key="MS500" value="0.0" />
+      <entry key="S2" value="0.0" />
+      <entry key="S5" value="0.0" />
+      <entry key="S10" value="0.0" />
+      <entry key="S30" value="0.0" />
+      <entry key="S60" value="0.0" />
+      <entry key="M2" value="0.0" />
+      <entry key="M5" value="0.0" />
+      <entry key="M10" value="0.0" />
+      <entry key="M15" value="0.0" />
+      <entry key="M30" value="0.0" />
+      <entry key="H1" value="0.0" />
+      <entry key="H2" value="0.0" />
+      <entry key="H4" value="0.0" />
+      <entry key="D1" value="0.0" />
+      <entry key="W1" value="0.0" />
+    </decayedSelected>
+    <decayedShown>
+      <entry key="MS100" value="1.6851319313896347" />
+      <entry key="MS500" value="4.635110089708376" />
+      <entry key="S2" value="8.037787866806367" />
+      <entry key="S5" value="10.991045826522123" />
+      <entry key="S10" value="16.76767517725358" />
+      <entry key="S30" value="40.42296185073791" />
+      <entry key="S60" value="61.232529355846836" />
+      <entry key="M2" value="81.41566416939634" />
+      <entry key="M5" value="100.86609539428156" />
+      <entry key="M10" value="109.9524525706254" />
+      <entry key="M15" value="114.06190551330016" />
+      <entry key="M30" value="121.37191531922228" />
+      <entry key="H1" value="130.09734410348648" />
+      <entry key="H2" value="138.1312927750663" />
+      <entry key="H4" value="143.78912501105034" />
+      <entry key="D1" value="149.67156131245915" />
+      <entry key="W1" value="150.80684267034917" />
+    </decayedShown>
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 5
+}</component>
+  <component name="ProjectId" id="3LBqzeJBWstTa2he1U4AjvUYkHA" />
+  <component name="ProjectSessionTemplates">
+    <option name="panelTemplate">
+      <template>
+        <option name="modeId" value="Agent" />
+        <option name="model">
+          <model>
+            <option name="modelType" value="builtin_id" />
+            <option name="modelValue" value="auto" />
+          </model>
+        </option>
+        <option name="targetType" value="BACKGROUND" />
+        <option name="worktreeMode" value="WORKSPACE" />
+      </template>
+    </option>
+    <option name="version" value="1" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Gradle.movie 빌드.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "Spring Boot.MovieApplication.executor": "Run",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "copilot.chat.legacySessionMetadata.migrated": "true",
+    "copilot.sensitive.allow.file_read.jetbrains_settings_files": "true",
+    "git-widget-placeholder": "main",
+    "junie.onboarding.icon.badge.shown": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/82106/OneDrive/바탕 화면/학교/동아리/UMC/11th/BE",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "reference.settingsdialog.project.gradle",
+    "to.speed.mode.migration.done": "true",
+    "vue.rearranger.settings.migration": "true"
+  },
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "mysql"
+    ]
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\82106\OneDrive\바탕 화면\학교\동아리\UMC\11th\BE\UMC-CUK-11th-PE_WEB\movie\src\main\resources" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Spring Boot.MovieApplication">
+    <configuration default="true" type="JetRunConfigurationType">
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <option name="filePath" />
+      <method v="2" />
+    </configuration>
+    <configuration name="MovieApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <option name="envFilePaths">
+        <option value="$PROJECT_DIR$/UMC-CUK-11th-PE_WEB/movie/src/main/resources/.env" />
+      </option>
+      <module name="movie.main" />
+      <selectedOptions>
+        <option name="environmentVariables" />
+      </selectedOptions>
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.umc.movie.MovieApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Umc11thWorkbookApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <module name="UMC11th_workbook.main" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.umc.umc11th_workbook.Umc11thWorkbookApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="Spring Boot.MovieApplication" />
+      <item itemvalue="Spring Boot.Umc11thWorkbookApplication" />
+    </list>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-a203e0a19954-intellij.indexing.shared.core-IU-262.10968.63" />
+        <option value="bundled-js-predefined-d6986cc7102b-4abd2a77f808-JavaScript-IU-262.10968.63" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="디폴트 작업">
+      <changelist id="e3d6023e-04c0-4964-9d32-ba5fa34e2238" name="변경" comment="" />
+      <created>1792938072782</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1792938072782</updated>
+      <workItem from="1792938074157" duration="1048000" />
+      <workItem from="1792939471095" duration="501000" />
+      <workItem from="1793011450288" duration="21000" />
+      <workItem from="1793514466013" duration="4794000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>
