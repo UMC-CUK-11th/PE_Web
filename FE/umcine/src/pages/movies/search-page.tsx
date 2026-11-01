@@ -1,37 +1,67 @@
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { useState, type SubmitEvent } from "react";
+import { useEffect, useState, type SubmitEvent } from "react";
 import { BookmarkButton } from "../../components/bookmark-button";
-import { movies } from "../../data/movies";
+import { searchMovies } from "../../api/movies/search-movies";
+import type { TmdbMovieListItem } from "../../api/movies/models";
+import { toMovieCard } from "../../utils/movies/to-movie-card";
+import { Pagination } from "../../components/pagination";
+import { RetryButton } from "../../components/retry-button";
 
 const searchIcon = "/icons/movie-icons/movie-icons/search.svg";
 
 export function SearchPage() {
-  const { query } = useSearch({ from: "/search" });
+  const { query, page = 1 } = useSearch({ from: "/search" });
+  const [attempt, setAttempt] = useState(0);
 
-  return <SearchPageContent key={query ?? ""} query={query} />;
+  return <SearchPageContent key={JSON.stringify([query, page, attempt])} query={query ?? ""} page={page} onRetry={() => setAttempt((value) => value + 1)} />;
 }
 
 interface SearchPageContentProps {
-  query?: string;
+  query: string;
+  page: number;
+  onRetry: () => void;
 }
 
-function SearchPageContent({ query }: SearchPageContentProps) {
+function SearchPageContent({ query, page, onRetry }: SearchPageContentProps) {
   const navigate = useNavigate({ from: "/search" });
   const [searchText, setSearchText] = useState(query ?? "");
 
-  const normalizedQuery = query?.trim().toLocaleLowerCase() ?? "";
-  const searchResults = normalizedQuery
-    ? movies.filter((movie) =>
-        [movie.title, movie.originalTitle].some((title) =>
-          title.toLocaleLowerCase().includes(normalizedQuery),
-        ),
-      )
-    : [];
+  const normalizedQuery = query.trim();
+  const [movies, setMovies] = useState<TmdbMovieListItem[]>([]);
+  const [isLoading, setIsLoading] = useState(Boolean(normalizedQuery));
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalResults, setTotalResults] = useState(0);
+
+  useEffect(() => {
+    let ignore = false;
+    const normalizedQuery = query.trim();
+    if (!normalizedQuery) {
+      return;
+    }
+    searchMovies({ query: normalizedQuery, page })
+      .then((response) => {
+        if (!ignore) {
+          setMovies(response.results);
+          setTotalPages(Math.min(response.total_pages, 500));
+          setTotalResults(response.total_results);
+        }
+      })
+      .catch(() => {
+        if (!ignore) setErrorMessage("검색 결과를 불러오지 못했어요.");
+      })
+      .finally(() => {
+        if (!ignore) setIsLoading(false);
+      });
+    return () => {
+      ignore = true;
+    };
+  }, [query, page]);
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const nextQuery = searchText.trim();
-    navigate({ search: nextQuery ? { query: nextQuery } : {} });
+    navigate({ search: nextQuery ? { query: nextQuery, page: 1 } : {} });
   }
 
   return (
@@ -49,21 +79,31 @@ function SearchPageContent({ query }: SearchPageContentProps) {
 
           <div className="mt-5 flex items-end justify-between border-b border-[#dedfe3] pb-3">
             <h2 className="text-sm font-bold">‘{query?.trim()}’ 검색 결과</h2>
-            <p className="text-[11px] text-[#777a82]">총 {searchResults.length}개</p>
+            <p className="text-[11px] text-[#777a82]">총 {totalResults}개</p>
           </div>
 
-          {searchResults.length === 0 ? (
+          {isLoading ? (
+            <p className="py-20 text-center text-sm" role="status">검색 결과를 불러오는 중이에요.</p>
+          ) : errorMessage ? (
+            <div className="py-20 text-center text-sm"><p role="alert">{errorMessage}</p><RetryButton onRetry={onRetry} /></div>
+          ) : movies.length === 0 ? (
             <div className="grid min-h-72 place-content-center text-center">
               <p className="text-sm font-bold">검색 결과가 없어요.</p>
               <p className="mt-2 text-xs text-[#8b8e96]">다른 검색어로 다시 시도해 보세요.</p>
             </div>
           ) : (
             <ul className="grid gap-x-8 md:grid-cols-2">
-              {searchResults.map((movie) => (
+              {movies.map(toMovieCard).map((movie) => {
+                const posterUrl = movie.posterPath;
+                return (
                 <li className="border-b border-[#e8e9ed] py-5" key={movie.id}>
                   <article className="flex gap-4">
                     <Link className="shrink-0" to="/movies/$movieId" params={{ movieId: String(movie.id) }}>
-                      <img className="h-32 w-[86px] rounded-[3px] object-cover shadow-sm" src={movie.posterPath} alt={`${movie.title} 포스터`} />
+                      {posterUrl ? (
+                        <img className="h-32 w-[86px] rounded-[3px] object-cover shadow-sm" src={posterUrl} alt={`${movie.title} 포스터`} />
+                      ) : (
+                        <div className="grid h-32 w-[86px] place-content-center rounded-[3px] bg-[#dedfe3] text-[10px] text-[#696c73]">이미지 없음</div>
+                      )}
                     </Link>
                     <div className="min-w-0 py-1">
                       <h3 className="truncate text-[13px] font-bold">
@@ -83,8 +123,12 @@ function SearchPageContent({ query }: SearchPageContentProps) {
                     </div>
                   </article>
                 </li>
-              ))}
+                );
+              })}
             </ul>
+          )}
+          {!isLoading && !errorMessage && movies.length > 0 && (
+            <Pagination currentPage={page} totalPages={totalPages} onPageChange={(page) => navigate({ search: { query, page } })} />
           )}
         </section>
       )}
