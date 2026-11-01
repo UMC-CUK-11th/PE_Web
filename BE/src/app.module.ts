@@ -1,24 +1,17 @@
 // src/app.module.ts
 
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { databaseProviders } from './database.provider.js';
+import { Member } from './entity/member.entity.js';
+import { Rating } from './entity/rating.entity.js';
 
-import { AppController } from './app.controller.js';
-import { AppService } from './app.service.js';
+import { MemberController } from './controller/member.controller.js';
+import { RatingController } from './controller/rating.controller.js';
 
-import { BookController } from './book.controller.js';
-import { BookService } from './book.service.js';
-import { BookRepository } from './book.repository.js';
-
-import { RentalController } from './rental.controller.js';
-import { RentalService } from './rental.service.js';
-import { RentalRepository } from './rental.repository.js';
-
-import { Book } from './book.entity.js';
-import { Category } from './category.entity.js';
+import { MemberService } from './service/member.service.js';
+import { RatingService } from './service/rating.service.js';
 
 @Module({
   imports: [
@@ -26,47 +19,29 @@ import { Category } from './category.entity.js';
       isGlobal: true,
     }),
 
-    // TypeORM DB 연결
-    TypeOrmModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'mysql',
-        host: configService.get<string>('DB_HOST'),
-        port: configService.get<number>('DB_PORT'),
-        username: configService.get<string>('DB_USER'),
-        password: configService.get<string>('DB_PASSWORD'),
-        database: configService.get<string>('DB_NAME'),
+    TypeOrmModule.forRoot({
+      type: 'mysql',
+      host: process.env.DB_HOST,
+      port: 3306,
+      username: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
 
-        entities: [Book, Category],
-
-        // 기존 DB 테이블을 그대로 사용
-        synchronize: false,
-      }),
+      autoLoadEntities: true,
+      synchronize: false,
     }),
 
-    // BookService에서 @InjectRepository(Book)를 사용할 수 있게 등록
-    TypeOrmModule.forFeature([Book, Category]),
+    TypeOrmModule.forFeature([Member, Rating]),
   ],
 
   controllers: [
-    AppController,
-    BookController,
-    RentalController,
+    MemberController,
+    RatingController,
   ],
 
   providers: [
-    // 기존 Raw SQL 연결 유지
-    ...databaseProviders,
-
-    AppService,
-
-    BookService,
-    BookRepository,
-
-    RentalService,
-    RentalRepository,
+    MemberService,
+    RatingService,
   ],
-
-  exports: [...databaseProviders],
 })
 export class AppModule {}
