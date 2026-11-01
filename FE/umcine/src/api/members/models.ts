@@ -11,4 +11,18 @@ interface MemberRating {
   updatedAt: string;
 }
 
-export type { AvailabilityResponse, MemberRating };
+// 6주차부터 서버가 쓰는 공통 응답 형식
+interface ApiResponse<T> {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: T;
+}
+
+interface SignupResult {
+  memberId: number;
+  email: string;
+  nickname: string;
+}
+
+export type { ApiResponse, AvailabilityResponse, MemberRating, SignupResult };
