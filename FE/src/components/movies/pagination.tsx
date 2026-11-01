@@ -2,12 +2,15 @@
 // 목록 페이지가 영화 데이터를 보여주는 일과 버튼 상태를 그리는 일을 나누기 위해 분리했다.
 interface PaginationProps {
   currentPage: number;
+  totalPages: number;
   onPageChange: (page: number) => void;
 }
 
-export function Pagination({ currentPage, onPageChange }: PaginationProps) {
-  // 이 학습 화면은 10편을 모두 보여주고, 페이지 번호 1~5의 선택 상태만 바꾼다.
-  const pages = [1, 2, 3, 4, 5];
+export function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
+  // URL에는 넣지 않고 기존 로컬 상태를 유지하며 실제 API 페이지를 요청한다.
+  const startPage = Math.min(Math.max(1, currentPage - 2), Math.max(1, totalPages - 4));
+  const pages = Array.from({ length: Math.min(5, totalPages) }, (_, index) => startPage + index);
+  if (totalPages <= 1) return null;
   const buttonClass = [
     "flex h-9 min-w-9 items-center justify-center rounded border",
     "border-gray-700 bg-[#1f2128] text-sm text-white hover:bg-[#2e303d]",
@@ -50,7 +53,7 @@ export function Pagination({ currentPage, onPageChange }: PaginationProps) {
         type="button"
         className={`${buttonClass} w-9`}
         aria-label="다음 페이지"
-        disabled={currentPage === pages.length}
+        disabled={currentPage >= totalPages}
         onClick={() => onPageChange(currentPage + 1)}
       >
         <img src="/icons/chevron-right.svg" alt="" className="h-4 w-4 invert" />

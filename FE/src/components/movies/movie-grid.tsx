@@ -1,10 +1,10 @@
 // 이 파일은 영화 배열을 카드 목록으로 바꾸고 화면 너비에 따라 열 수를 조절한다.
 // 반복 렌더링을 한곳에 두어 목록 페이지가 개별 카드의 배치를 직접 다루지 않게 한다.
-import type { Movie } from "../../types/movie";
+import type { TmdbMovieListItem } from "../../api/movies/models";
 import { MovieCard } from "./movie-card";
 
 interface MovieGridProps {
-  movies: Movie[];
+  movies: TmdbMovieListItem[];
 }
 
 export function MovieGrid({ movies }: MovieGridProps) {
