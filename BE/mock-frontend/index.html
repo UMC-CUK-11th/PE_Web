@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5주차 API 연동 확인</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: Arial, sans-serif; background: #f4f6fa; color: #1f2937; }
+        main { width: min(920px, calc(100% - 32px)); margin: 48px auto; }
+        h1 { margin-bottom: 8px; }
+        .description { margin-top: 0; color: #667085; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+        section { padding: 20px; border-radius: 14px; background: white; box-shadow: 0 8px 28px rgba(15, 23, 42, .08); }
+        label { display: block; margin-bottom: 8px; font-weight: 700; }
+        input { width: 100%; padding: 11px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 15px; }
+        button { width: 100%; margin-top: 10px; padding: 11px; border: 0; border-radius: 8px; background: #2563eb; color: white; font-weight: 700; cursor: pointer; }
+        button:hover { background: #1d4ed8; }
+        pre { min-height: 100px; margin: 12px 0 0; padding: 12px; overflow: auto; border-radius: 8px; background: #111827; color: #d1fae5; white-space: pre-wrap; }
+        .status { margin-top: 10px; font-weight: 700; }
+    </style>
+</head>
+<body>
+<main>
+    <h1>5주차 API 연동 확인</h1>
+    <p class="description">Spring Boot API를 실제 브라우저 화면에서 호출합니다.</p>
+
+    <div class="grid">
+        <section>
+            <label for="nickname">닉네임 중복 확인</label>
+            <input id="nickname" value="수현">
+            <button onclick="checkNickname()">조회하기</button>
+            <div class="status" id="nickname-status"></div>
+            <pre id="nickname-result">결과 대기 중</pre>
+        </section>
+
+        <section>
+            <label for="email">이메일 중복 확인</label>
+            <input id="email" value="noco@umc.com">
+            <button onclick="checkEmail()">조회하기</button>
+            <div class="status" id="email-status"></div>
+            <pre id="email-result">결과 대기 중</pre>
+        </section>
+
+        <section>
+            <label for="member-id">회원별 평점 조회</label>
+            <input id="member-id" type="number" min="1" value="1">
+            <button onclick="getRatings()">조회하기</button>
+            <div class="status" id="ratings-status"></div>
+            <pre id="ratings-result">결과 대기 중</pre>
+        </section>
+    </div>
+</main>
+
+<script>
+    const API_BASE_URL = "http://localhost:8080";
+
+    async function request(path, statusId, resultId) {
+        const status = document.getElementById(statusId);
+        const result = document.getElementById(resultId);
+        status.textContent = "요청 중...";
+
+        try {
+            const response = await fetch(`${API_BASE_URL}${path}`);
+            const data = await response.json();
+            status.textContent = `${response.status} ${response.statusText}`;
+            result.textContent = JSON.stringify(data, null, 2);
+        } catch (error) {
+            status.textContent = "요청 실패";
+            result.textContent = error.message;
+        }
+    }
+
+    function checkNickname() {
+        const nickname = encodeURIComponent(document.getElementById("nickname").value);
+        request(`/members/nickname/${nickname}`, "nickname-status", "nickname-result");
+    }
+
+    function checkEmail() {
+        const email = encodeURIComponent(document.getElementById("email").value);
+        request(`/members/email/${email}`, "email-status", "email-result");
+    }
+
+    function getRatings() {
+        const memberId = document.getElementById("member-id").value;
+        request(`/members/${memberId}/ratings?page=0&size=10`, "ratings-status", "ratings-result");
+    }
+</script>
+</body>
+</html>

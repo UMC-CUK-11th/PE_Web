@@ -12,3 +12,7 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+
+app:
+  cors:
+    enabled: ${CORS_ENABLED:true}

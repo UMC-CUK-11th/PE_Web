@@ -1,27 +1,50 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
+import { HTTPError } from "ky";
 import { Link, useParams } from "react-router-dom";
+import { adaptTmdbMovieDetails } from "../api/tmdb-adapter";
+import { getMovieDetails } from "../api/tmdb-service";
 import { BookmarkButton } from "../components/bookmark-button";
-import { movies } from "../data/movie";
+import { ErrorState, LoadingState } from "../components/request-state";
+import { useRequest } from "../hooks/use-request";
 import { cn } from "../utils/cn";
+
+function MovieNotFound() {
+  return (
+    <main className="grid flex-1 place-items-center px-6 text-center">
+      <div>
+        <span className="text-sm font-bold text-[#2877eb]">404</span>
+        <h1 className="mt-3 text-[32px] font-extrabold">영화를 찾을 수 없어요.</h1>
+        <p className="mt-3 text-sm text-[#7f8792]">주소를 다시 확인하거나 영화 목록으로 돌아가 주세요.</p>
+        <Link className="mt-8 inline-flex rounded-lg bg-[#2877eb] px-5 py-3 text-sm font-bold text-white no-underline" to="/">영화 목록으로</Link>
+      </div>
+    </main>
+  );
+}
 
 export function MovieDetailPage() {
   const { movieId } = useParams();
-  const movie = movies.find(({ id }) => String(id) === movieId);
+  const parsedMovieId = Number(movieId);
+  const isValidMovieId = Number.isInteger(parsedMovieId) && parsedMovieId > 0;
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState("");
+  const requestMovie = useCallback(
+    (signal: AbortSignal) => getMovieDetails(parsedMovieId, signal),
+    [parsedMovieId],
+  );
+  const movieRequest = useRequest(requestMovie, isValidMovieId);
 
-  if (!movie) {
-    return (
-      <main className="grid flex-1 place-items-center px-6 text-center">
-        <div>
-          <span className="text-sm font-bold text-[#2877eb]">404</span>
-          <h1 className="mt-3 text-[32px] font-extrabold">영화를 찾을 수 없어요.</h1>
-          <p className="mt-3 text-sm text-[#7f8792]">주소를 다시 확인하거나 영화 목록으로 돌아가 주세요.</p>
-          <Link className="mt-8 inline-flex rounded-lg bg-[#2877eb] px-5 py-3 text-sm font-bold text-white no-underline" to="/">영화 목록으로</Link>
-        </div>
-      </main>
-    );
+  if (!isValidMovieId) return <MovieNotFound />;
+  if (movieRequest.status === "loading" || movieRequest.status === "idle") {
+    return <main className="flex-1"><LoadingState message="영화 상세 정보를 불러오는 중이에요." /></main>;
   }
+  if (movieRequest.status === "error") {
+    if (movieRequest.error instanceof HTTPError && movieRequest.error.response.status === 404) {
+      return <MovieNotFound />;
+    }
+    return <main className="flex-1"><ErrorState error={movieRequest.error} onRetry={movieRequest.retry} /></main>;
+  }
+
+  const movie = adaptTmdbMovieDetails(movieRequest.data);
 
   return (
     <main className="flex-1">
@@ -60,8 +83,10 @@ export function MovieDetailPage() {
             {[1, 2, 3, 4, 5].map((score) => (
               <button
                 className={cn(
-                  "grid size-9 cursor-pointer place-items-center rounded-md border border-[#dfe3e8] bg-white text-xl text-[#8a929d]",
-                  score <= rating && "border-[#2877eb] bg-[#2877eb] text-white",
+                  "grid size-9 cursor-pointer place-items-center rounded-md border text-xl",
+                  score <= rating
+                    ? "border-[#2877eb] bg-[#2877eb] text-white"
+                    : "border-[#dfe3e8] bg-white text-[#8a929d]",
                 )}
                 type="button"
                 key={score}

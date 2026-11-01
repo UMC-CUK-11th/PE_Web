@@ -1,27 +1,37 @@
-import { type FormEvent, useMemo, useState } from "react";
+import { type FormEvent, useCallback, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { adaptTmdbMovie } from "../api/tmdb-adapter";
+import { searchMovies } from "../api/tmdb-service";
 import { BookmarkButton } from "../components/bookmark-button";
-import { movies } from "../data/movie";
+import { Pagination } from "../components/pagination";
+import { EmptyState, ErrorState, LoadingState } from "../components/request-state";
+import { useRequest } from "../hooks/use-request";
+
+function parsePage(value: string | null) {
+  const page = Number(value);
+  return Number.isInteger(page) && page > 0 ? page : 1;
+}
 
 export function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get("query")?.trim() ?? "";
+  const currentPage = parsePage(searchParams.get("page"));
   const [searchInput, setSearchInput] = useState(query);
-
-  const results = useMemo(() => {
-    if (!query) return [];
-    const normalizedQuery = query.toLocaleLowerCase("ko-KR");
-    return movies.filter((movie) =>
-      [movie.title, movie.originalTitle, ...movie.genres].some((value) =>
-        value.toLocaleLowerCase("ko-KR").includes(normalizedQuery),
-      ),
-    );
-  }, [query]);
+  const requestSearchMovies = useCallback(
+    (signal: AbortSignal) => searchMovies(query, currentPage, signal),
+    [currentPage, query],
+  );
+  const searchRequest = useRequest(requestSearchMovies, Boolean(query));
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const nextQuery = searchInput.trim();
     setSearchParams(nextQuery ? { query: nextQuery } : {});
+  };
+
+  const handlePageChange = (page: number) => {
+    setSearchParams({ query, ...(page > 1 ? { page: String(page) } : {}) });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   if (!query) {
@@ -48,6 +58,8 @@ export function SearchPage() {
     );
   }
 
+  const results = searchRequest.status === "success" ? searchRequest.data.results.map(adaptTmdbMovie) : [];
+
   return (
     <main className="flex-1">
       <div className="mx-auto w-[min(calc(100%-48px),1200px)] py-7 pb-20 max-[420px]:w-[calc(100%-32px)]">
@@ -66,17 +78,16 @@ export function SearchPage() {
           <button className="h-9 cursor-pointer rounded-md border-0 bg-[#18191b] px-4 text-xs font-bold text-white" type="submit">다시 검색</button>
         </form>
 
-        {results.length === 0 ? (
-          <section className="py-32 text-center" aria-live="polite">
-            <img className="mx-auto mb-5 size-10 opacity-40" src="/icons/movie.svg" alt="" />
-            <h2 className="mb-2 text-xl font-bold">검색 결과가 없어요.</h2>
-            <p className="text-sm text-[#7f8792]">다른 검색어로 다시 시도해 주세요.</p>
-          </section>
-        ) : (
+        {searchRequest.status === "loading" && <LoadingState message="검색 결과를 불러오는 중이에요." />}
+        {searchRequest.status === "error" && <ErrorState error={searchRequest.error} onRetry={searchRequest.retry} />}
+        {searchRequest.status === "success" && results.length === 0 && (
+          <EmptyState title="검색 결과가 없어요." description="다른 검색어로 다시 시도해 주세요." />
+        )}
+        {searchRequest.status === "success" && results.length > 0 && (
           <section aria-live="polite">
             <div className="flex items-center justify-between border-b border-[#dfe3e8] py-4">
               <h2 className="text-base font-bold">‘{query}’ 검색 결과</h2>
-              <span className="text-xs text-[#8b929c]">영화 {results.length}편</span>
+              <span className="text-xs text-[#8b929c]">영화 {searchRequest.data.total_results.toLocaleString("ko-KR")}편</span>
             </div>
             <div className="grid grid-cols-2 max-[760px]:grid-cols-1">
               {results.map((movie) => (
@@ -102,6 +113,11 @@ export function SearchPage() {
                 </article>
               ))}
             </div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={Math.min(searchRequest.data.total_pages, 500)}
+              onPageChange={handlePageChange}
+            />
           </section>
         )}
       </div>

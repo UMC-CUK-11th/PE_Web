@@ -1,75 +1,36 @@
-# React + TypeScript + Vite
+# UMCine
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+TMDB API를 이용해 인기 영화 목록, 검색 결과와 상세 정보를 표시하는 React 프로젝트입니다.
 
-Currently, two official plugins are available:
+## 실행 준비
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+1. `.env.example`을 복사해 `.env`를 만듭니다.
+2. TMDB 계정의 API Read Access Token을 입력합니다.
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```env
+VITE_TMDB_ACCESS_TOKEN=YOUR_TMDB_API_READ_ACCESS_TOKEN
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+`.env`는 Git에 포함되지 않습니다. 환경변수를 바꾼 뒤에는 개발 서버를 다시 실행해야 합니다.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+pnpm install
+pnpm dev
+```
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## API 확인
 
+- 인기 영화: `/movie/popular?language=ko-KR&page=1`
+- 영화 검색: `/search/movie?language=ko-KR&query=...&page=1`
+- 영화 상세: `/movie/{movieId}?language=ko-KR`
+- 순수 `fetch` 예제: `src/api/tmdb-fetch.ts`
+- 실제 화면용 ky 인스턴스: `src/api/tmdb-client.ts`
+
+브라우저 Network 패널에서 `popular`, `movie?`, 영화 ID 요청을 선택하면 요청 URL, `Authorization` 헤더 사용 여부와 JSON 응답을 확인할 수 있습니다. 토큰 전체 값은 캡처하거나 공유하지 마세요.
+
+## 검증
+
+```bash
+pnpm lint
+pnpm build
 ```
