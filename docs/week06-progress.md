@@ -1,5 +1,16 @@
 # 6주차 필수 미션 구현·검증 기록
 
+## 워크북 기록 위치
+
+다음 4개 Notion 페이지의 미션 기록 토글에 실제 핵심 코드·검증 결과·남은 확인 항목을 입력했다. 개인 학습 경험이나 이해도를 대신 만들어 적지 않았다.
+
+- [5주차 FE](https://app.notion.com/p/c44234d8038b82fe804b01d02e5d79d4)
+- [5주차 BE](https://app.notion.com/p/ba7234d8038b836d9026013e97cf379f)
+- [6주차 FE](https://app.notion.com/p/d22234d8038b8384a3af010957bfb0de)
+- [6주차 BE](https://app.notion.com/p/ffd234d8038b82318c39012f231c28b4)
+
+로컬 구현 커밋: week05 `f85a6d0`, week06 `2067327`. GitHub 업로드는 보류 중이다.
+
 ## FE: TanStack Query
 
 - QueryClientProvider와 개발 모드 ReactQueryDevtools를 연결했다.
