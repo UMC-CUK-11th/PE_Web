@@ -1,10 +1,9 @@
-import { useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "@tanstack/react-router";
 import BookmarkButton from "../../components/movies/bookmark-button";
 import { MovieImage } from "../../components/movies/movie-image";
 import { RequestState } from "../../components/movies/request-state";
 import { getMovieDetail } from "../../api/movies/get-movie-detail";
-import { useMovieRequest } from "../../hooks/use-movie-request";
 import { getMovieDetailErrorMessage } from "../../utils/movies/get-movie-detail-error-message";
 import { getTmdbPosterUrl, getTmdbBackdropUrl } from "../../utils/movies/tmdb-image";
 import { formatRuntime } from "../../utils/movies/movie-adapter";
@@ -13,13 +12,19 @@ export function MovieDetailPage() {
   const { movieId } = useParams({ from: "/movies/$movieId" });
   const id = Number(movieId);
   const valid = Number.isSafeInteger(id) && id > 0;
-  const load = useCallback(() => getMovieDetail(id), [id]);
-  const { data: movie, error, isLoading, retry } = useMovieRequest(`detail:${id}`, load, valid);
-  if (!valid || isLoading || error || !movie) {
+  const movieDetailQuery = useQuery({
+    queryKey: ["movies", "detail", id],
+    queryFn: () => getMovieDetail(id),
+    enabled: valid,
+    staleTime: 30 * 1000,
+  });
+  const { data: movie, error } = movieDetailQuery;
+  if (!valid || movieDetailQuery.isPending || movieDetailQuery.isError || !movie) {
     return <main className="mx-auto max-w-7xl px-6 py-12">
       {!valid ? <RequestState error="올바르지 않은 영화 번호예요." />
-        : isLoading ? <RequestState loading />
-        : <RequestState error={getMovieDetailErrorMessage(error)} onRetry={retry} />}
+        : movieDetailQuery.isPending ? <RequestState loading />
+        : movieDetailQuery.isError ? <RequestState error={getMovieDetailErrorMessage(error)} onRetry={() => movieDetailQuery.refetch()} />
+        : <RequestState />}
       <Link to="/" className="text-blue-700">영화 목록</Link>
     </main>;
   }

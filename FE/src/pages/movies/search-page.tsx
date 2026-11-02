@@ -1,7 +1,7 @@
-import { useCallback, useState, type SubmitEvent } from "react";
+import { useState, type SubmitEvent } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { searchMovies } from "../../api/movies/search-movies";
-import { useMovieRequest } from "../../hooks/use-movie-request";
 import { toMovieCard } from "../../utils/movies/movie-adapter";
 import { getRequestErrorMessage } from "../../utils/movies/get-movie-detail-error-message";
 import BookmarkButton from "../../components/movies/bookmark-button";
@@ -21,14 +21,18 @@ export function SearchPage() {
   const { query = "", page = 1 } = useSearch({ from: "/search" });
   const navigate = useNavigate({ from: "/search" });
   const normalizedQuery = query.trim();
-  const load = useCallback(() => searchMovies({ query: normalizedQuery, page }), [normalizedQuery, page]);
-  const { data, error, isLoading, retry } = useMovieRequest(`search:${normalizedQuery}:${page}`, load, Boolean(normalizedQuery));
+  const searchQuery = useQuery({
+    queryKey: ["movies", "search", { query: normalizedQuery, page }],
+    queryFn: () => searchMovies({ query: normalizedQuery, page }),
+    enabled: normalizedQuery.length > 0,
+  });
+  const { data, error } = searchQuery;
   return <main className="mx-auto max-w-5xl px-5 py-10 sm:px-8 sm:py-14">
     <h1 className="text-3xl font-bold">영화 검색</h1>
     <p className="mt-3 text-slate-600">영화 제목이나 원제로 검색해 보세요.</p>
     <SearchForm key={query} query={query} onSearch={(next) => navigate({ search: next ? { query: next, page: 1 } : {} })} />
     {!normalizedQuery ? <p role="status" className="py-16 text-center text-slate-500">검색어를 입력해 주세요.</p>
-      : isLoading ? <RequestState loading /> : error ? <RequestState error={getRequestErrorMessage(error)} onRetry={retry} />
+      : searchQuery.isLoading ? <RequestState loading /> : searchQuery.isError ? <RequestState error={getRequestErrorMessage(error)} onRetry={() => searchQuery.refetch()} />
       : <>
         <h2 className="text-xl font-bold break-words">‘{query}’ 검색 결과</h2>
         <p role="status" className="mt-2 mb-6 text-sm text-slate-500">영화 {data?.total_results ?? 0}편</p>
