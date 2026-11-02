@@ -1,35 +1,47 @@
 // src/app.module.ts
+
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { databaseProviders } from './database.provider.js';
-import { AppController } from './app.controller.js';
-import { AppService } from './app.service.js';
-import { BookController } from './book.controller.js';
-import { BookService } from './book.service.js';
-import { BookRepository } from './book.repository.js';
-import { RentalRepository } from './rental.repository.js';
-import { RentalService } from './rental.service.js';
-import { RentalController } from './rental.controller.js';
+import { TypeOrmModule } from '@nestjs/typeorm';
+
+import { Member } from './entity/member.entity.js';
+import { Rating } from './entity/rating.entity.js';
+
+import { MemberController } from './controller/member.controller.js';
+import { RatingController } from './controller/rating.controller.js';
+
+import { MemberService } from './service/member.service.js';
+import { RatingService } from './service/rating.service.js';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+
+    TypeOrmModule.forRoot({
+      type: 'mysql',
+      host: process.env.DB_HOST,
+      port: 3306,
+      username: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+
+      autoLoadEntities: true,
+      synchronize: false,
+    }),
+
+    TypeOrmModule.forFeature([Member, Rating]),
   ],
+
   controllers: [
-    AppController,
-    BookController,
-    RentalController // 추가!
+    MemberController,
+    RatingController,
   ],
+
   providers: [
-    ...databaseProviders,
-    AppService,
-    BookService, // 추가!
-    BookRepository, 
-    RentalService,
-    RentalRepository// 추가
+    MemberService,
+    RatingService,
   ],
-  exports: [...databaseProviders],
 })
 export class AppModule {}
