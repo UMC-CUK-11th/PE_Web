@@ -1,0 +1,47 @@
+{
+  "recordedAt": "2026-11-02T08:12:55.396Z",
+  "runtime": "Actual application QueryClient + API functions in Node/Vite SSR; browser Devtools not verified",
+  "navigation": [
+    1,
+    2,
+    1
+  ],
+  "apiFunctionCalls": [
+    {
+      "page": 1,
+      "startedAt": "2026-11-02T08:12:54.504Z"
+    },
+    {
+      "page": 2,
+      "startedAt": "2026-11-02T08:12:55.180Z"
+    }
+  ],
+  "apiFunctionCallCount": 2,
+  "cachedReturnReused": true,
+  "staleTime": 60000,
+  "gcTime": 300000,
+  "cache": [
+    {
+      "queryKey": [
+        "movies",
+        "list",
+        {
+          "page": 1
+        }
+      ],
+      "status": "success",
+      "dataUpdatedAt": 1793607175179
+    },
+    {
+      "queryKey": [
+        "movies",
+        "list",
+        {
+          "page": 2
+        }
+      ],
+      "status": "success",
+      "dataUpdatedAt": 1793607175395
+    }
+  ]
+}

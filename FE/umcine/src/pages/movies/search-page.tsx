@@ -1,7 +1,7 @@
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useState, type SubmitEvent } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { searchMovies } from "../../api/movies/search-movies";
-import type { TmdbMovieListItem } from "../../api/movies/models";
 import { BookmarkButton } from "../../components/bookmark-button";
 import { MovieImage } from "../../components/movies/movie-image";
 import { getTmdbPosterUrl } from "../../utils/movies/tmdb-image";
@@ -11,29 +11,20 @@ export function SearchPage() {
   const navigate = useNavigate({ from: "/search" });
   const [searchText, setSearchText] = useState(query ?? "");
   const normalizedQuery = query?.trim() ?? "";
-  const [movies, setMovies] = useState<TmdbMovieListItem[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
   useEffect(() => { setSearchText(query ?? ""); }, [query]);
-  useEffect(() => {
-    let ignore = false;
-    setMovies([]);
-    setErrorMessage(null);
-    if (!normalizedQuery) { setIsLoading(false); return; }
-    setIsLoading(true);
-    searchMovies({ query: normalizedQuery })
-      .then((response) => { if (!ignore) setMovies(response.results); })
-      .catch(() => { if (!ignore) setErrorMessage("검색 결과를 불러오지 못했어요."); })
-      .finally(() => { if (!ignore) setIsLoading(false); });
-    return () => { ignore = true; };
-  }, [normalizedQuery]);
+  const searchQuery = useQuery({
+    queryKey: ["movies", "search", { query: normalizedQuery }],
+    queryFn: () => searchMovies({ query: normalizedQuery }),
+    enabled: normalizedQuery.length > 0,
+  });
+  const searchResults = searchQuery.data?.results ?? [];
+  const isLoading = searchQuery.isLoading;
+  const errorMessage = searchQuery.isError ? "검색 결과를 불러오지 못했어요." : null;
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     void navigate({ search: searchText.trim() ? { query: searchText.trim() } : {} });
   }
-  const searchResults = movies;
   return (
     <main className="min-h-[calc(100vh-64px)] bg-[#f5f6f8]">
       <section
@@ -89,7 +80,7 @@ export function SearchPage() {
                 </p>
               </div>
 
-              {isLoading ? <p role="status">검색 결과를 불러오는 중이에요.</p> : errorMessage ? <p role="alert">{errorMessage}</p> : searchResults.length === 0 ? (
+              {isLoading ? <p role="status">검색 결과를 불러오는 중이에요.</p> : errorMessage ? <p role="alert">{errorMessage}</p> : searchQuery.isSuccess && searchResults.length === 0 ? (
                 <p className="py-16 text-center text-sm text-[#777c85]">
                   검색 결과가 없어요.
                 </p>
