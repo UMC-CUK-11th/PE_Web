@@ -1,18 +1,21 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import MovieGrid from "../../components/movies/movie-grid";
 import Pagination from "../../components/movies/pagination";
 import { RequestState } from "../../components/movies/request-state";
 import { getMovies } from "../../api/movies/get-movies";
-import { useMovieRequest } from "../../hooks/use-movie-request";
 import { toMovieCard } from "../../utils/movies/movie-adapter";
 import { getRequestErrorMessage } from "../../utils/movies/get-movie-detail-error-message";
 
 export function MovieListPage() {
   const { page = 1 } = useSearch({ from: "/" });
   const navigate = useNavigate({ from: "/" });
-  const load = useCallback(() => getMovies({ page }), [page]);
-  const { data, error, isLoading, retry } = useMovieRequest(`list:${page}`, load);
+  const moviesQuery = useQuery({
+    queryKey: ["movies", "list", { page }],
+    queryFn: () => getMovies({ page }),
+  });
+  const { data, error } = moviesQuery;
   const [cardSize, setCardSize] = useState<"default" | "large">(() => {
     try { return localStorage.getItem("umcine-card-size") === "large" ? "large" : "default"; }
     catch { return "default"; }
@@ -32,7 +35,7 @@ export function MovieListPage() {
           <option value="default">기본</option><option value="large">크게</option>
         </select>
       </label>
-      {isLoading ? <RequestState loading /> : error ? <RequestState error={getRequestErrorMessage(error)} onRetry={retry} />
+      {moviesQuery.isPending ? <RequestState loading /> : moviesQuery.isError ? <RequestState error={getRequestErrorMessage(error)} onRetry={() => moviesQuery.refetch()} />
         : data?.results.length ? <MovieGrid movies={data.results.map(toMovieCard)} cardSize={cardSize} /> : <RequestState />}
       {data && <Pagination page={page} totalPages={data.total_pages} onPageChange={(next) => navigate({ search: { page: next } })} />}
     </main>
