@@ -1,5 +1,5 @@
 {
-  "recordedAt": "2026-11-02T08:12:55.396Z",
+  "recordedAt": "2026-11-04T11:43:21.517Z",
   "runtime": "Actual application QueryClient + API functions in Node/Vite SSR; browser Devtools not verified",
   "navigation": [
     1,
@@ -9,11 +9,11 @@
   "apiFunctionCalls": [
     {
       "page": 1,
-      "startedAt": "2026-11-02T08:12:54.504Z"
+      "startedAt": "2026-11-04T11:43:20.793Z"
     },
     {
       "page": 2,
-      "startedAt": "2026-11-02T08:12:55.180Z"
+      "startedAt": "2026-11-04T11:43:21.356Z"
     }
   ],
   "apiFunctionCallCount": 2,
@@ -30,7 +30,7 @@
         }
       ],
       "status": "success",
-      "dataUpdatedAt": 1793607175179
+      "dataUpdatedAt": 1793792601356
     },
     {
       "queryKey": [
@@ -41,7 +41,7 @@
         }
       ],
       "status": "success",
-      "dataUpdatedAt": 1793607175395
+      "dataUpdatedAt": 1793792601516
     }
   ]
 }

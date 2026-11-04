@@ -1,15 +1,15 @@
 {
-  "recordedAt": "2026-11-02T08:10:30.721Z",
+  "recordedAt": "2026-11-04T11:43:15.194Z",
   "runtime": "Node HTTP + real MySQL backend (not browser)",
-  "testMemberId": 3,
-  "testEmail": "umc06_1793607028603@example.com",
+  "testMemberId": 5,
+  "testEmail": "umc06_1793792593985@example.com",
   "checks": [
     {
       "method": "POST",
       "url": "http://127.0.0.1:8080/members",
       "request": {
-        "email": "umc06_1793607028603@example.com",
-        "nickname": "검증A028603",
+        "email": "umc06_1793792593985@example.com",
+        "nickname": "검증A593985",
         "password": "[test password redacted]"
       },
       "status": 201,
@@ -18,9 +18,9 @@
         "code": "COMMON201",
         "message": "회원가입에 성공했습니다.",
         "result": {
-          "memberId": 3,
-          "email": "umc06_1793607028603@example.com",
-          "nickname": "검증A028603"
+          "memberId": 5,
+          "email": "umc06_1793792593985@example.com",
+          "nickname": "검증A593985"
         }
       }
     },
@@ -28,8 +28,8 @@
       "method": "POST",
       "url": "http://127.0.0.1:8080/members",
       "request": {
-        "email": "other_1793607028603@example.com",
-        "nickname": "검증B028603",
+        "email": "other_1793792593985@example.com",
+        "nickname": "검증B593985",
         "password": "[test password redacted]"
       },
       "status": 201,
@@ -38,9 +38,9 @@
         "code": "COMMON201",
         "message": "회원가입에 성공했습니다.",
         "result": {
-          "memberId": 4,
-          "email": "other_1793607028603@example.com",
-          "nickname": "검증B028603"
+          "memberId": 6,
+          "email": "other_1793792593985@example.com",
+          "nickname": "검증B593985"
         }
       }
     },
@@ -48,8 +48,8 @@
       "method": "POST",
       "url": "http://127.0.0.1:8080/members",
       "request": {
-        "email": "umc06_1793607028603@example.com",
-        "nickname": "검증C028603",
+        "email": "umc06_1793792593985@example.com",
+        "nickname": "검증C593985",
         "password": "[test password redacted]"
       },
       "status": 409,
@@ -64,8 +64,8 @@
       "method": "POST",
       "url": "http://127.0.0.1:8080/members",
       "request": {
-        "email": "duplicate_1793607028603@example.com",
-        "nickname": "검증A028603",
+        "email": "duplicate_1793792593985@example.com",
+        "nickname": "검증A593985",
         "password": "[test password redacted]"
       },
       "status": 409,
@@ -81,7 +81,7 @@
       "url": "http://127.0.0.1:8080/members",
       "request": {
         "email": "bad-email",
-        "nickname": "검증A028603",
+        "nickname": "검증A593985",
         "password": "[test password redacted]"
       },
       "status": 400,
@@ -96,7 +96,7 @@
       "method": "POST",
       "url": "http://127.0.0.1:8080/members",
       "request": {
-        "email": "umc06_1793607028603@example.com",
+        "email": "umc06_1793792593985@example.com",
         "nickname": "가",
         "password": "[test password redacted]"
       },
@@ -112,8 +112,8 @@
       "method": "POST",
       "url": "http://127.0.0.1:8080/members",
       "request": {
-        "email": "umc06_1793607028603@example.com",
-        "nickname": "검증A028603",
+        "email": "umc06_1793792593985@example.com",
+        "nickname": "검증A593985",
         "password": "[test password redacted]"
       },
       "status": 400,
@@ -126,7 +126,7 @@
     },
     {
       "method": "POST",
-      "url": "http://127.0.0.1:8080/members/3/ratings",
+      "url": "http://127.0.0.1:8080/members/5/ratings",
       "request": {
         "movieId": 550,
         "score": 5,
@@ -137,12 +137,12 @@
         "isSuccess": true,
         "code": "COMMON201",
         "message": "평점 등록에 성공했습니다.",
-        "result": 4
+        "result": 5
       }
     },
     {
       "method": "POST",
-      "url": "http://127.0.0.1:8080/members/3/ratings",
+      "url": "http://127.0.0.1:8080/members/5/ratings",
       "request": {
         "movieId": 550,
         "score": 4
@@ -157,7 +157,7 @@
     },
     {
       "method": "POST",
-      "url": "http://127.0.0.1:8080/members/3/ratings",
+      "url": "http://127.0.0.1:8080/members/5/ratings",
       "request": {
         "movieId": 155,
         "score": 6
@@ -172,7 +172,7 @@
     },
     {
       "method": "POST",
-      "url": "http://127.0.0.1:8080/members/3/ratings",
+      "url": "http://127.0.0.1:8080/members/5/ratings",
       "request": {
         "movieId": 155,
         "score": 2.5
@@ -187,7 +187,7 @@
     },
     {
       "method": "POST",
-      "url": "http://127.0.0.1:8080/members/3/ratings",
+      "url": "http://127.0.0.1:8080/members/5/ratings",
       "request": {
         "movieId": 0,
         "score": 5
@@ -202,7 +202,7 @@
     },
     {
       "method": "POST",
-      "url": "http://127.0.0.1:8080/members/3/ratings",
+      "url": "http://127.0.0.1:8080/members/5/ratings",
       "request": {
         "movieId": 155,
         "score": 5,
@@ -218,22 +218,22 @@
     },
     {
       "method": "GET",
-      "url": "http://127.0.0.1:8080/members/3/ratings",
+      "url": "http://127.0.0.1:8080/members/5/ratings",
       "status": 200,
       "response": [
         {
-          "ratingId": 4,
+          "ratingId": 5,
           "movieId": 550,
           "score": 5,
           "comment": "실제 MySQL API 검증용 후기",
-          "createdAt": "2026-11-02T17:10:30",
-          "updatedAt": "2026-11-02T17:10:30"
+          "createdAt": "2026-11-04T20:43:15",
+          "updatedAt": "2026-11-04T20:43:15"
         }
       ]
     },
     {
       "method": "PATCH",
-      "url": "http://127.0.0.1:8080/members/4/ratings/4",
+      "url": "http://127.0.0.1:8080/members/6/ratings/5",
       "request": {
         "score": 4
       },
@@ -247,7 +247,7 @@
     },
     {
       "method": "DELETE",
-      "url": "http://127.0.0.1:8080/members/4/ratings/4",
+      "url": "http://127.0.0.1:8080/members/6/ratings/5",
       "status": 403,
       "response": {
         "isSuccess": false,
@@ -258,7 +258,7 @@
     },
     {
       "method": "PATCH",
-      "url": "http://127.0.0.1:8080/members/3/ratings/999999999",
+      "url": "http://127.0.0.1:8080/members/5/ratings/999999999",
       "request": {
         "score": 4
       },
@@ -272,7 +272,7 @@
     },
     {
       "method": "DELETE",
-      "url": "http://127.0.0.1:8080/members/3/ratings/999999999",
+      "url": "http://127.0.0.1:8080/members/5/ratings/999999999",
       "status": 404,
       "response": {
         "isSuccess": false,
@@ -298,7 +298,7 @@
     },
     {
       "method": "PATCH",
-      "url": "http://127.0.0.1:8080/members/3/ratings/4",
+      "url": "http://127.0.0.1:8080/members/5/ratings/5",
       "request": {
         "score": 4,
         "comment": "수정된 후기"
@@ -313,29 +313,29 @@
     },
     {
       "method": "GET",
-      "url": "http://127.0.0.1:8080/members/3/ratings",
+      "url": "http://127.0.0.1:8080/members/5/ratings",
       "status": 200,
       "response": [
         {
-          "ratingId": 4,
+          "ratingId": 5,
           "movieId": 550,
           "score": 4,
           "comment": "수정된 후기",
-          "createdAt": "2026-11-02T17:10:30",
-          "updatedAt": "2026-11-02T17:10:31"
+          "createdAt": "2026-11-04T20:43:15",
+          "updatedAt": "2026-11-04T20:43:15"
         }
       ]
     },
     {
       "method": "DELETE",
-      "url": "http://127.0.0.1:8080/members/3/ratings/4",
+      "url": "http://127.0.0.1:8080/members/5/ratings/5",
       "status": 204,
       "response": null,
       "bodyBytes": 0
     },
     {
       "method": "GET",
-      "url": "http://127.0.0.1:8080/members/3/ratings",
+      "url": "http://127.0.0.1:8080/members/5/ratings",
       "status": 200,
       "response": []
     }
