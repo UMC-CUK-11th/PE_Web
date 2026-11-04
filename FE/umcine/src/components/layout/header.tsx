@@ -17,6 +17,9 @@ export function Header() {
           <Link className="text-[#444] no-underline" to="/search">
             검색
           </Link>
+          <Link className="text-[#444] no-underline" to="/members">
+            회원
+          </Link>
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
