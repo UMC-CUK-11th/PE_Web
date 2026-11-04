@@ -1,48 +1,30 @@
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useState, type SubmitEvent } from "react";
-import { movies } from "../../data/movies";
-//4주차 추가 코드
+import { useQuery } from "@tanstack/react-query";
+import { searchMovies } from "../../api/movies/search-movies";
 import { BookmarkButton } from "../../components/bookmark-button";
+import { MovieImage } from "../../components/movies/movie-image";
+import { getTmdbPosterUrl } from "../../utils/movies/tmdb-image";
 
 export function SearchPage() {
-  // /search?query=... 에서 검증된 query 값을 읽는다.
   const { query } = useSearch({ from: "/search" });
-
-  // 검색어를 URL의 search param에 반영하기 위해 사용한다.
   const navigate = useNavigate({ from: "/search" });
-
-  // 입력창에 현재 보이는 검색어를 상태로 관리한다.
   const [searchText, setSearchText] = useState(query ?? "");
-
-  // 뒤로 가기/앞으로 가기로 query가 바뀌면 입력창의 값도 URL과 맞춘다.
-  useEffect(() => {
-    setSearchText(query ?? "");
-  }, [query]);
-
-  // 검색 비교를 쉽게 하기 위해 양끝 공백을 지우고 영문 대소문자를 맞춘다.
-  const normalizedQuery = query?.trim().toLowerCase() ?? "";
-
-  // 제목이나 원제에 검색어가 포함된 영화만 남긴다.
-  const searchResults = normalizedQuery
-    ? movies.filter(
-        (movie) =>
-          movie.title.toLowerCase().includes(normalizedQuery) ||
-          movie.originalTitle.toLowerCase().includes(normalizedQuery),
-      )
-    : [];
+  const normalizedQuery = query?.trim() ?? "";
+  useEffect(() => { setSearchText(query ?? ""); }, [query]);
+  const searchQuery = useQuery({
+    queryKey: ["movies", "search", { query: normalizedQuery }],
+    queryFn: () => searchMovies({ query: normalizedQuery }),
+    enabled: normalizedQuery.length > 0,
+  });
+  const searchResults = searchQuery.data?.results ?? [];
+  const isLoading = searchQuery.isLoading;
+  const errorMessage = searchQuery.isError ? "검색 결과를 불러오지 못했어요." : null;
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
-    // form의 기본 동작인 페이지 새로고침을 막는다.
     event.preventDefault();
-
-    const nextQuery = searchText.trim();
-
-    // path는 /search로 유지하고 query 값만 URL에 반영한다.
-    navigate({
-      search: nextQuery ? { query: nextQuery } : {},
-    });
+    void navigate({ search: searchText.trim() ? { query: searchText.trim() } : {} });
   }
-
   return (
     <main className="min-h-[calc(100vh-64px)] bg-[#f5f6f8]">
       <section
@@ -98,7 +80,7 @@ export function SearchPage() {
                 </p>
               </div>
 
-              {searchResults.length === 0 ? (
+              {isLoading ? <p role="status">검색 결과를 불러오는 중이에요.</p> : errorMessage ? <p role="alert">{errorMessage}</p> : searchQuery.isSuccess && searchResults.length === 0 ? (
                 <p className="py-16 text-center text-sm text-[#777c85]">
                   검색 결과가 없어요.
                 </p>
@@ -107,9 +89,9 @@ export function SearchPage() {
                   {searchResults.map((movie) => (
                     <li className="border-b border-[#e1e3e8]" key={movie.id}>
                       <div className="flex min-h-[172px] gap-4 py-4">
-                        <img
+                        <MovieImage
                           className="h-[142px] w-[96px] shrink-0 rounded-[5px] object-cover"
-                          src={movie.posterPath}
+                          src={getTmdbPosterUrl(movie.poster_path)}
                           alt={`${movie.title} 포스터`}
                         />
 
@@ -118,7 +100,7 @@ export function SearchPage() {
                             {movie.title}
                           </h3>
                           <p className="mb-0 mt-1 text-[11px] text-[#858992]">
-                            {movie.originalTitle} · {movie.releaseDate}
+                            {movie.original_title} · {movie.release_date}
                           </p>
                           <p className="mb-0 mt-3 line-clamp-3 text-[12px] leading-5 text-[#666b74]">
                             {movie.overview}

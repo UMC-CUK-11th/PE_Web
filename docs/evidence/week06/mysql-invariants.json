@@ -1,0 +1,7 @@
+{
+    "recordedAt":  "2026-11-02T08:12:50.1896530Z",
+    "database":  "umc_movie",
+    "memberId":  3,
+    "bcryptLengthAndPrefixValid":  true,
+    "ratingUniqueIndexColumnCount":  2
+}

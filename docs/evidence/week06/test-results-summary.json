@@ -1,0 +1,16 @@
+{
+    "recordedAt":  "2026-11-02T08:18:12.8206230Z",
+    "framework":  "Spring Boot + MockMvc",
+    "database":  "isolated H2 MODE=MySQL",
+    "tests":  5,
+    "failures":  0,
+    "errors":  0,
+    "skipped":  0,
+    "cases":  [
+                  "corsAllowsOnlyLocalFrontendOrigins()",
+                  "invalidSignUpExplainsValidationFailure()",
+                  "ratingLifecycleChecksValidationOwnershipAndDeletion()",
+                  "missingMemberReturns404AndMalformedJsonReturns400()",
+                  "signUpHashesPasswordAndRejectsDuplicates()"
+              ]
+}

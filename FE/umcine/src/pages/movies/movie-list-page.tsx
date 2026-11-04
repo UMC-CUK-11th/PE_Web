@@ -1,54 +1,23 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getMovies } from "../../api/movies/get-movies";
 import MovieGrid from "../../components/movies/movie-grid";
 import Pagination from "../../components/movies/pagination";
-import { movies as initialMovies } from "../../data/movies";
-
-//4주차 코드 추가
-import { readBookmarkIds, saveBookmarkIds } from "../../utils/bookmark-storage";
 
 export function MovieListPage() {
-  // 로컬 영화 데이터를 초기값으로 영화 목록 상태를 만든다.
-  //4주차 코드 추가
-  // 저장된 북마크를 영화 목록의 초기 상태에 반영한다.
-  const [movies, setMovies] = useState(() => {
-    const bookmarkedMovieIds = readBookmarkIds();
-
-    return initialMovies.map((movie) => ({
-      ...movie,
-      isBookmarked: bookmarkedMovieIds.includes(movie.id),
-    }));
+  const [page, setPage] = useState(1);
+  const moviesQuery = useQuery({
+    queryKey: ["movies", "list", { page }],
+    queryFn: () => getMovies({ page }),
   });
-
-  function handleToggleBookmark(movieId: number) {
-    //4주차 변경 코드
-    const nextMovies = movies.map((movie) =>
-      movie.id === movieId
-        ? {
-          ...movie,
-          isBookmarked: !movie.isBookmarked,
-        }
-      : movie,
-    );
-
-    setMovies(nextMovies);
-
-    const bookmarkedMovieIds = nextMovies
-      .filter((movie)=>movie.isBookmarked)
-      .map((movie)=>movie.id);
-
-    saveBookmarkIds(bookmarkedMovieIds);
-  }
-
-  return (
-    <main className="mx-auto w-full max-w-[1180px] px-6 py-6">
-      <h1 className="mb-5 text-[25px] font-bold text-[#20232a]">영화 목록</h1>
-
-      <MovieGrid
-        movies={movies}
-        onToggleBookmark={handleToggleBookmark}
-      />
-
-      <Pagination />
-    </main>
-  );
+  const movies = moviesQuery.data?.results ?? [];
+  return <main className="mx-auto w-full max-w-[1180px] px-6 py-6">
+    <h1 className="mb-5 text-[25px] font-bold text-[#20232a]">영화 목록</h1>
+    {moviesQuery.isPending ? <p role="status">영화 목록을 불러오는 중이에요.</p>
+      : moviesQuery.isError ? <p role="alert">영화 목록을 불러오지 못했어요.</p>
+      : movies.length === 0 ? <p>조건에 맞는 영화가 없어요.</p>
+      : <><MovieGrid movies={movies} />
+        <Pagination currentPage={page} totalPages={moviesQuery.data?.total_pages ?? 0} onPageChange={setPage} />
+      </>}
+  </main>;
 }
