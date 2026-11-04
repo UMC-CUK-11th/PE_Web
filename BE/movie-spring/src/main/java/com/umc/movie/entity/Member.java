@@ -14,11 +14,16 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "member")
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Member extends BaseTimeEntity {
+@NoArgsConstructor(
+    access = AccessLevel.PROTECTED
+)
+public class Member
+    extends BaseTimeEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(
+        strategy = GenerationType.IDENTITY
+    )
     @Column(name = "member_id")
     private Long memberId;
 
@@ -53,6 +58,12 @@ public class Member extends BaseTimeEntity {
     ) {
         this.email = email;
         this.password = password;
+        this.nickname = nickname;
+    }
+
+    public void updateNickname(
+        String nickname
+    ) {
         this.nickname = nickname;
     }
 }
