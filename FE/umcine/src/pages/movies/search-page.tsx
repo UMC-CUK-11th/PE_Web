@@ -1,51 +1,24 @@
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { useEffect, useState, type SubmitEvent } from "react";
+import { useState, type SubmitEvent } from "react";
 import { searchMovies } from "../../api/movies/search-movies";
-import type { TmdbMovieListItem } from "../../api/movies/models";
 import { getTmdbPosterUrl } from "../../utils/movies/tmdb-image";
+import { useQuery } from "@tanstack/react-query";
 
 export function SearchPage() {
   const { query = "" } = useSearch({ from: "/search" });
   const navigate = useNavigate({ from: "/search" });
   const [searchText, setSearchText] = useState(query ?? "");
 
-  const [movies, setMovies] = useState<TmdbMovieListItem[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
   const normalizedQuery = query.trim();
 
-  useEffect(() => {
-    let ignore = false;
-    const normalizedQuery = query.trim();
+  const searchQuery = useQuery({
+    queryKey: ["movies", "search", { query: normalizedQuery }],
+    queryFn: () => searchMovies({ query: normalizedQuery }),
+    enabled: normalizedQuery.length > 0,
+    staleTime: 30 * 1000,
+  });
 
-    // 검색어가 바뀌면 이전 요청의 결과를 비우고 새 요청 상태로 전환해요.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMovies([]);
-    setErrorMessage(null);
-
-    if (!normalizedQuery) {
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
-
-    searchMovies({ query: normalizedQuery })
-      .then((response) => {
-        if (!ignore) setMovies(response.results);
-      })
-      .catch(() => {
-        if (!ignore) setErrorMessage("검색 결과를 불러오지 못했어요.");
-      })
-      .finally(() => {
-        if (!ignore) setIsLoading(false);
-      });
-
-    return () => {
-      ignore = true;
-    };
-  }, [query]);
+  const searchResults = searchQuery.data?.results ?? [];
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -164,25 +137,19 @@ export function SearchPage() {
             <h2 className="text-[20px] font-bold">‘{query}’ 검색 결과</h2>
 
             <p className="text-[13px] text-[#969DAA]">
-              영화 {movies.length}편 · 1페이지
+              영화 {searchResults.length}편 · 1페이지
             </p>
           </div>
 
-          {isLoading ? (
-            <p role="status" className="py-20 text-center text-[#969DAA]">
-              검색 결과를 불러오는 중이에요.
-            </p>
-          ) : errorMessage ? (
-            <p role="alert" className="py-20 text-center text-[#969DAA]">
-              {errorMessage}
-            </p>
-          ) : movies.length === 0 ? (
-            <p className="py-20 text-center text-[#969DAA]">
-              검색 결과가 없어요.
-            </p>
+          {searchQuery.isLoading ? (
+            <p>검색 결과를 불러오는 중이에요.</p> // 기존 로딩 UI가 있다면 재사용해요.
+          ) : searchQuery.isError ? (
+            <p>{searchQuery.error.message}</p> // 기존 오류 UI가 있다면 재사용해요.
+          ) : searchQuery.isSuccess && searchResults.length === 0 ? (
+            <p>검색 결과가 없어요.</p> // 기존 빈 결과 UI가 있다면 재사용해요.
           ) : (
             <ul className="grid grid-cols-1 lg:grid-cols-2 gap-x-10">
-              {movies.map((movie) => (
+              {searchResults.map((movie) => (
                 <li
                   key={movie.id}
                   className="flex min-h-[260px] gap-5 border-b border-[#D9DDE5] py-6"
