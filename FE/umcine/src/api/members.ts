@@ -1,13 +1,14 @@
-import ky from "ky";
+import { apiClient } from "./api-client";
 
-const backendClient = ky.create({
-  baseUrl: `${(import.meta.env.VITE_BACKEND_API_BASE_URL || "http://localhost:3000").replace(/\/+$/, "")}/`,
-  retry: 0,
-});
-
-export interface CheckResponse {
-  available: boolean;
-}
+// Preserve existing /api-test imports while sharing the endpoint functions.
+export { checkEmail } from "./members/check-email-duplicate";
+export { checkNickname } from "./members/check-nickname-duplicate";
+export { signup } from "./members/signup";
+export type {
+  CheckResponse,
+  SignupRequest,
+  SignupResponse,
+} from "./members/models";
 export interface RatingResponse {
   ratingId: number;
   movieId: number;
@@ -17,18 +18,6 @@ export interface RatingResponse {
   updatedAt: string;
 }
 
-export function checkNickname(nickname: string) {
-  return backendClient
-    .get(`members/nickname/${encodeURIComponent(nickname)}`)
-    .json<CheckResponse>();
-}
-export function checkEmail(email: string) {
-  return backendClient
-    .get(`members/email/${encodeURIComponent(email)}`)
-    .json<CheckResponse>();
-}
 export function getMemberRatings(memberId: number) {
-  return backendClient
-    .get(`members/${memberId}/ratings`)
-    .json<RatingResponse[]>();
+  return apiClient.get(`members/${memberId}/ratings`).json<RatingResponse[]>();
 }

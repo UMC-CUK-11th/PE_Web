@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 export default function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/90 backdrop-blur-xl">
-      <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-5 sm:px-8 lg:px-10">
+      <div className="mx-auto flex min-h-[72px] max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-3 sm:px-8 lg:px-10">
         {/* Logo */}
         <Link
           to="/"
@@ -66,6 +66,29 @@ export default function Header() {
           >
             북마크
           </button>
+        </nav>
+        <nav
+          aria-label="회원 메뉴"
+          className="flex w-full justify-end gap-4 text-xs text-zinc-600 sm:w-auto"
+        >
+          <Link
+            to="/login"
+            className="rounded hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-4"
+          >
+            로그인
+          </Link>
+          <Link
+            to="/signup"
+            className="rounded hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-4"
+          >
+            회원가입
+          </Link>
+          <Link
+            to="/my"
+            className="rounded hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-4"
+          >
+            내 정보
+          </Link>
         </nav>
       </div>
     </header>
