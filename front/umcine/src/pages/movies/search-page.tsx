@@ -1,5 +1,6 @@
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { useEffect, useState, type SubmitEvent } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useState, type SubmitEvent } from "react";
 import { searchMovies } from "../../api/movies/search-movies";
 import type { TmdbMovieListItem } from "../../api/movies/models";
 import { TmdbFooter } from "../../components/layout/tmdb-footer";
@@ -42,44 +43,25 @@ function SearchForm({ initialQuery, hasQuery }: SearchFormProps) {
   );
 }
 
-function SearchResults({ query }: { query: string }) {
-  const [results, setResults] = useState<TmdbMovieListItem[]>([]);
-  const [totalResults, setTotalResults] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+interface SearchResultsProps {
+  query: string;
+  results: TmdbMovieListItem[];
+  totalResults: number;
+  isLoading: boolean;
+  isError: boolean;
+}
 
-  useEffect(() => {
-    let ignore = false;
-
-    searchMovies({ query })
-      .then((response) => {
-        if (!ignore) {
-          setResults(response.results);
-          setTotalResults(response.total_results);
-        }
-      })
-      .catch(() => {
-        if (!ignore) setErrorMessage("검색 결과를 불러오지 못했어요.");
-      })
-      .finally(() => {
-        if (!ignore) setIsLoading(false);
-      });
-
-    return () => {
-      ignore = true;
-    };
-  }, [query]);
-
+function SearchResults({ query, results, totalResults, isLoading, isError }: SearchResultsProps) {
   return (
     <section className="mt-2" aria-live="polite">
       <div className="flex items-baseline justify-between border-b border-[#dfe2e7] pb-1.5">
         <h2 className="text-[15px] leading-[1.2] font-extrabold tracking-[-0.6px] text-[#252a34]">‘{query}’ 검색 결과</h2>
-        {!isLoading && !errorMessage && <p className="text-[11px] text-[#8a909a]">영화 {totalResults}편</p>}
+        {!isLoading && !isError && <p className="text-[11px] text-[#8a909a]">영화 {totalResults}편</p>}
       </div>
       {isLoading ? (
         <p role="status" className="py-[68px] text-center text-sm text-[#747b86]">검색 중이에요.</p>
-      ) : errorMessage ? (
-        <p role="alert" className="py-[68px] text-center text-sm text-[#747b86]">{errorMessage}</p>
+      ) : isError ? (
+        <p role="alert" className="py-[68px] text-center text-sm text-[#747b86]">검색 결과를 불러오지 못했어요.</p>
       ) : results.length === 0 ? (
         <p className="py-[68px] text-center text-sm text-[#747b86]">검색 결과가 없어요.</p>
       ) : (
@@ -117,6 +99,13 @@ function SearchResults({ query }: { query: string }) {
 export function SearchPage() {
   const { query } = useSearch({ from: "/search" });
   const normalizedQuery = query?.trim() ?? "";
+  const searchQuery = useQuery({
+    queryKey: ["movies", "search", { query: normalizedQuery }],
+    queryFn: () => searchMovies({ query: normalizedQuery }),
+    enabled: normalizedQuery.length > 0,
+    retry: false,
+  });
+  const searchResults = searchQuery.data?.results ?? [];
 
   return (
     <div className="flex min-h-[calc(100vh-56px)] flex-col bg-[#f6f7f9]">
@@ -128,7 +117,15 @@ export function SearchPage() {
         {!normalizedQuery && <h2 className="mb-[22px] text-center text-[26px] leading-[1.3] font-extrabold tracking-[-1px] text-[#252a34]">어떤 영화를 찾고 있나요?</h2>}
         <SearchForm key={`form-${query ?? ""}`} initialQuery={query ?? ""} hasQuery={Boolean(normalizedQuery)} />
 
-        {normalizedQuery && <SearchResults key={`results-${normalizedQuery}`} query={normalizedQuery} />}
+        {normalizedQuery && (
+          <SearchResults
+            query={normalizedQuery}
+            results={searchResults}
+            totalResults={searchQuery.data?.total_results ?? 0}
+            isLoading={searchQuery.isPending}
+            isError={searchQuery.isError}
+          />
+        )}
       </main>
       <TmdbFooter />
     </div>
