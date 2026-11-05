@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { MovieGrid } from '../../components/movies/movie-grid';
 import { Pagination } from '../../components/movies/pagination';
 import { useBookmarks } from '../../data/movies';
@@ -10,60 +11,33 @@ const FALLBACK_IMAGE = '/umcine-images/images/movies/placeholder.jpg';
 
 export function MovieListPage() {
   const { bookmarkedIds, toggleBookmark } = useBookmarks();
-
   const [currentPage, setCurrentPage] = useState(1);
-  const [movies, setMovies] = useState<Movie[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [totalPages, setTotalPages] = useState(1);
 
-  useEffect(() => {
-    let ignore = false;
+  const moviesQuery = useQuery({
+    queryKey: ['movies', 'list', { page: currentPage }],
+    queryFn: () => getMovies({ page: currentPage }),
+  });
 
-    async function loadMovies() {
-      setIsLoading(true);
-      setErrorMessage(null);
+  const rawMovies = moviesQuery.data?.results ?? [];
+  const totalPages = moviesQuery.data?.total_pages ?? 1;
 
-      try {
-        const response = await getMovies({ page: currentPage });
+  const movies: Movie[] = rawMovies.map((movie: TmdbMovieListItem) => ({
+    id: movie.id,
+    title: movie.title,
+    originalTitle: movie.original_title,
+    releaseDate: movie.release_date,
+    posterPath: movie.poster_path ?? FALLBACK_IMAGE,
+    backdropPath: movie.backdrop_path ?? FALLBACK_IMAGE,
+    genres: [],
+    runtime: '',
+    tagline: '',
+    overview: movie.overview,
+    isBookmarked: bookmarkedIds.has(movie.id),
+  }));
 
-        if (ignore) return;
-
-        const convertedMovies: Movie[] = response.results.map(
-          (movie: TmdbMovieListItem) => ({
-            id: movie.id,
-            title: movie.title,
-            originalTitle: movie.original_title,
-            releaseDate: movie.release_date,
-            posterPath: movie.poster_path ?? FALLBACK_IMAGE,
-            backdropPath: movie.backdrop_path ?? FALLBACK_IMAGE,
-            genres: [],
-            runtime: '',
-            tagline: '',
-            overview: movie.overview,
-            isBookmarked: bookmarkedIds.has(movie.id),
-          }),
-        );
-
-        setMovies(convertedMovies);
-        setTotalPages(response.total_pages);
-      } catch {
-        if (!ignore) {
-          setErrorMessage('영화 목록을 불러오지 못했어요.');
-        }
-      } finally {
-        if (!ignore) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    loadMovies();
-
-    return () => {
-      ignore = true;
-    };
-  }, [currentPage]);
+  const handlePageChange = (nextPage: number) => {
+    setCurrentPage(nextPage);
+  };
 
   return (
     <main className='mx-auto w-full max-w-[1200px] px-6 pb-16 pt-8'>
@@ -71,10 +45,10 @@ export function MovieListPage() {
         영화 목록
       </h2>
 
-      {isLoading ? (
+      {moviesQuery.isPending ? (
         <p>영화 목록을 불러오는 중이에요.</p>
-      ) : errorMessage ? (
-        <p role='alert'>{errorMessage}</p>
+      ) : moviesQuery.isError ? (
+        <p role='alert'>영화 목록을 불러오지 못했어요.</p>
       ) : movies.length === 0 ? (
         <p>조건에 맞는 영화가 없어요.</p>
       ) : (
@@ -88,7 +62,7 @@ export function MovieListPage() {
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}
-        onPageChange={setCurrentPage}
+        onPageChange={handlePageChange}
       />
     </main>
   );
