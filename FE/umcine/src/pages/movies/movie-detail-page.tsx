@@ -1,8 +1,8 @@
 import { Link, useParams } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { BookmarkButton } from "../../components/bookmark-button";
-import { getMovieDetail } from "../../api/movies/get-movie-detail";
-import type { TmdbMovieDetail } from "../../api/movies/models";
+import { useQuery } from "@tanstack/react-query";
+import { movieDetailOptions } from "../../api/movies/movie-query-options";
 import { getMovieDetailErrorMessage } from "../../utils/movies/get-movie-detail-error-message";
 import { getTmdbBackdropUrl, getTmdbPosterUrl } from "../../utils/movies/tmdb-image";
 import { cn } from "../../utils/cn";
@@ -12,38 +12,18 @@ const iconPath = "/icons/movie-icons/movie-icons";
 
 export function MovieDetailPage() {
   const { movieId } = useParams({ from: "/movies/$movieId" });
-  const [attempt, setAttempt] = useState(0);
-  return <MovieDetailContent key={`${movieId}:${attempt}`} parsedMovieId={Number(movieId)} onRetry={() => setAttempt((value) => value + 1)} />;
+  return <MovieDetailContent key={movieId} parsedMovieId={Number(movieId)} />;
 }
 
-function MovieDetailContent({ parsedMovieId, onRetry }: { parsedMovieId: number; onRetry: () => void }) {
+function MovieDetailContent({ parsedMovieId }: { parsedMovieId: number }) {
   const isValidMovieId = Number.isInteger(parsedMovieId) && parsedMovieId > 0;
-  const [movie, setMovie] = useState<TmdbMovieDetail | null>(null);
-  const [isLoading, setIsLoading] = useState(isValidMovieId);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const movieDetailQuery = useQuery(movieDetailOptions(parsedMovieId));
+  const movie = movieDetailQuery.data;
+  const isLoading = movieDetailQuery.isPending;
+  const errorMessage = movieDetailQuery.isError
+    ? getMovieDetailErrorMessage(movieDetailQuery.error)
+    : null;
   const [rating, setRating] = useState(0);
-
-  useEffect(() => {
-    let ignore = false;
-    if (!Number.isInteger(parsedMovieId) || parsedMovieId <= 0) {
-      return;
-    }
-    async function loadMovie() {
-      setIsLoading(true);
-      try {
-        const response = await getMovieDetail(parsedMovieId);
-        if (!ignore) setMovie(response);
-      } catch (error) {
-        if (!ignore) setErrorMessage(getMovieDetailErrorMessage(error));
-      } finally {
-        if (!ignore) setIsLoading(false);
-      }
-    }
-    loadMovie();
-    return () => {
-      ignore = true;
-    };
-  }, [parsedMovieId]);
 
   if (!isValidMovieId || isLoading || errorMessage || !movie) {
     return (
@@ -51,7 +31,7 @@ function MovieDetailContent({ parsedMovieId, onRetry }: { parsedMovieId: number;
         <p className="text-lg font-extrabold" role={!isValidMovieId || errorMessage ? "alert" : "status"}>
           {!isValidMovieId ? "올바르지 않은 영화 번호예요." : isLoading ? "영화 정보를 불러오는 중이에요." : errorMessage ?? "영화를 찾을 수 없어요."}
         </p>
-        {isValidMovieId && !isLoading && errorMessage && <RetryButton onRetry={onRetry} />}
+        {isValidMovieId && !isLoading && errorMessage && <RetryButton onRetry={() => void movieDetailQuery.refetch()} />}
         <Link className="mt-3 text-sm font-bold text-[#2563eb] no-underline hover:underline" to="/">
           영화 목록으로 돌아가기
         </Link>

@@ -1,5 +1,17 @@
 # React + TypeScript + Vite
 
+## Week 06 TanStack Query 미션
+
+영화 목록·검색·상세 요청을 TanStack Query로 관리합니다. 공통 staleTime은 60초,
+상세 staleTime은 30초, gcTime은 5분입니다. 개발 환경에서는 React Query Devtools를 사용할 수 있습니다.
+`queryOptions`를 분리하는 선택 미션도 적용했습니다.
+
+실행: `npm install` 후 `npm run dev`. 기존 `.env.local`의 TMDB 환경 변수가 필요합니다.
+검증: `npm run build`, `npm run lint`.
+
+노션에 옮길 미션 기록, 개념 정리, 화면 확인 방법과 제출 체크리스트는
+[6주차 제출 준비](docs/week06-submission.md)를 참고하세요.
+
 ## Week 04 상태 관리 미션
 
 ### 북마크 상태 공유와 저장
