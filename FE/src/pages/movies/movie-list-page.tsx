@@ -1,40 +1,25 @@
-// 워크북처럼 useEffect 안에서 요청의 시작·완료 상태를 관리한다.
-import { useEffect, useState } from "react";
+// 인기 영화 목록과 페이지 이동을 표시한다.
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { getMovies } from "../../api/movies/get-movies";
-import type { TmdbMovieListItem } from "../../api/movies/models";
 import { MovieGrid } from "../../components/movies/movie-grid";
 import { Pagination } from "../../components/movies/pagination";
 import { env } from "../../config/env";
 
 export function MovieListPage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [movies, setMovies] = useState<TmdbMovieListItem[]>([]);
-  const [totalPages, setTotalPages] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  // 페이지 번호마다 인기 영화 응답을 따로 저장한다.
+  const moviesQuery = useQuery({
+    queryKey: ["movies", "popular", currentPage],
+    queryFn: () => getMovies({ page: currentPage }),
+  });
 
-  useEffect(() => {
-    let ignore = false;
-    async function loadMovies() {
-      setIsLoading(true);
-      setErrorMessage(null);
-      setMovies([]);
-      try {
-        const response = await getMovies({ page: currentPage });
-        if (!ignore) {
-          setMovies(response.results);
-          setTotalPages(response.total_pages);
-        }
-      } catch {
-        if (!ignore) setErrorMessage("영화 목록을 불러오지 못했어요.");
-      } finally {
-        if (!ignore) setIsLoading(false);
-      }
-    }
-    loadMovies();
-    // 이전 페이지의 느린 응답이 현재 화면을 덮어쓰지 않게 한다.
-    return () => { ignore = true; };
-  }, [currentPage]);
+  const movies = moviesQuery.data?.results ?? [];
+  const totalPages = moviesQuery.data?.total_pages ?? 0;
+  const isLoading = moviesQuery.isLoading;
+  const errorMessage = moviesQuery.isError
+    ? "영화 목록을 불러오지 못했어요."
+    : null;
 
   return (
     <main className="mx-auto max-w-[1200px] px-5 py-8">

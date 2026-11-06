@@ -1,8 +1,7 @@
-// 상세 응답의 genres·runtime 등을 그대로 사용하고 영화 ID로 북마크 상태를 공유한다.
+// URL의 영화 번호로 상세 정보와 북마크 버튼을 표시한다.
+import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
 import { getMovieDetail } from "../../api/movies/get-movie-detail";
-import type { TmdbMovieDetail } from "../../api/movies/models";
 import { BookmarkButton } from "../../components/movies/bookmark-button";
 import { getMovieDetailErrorMessage } from "../../utils/movies/get-movie-detail-error-message";
 import { getTmdbBackdropUrl, getTmdbPosterUrl } from "../../utils/movies/tmdb-image";
@@ -11,33 +10,18 @@ export function MovieDetailPage() {
   const { movieId } = useParams({ from: "/movies/$movieId" });
   const parsedMovieId = Number(movieId);
   const isValidMovieId = Number.isInteger(parsedMovieId) && parsedMovieId > 0;
-  const [movie, setMovie] = useState<TmdbMovieDetail | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  // 유효한 영화 번호만 조회하고 번호별로 상세 응답을 저장한다.
+  const detailQuery = useQuery({
+    queryKey: ["movies", "detail", parsedMovieId],
+    queryFn: () => getMovieDetail(parsedMovieId),
+    enabled: isValidMovieId,
+  });
 
-  useEffect(() => {
-    let ignore = false;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- 워크북 방식으로 ID 변경 시 이전 상세 데이터를 비우고 요청 상태를 초기화한다.
-    setMovie(null);
-    setErrorMessage(null);
-    if (!isValidMovieId) {
-      setIsLoading(false);
-      return;
-    }
-    async function loadMovie() {
-      setIsLoading(true);
-      try {
-        const response = await getMovieDetail(parsedMovieId);
-        if (!ignore) setMovie(response);
-      } catch (error) {
-        if (!ignore) setErrorMessage(getMovieDetailErrorMessage(error));
-      } finally {
-        if (!ignore) setIsLoading(false);
-      }
-    }
-    loadMovie();
-    return () => { ignore = true; };
-  }, [parsedMovieId, isValidMovieId]);
+  const movie = detailQuery.data;
+  const isLoading = detailQuery.isLoading;
+  const errorMessage = detailQuery.isError
+    ? getMovieDetailErrorMessage(detailQuery.error)
+    : null;
 
   const statusMessage = !isValidMovieId ? "올바르지 않은 영화 번호예요."
     : isLoading ? "영화 정보를 불러오는 중이에요."
