@@ -1,8 +1,8 @@
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { useEffect, useState, type SubmitEvent } from "react";
+import { useState, type SubmitEvent } from "react";
 import { BookmarkButton } from "../../components/bookmark-button";
-import { searchMovies } from "../../api/movies/search-movies";
-import type { TmdbMovieListItem } from "../../api/movies/models";
+import { useQuery } from "@tanstack/react-query";
+import { movieSearchOptions } from "../../api/movies/movie-query-options";
 import { toMovieCard } from "../../utils/movies/to-movie-card";
 import { Pagination } from "../../components/pagination";
 import { RetryButton } from "../../components/retry-button";
@@ -11,52 +11,23 @@ const searchIcon = "/icons/movie-icons/movie-icons/search.svg";
 
 export function SearchPage() {
   const { query, page = 1 } = useSearch({ from: "/search" });
-  const [attempt, setAttempt] = useState(0);
-
-  return <SearchPageContent key={JSON.stringify([query, page, attempt])} query={query ?? ""} page={page} onRetry={() => setAttempt((value) => value + 1)} />;
+  return <SearchPageContent key={JSON.stringify([query, page])} query={query ?? ""} page={page} />;
 }
 
 interface SearchPageContentProps {
   query: string;
   page: number;
-  onRetry: () => void;
 }
 
-function SearchPageContent({ query, page, onRetry }: SearchPageContentProps) {
+function SearchPageContent({ query, page }: SearchPageContentProps) {
   const navigate = useNavigate({ from: "/search" });
   const [searchText, setSearchText] = useState(query ?? "");
 
   const normalizedQuery = query.trim();
-  const [movies, setMovies] = useState<TmdbMovieListItem[]>([]);
-  const [isLoading, setIsLoading] = useState(Boolean(normalizedQuery));
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [totalPages, setTotalPages] = useState(0);
-  const [totalResults, setTotalResults] = useState(0);
-
-  useEffect(() => {
-    let ignore = false;
-    const normalizedQuery = query.trim();
-    if (!normalizedQuery) {
-      return;
-    }
-    searchMovies({ query: normalizedQuery, page })
-      .then((response) => {
-        if (!ignore) {
-          setMovies(response.results);
-          setTotalPages(Math.min(response.total_pages, 500));
-          setTotalResults(response.total_results);
-        }
-      })
-      .catch(() => {
-        if (!ignore) setErrorMessage("검색 결과를 불러오지 못했어요.");
-      })
-      .finally(() => {
-        if (!ignore) setIsLoading(false);
-      });
-    return () => {
-      ignore = true;
-    };
-  }, [query, page]);
+  const searchQuery = useQuery(movieSearchOptions(normalizedQuery, page));
+  const movies = searchQuery.data?.results ?? [];
+  const totalPages = Math.min(searchQuery.data?.total_pages ?? 0, 500);
+  const totalResults = searchQuery.data?.total_results ?? 0;
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -82,11 +53,11 @@ function SearchPageContent({ query, page, onRetry }: SearchPageContentProps) {
             <p className="text-[11px] text-[#777a82]">총 {totalResults}개</p>
           </div>
 
-          {isLoading ? (
+          {searchQuery.isLoading ? (
             <p className="py-20 text-center text-sm" role="status">검색 결과를 불러오는 중이에요.</p>
-          ) : errorMessage ? (
-            <div className="py-20 text-center text-sm"><p role="alert">{errorMessage}</p><RetryButton onRetry={onRetry} /></div>
-          ) : movies.length === 0 ? (
+          ) : searchQuery.isError ? (
+            <div className="py-20 text-center text-sm"><p role="alert">검색 결과를 불러오지 못했어요.</p><RetryButton onRetry={() => void searchQuery.refetch()} /></div>
+          ) : searchQuery.isSuccess && movies.length === 0 ? (
             <div className="grid min-h-72 place-content-center text-center">
               <p className="text-sm font-bold">검색 결과가 없어요.</p>
               <p className="mt-2 text-xs text-[#8b8e96]">다른 검색어로 다시 시도해 보세요.</p>
@@ -127,7 +98,7 @@ function SearchPageContent({ query, page, onRetry }: SearchPageContentProps) {
               })}
             </ul>
           )}
-          {!isLoading && !errorMessage && movies.length > 0 && (
+          {searchQuery.isSuccess && movies.length > 0 && (
             <Pagination currentPage={page} totalPages={totalPages} onPageChange={(page) => navigate({ search: { query, page } })} />
           )}
         </section>
