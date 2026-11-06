@@ -1,62 +1,49 @@
 import { Link, useParams } from '@tanstack/react-router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { getMovieDetail } from '../../api/movies/get-movie-detail';
-import type { TmdbMovieDetail } from '../../api/movies/models';
 import { useBookmarks } from '../../data/movies';
 import { getMovieDetailErrorMessage } from '../../utils/movies/get-movie-detail-error-message';
 
 export function MovieDetailPage() {
-  const { movieId } = useParams({ from: '/movies/$movieId' });
-  const parsedMovieId = Number(movieId);
+  const { movieId: movieIdParam } = useParams({ from: '/movies/$movieId' });
+  const movieId = Number(movieIdParam);
+  const isValidMovieId = Number.isInteger(movieId) && movieId > 0;
 
   const { isBookmarked, toggleBookmark } = useBookmarks();
 
-  const [movie, setMovie] = useState<TmdbMovieDetail | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
 
-  useEffect(() => {
-    let ignore = false;
+  const movieDetailQuery = useQuery({
+    queryKey: ['movies', 'detail', movieId],
+    queryFn: () => getMovieDetail(movieId),
+    enabled: isValidMovieId,
+  });
 
-    async function loadMovieDetail() {
-      setMovie(null);
-      setErrorMessage(null);
+  const movie = movieDetailQuery.data;
 
-      if (!Number.isInteger(parsedMovieId) || parsedMovieId <= 0) {
-        setErrorMessage('올바르지 않은 영화 번호예요.');
-        setIsLoading(false);
-        return;
-      }
+  // 1. 유효하지 않은 영화 번호 처리 (로딩보다 먼저 확인)
+  if (!isValidMovieId) {
+    return (
+      <main className='min-h-[calc(100vh-72px)] w-full bg-gray-100'>
+        <div className='px-6 py-20 text-center sm:px-20'>
+          <h2 className='mb-4 text-xl font-bold text-gray-900'>
+            올바르지 않은 영화 번호예요.
+          </h2>
+          <Link
+            to='/'
+            className='text-sm text-blue-600 no-underline hover:underline'
+          >
+            영화 목록으로 돌아가기
+          </Link>
+        </div>
+      </main>
+    );
+  }
 
-      setIsLoading(true);
-
-      try {
-        const response = await getMovieDetail(parsedMovieId);
-
-        if (!ignore) {
-          setMovie(response);
-        }
-      } catch (error: unknown) {
-        if (!ignore) {
-          setErrorMessage(getMovieDetailErrorMessage(error));
-        }
-      } finally {
-        if (!ignore) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    loadMovieDetail();
-
-    return () => {
-      ignore = true;
-    };
-  }, [parsedMovieId]);
-
-  if (isLoading) {
+  // 2. 로딩 중 처리
+  if (movieDetailQuery.isPending) {
     return (
       <main className='min-h-[calc(100vh-72px)] w-full bg-gray-100 px-6 py-20 text-center'>
         영화 정보를 불러오는 중이에요.
@@ -64,12 +51,14 @@ export function MovieDetailPage() {
     );
   }
 
-  if (errorMessage || !movie) {
+  // 3. 에러 발생 또는 데이터가 없을 때 처리
+  if (movieDetailQuery.isError || !movie) {
     return (
       <main className='min-h-[calc(100vh-72px)] w-full bg-gray-100'>
         <div className='px-6 py-20 text-center sm:px-20'>
           <h2 className='mb-4 text-xl font-bold text-gray-900'>
-            {errorMessage ?? '영화 정보를 불러오지 못했어요.'}
+            {getMovieDetailErrorMessage(movieDetailQuery.error) ??
+              '영화 정보를 불러오지 못했어요.'}
           </h2>
           <Link
             to='/'
