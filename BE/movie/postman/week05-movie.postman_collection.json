@@ -1,0 +1,217 @@
+{
+  "info": {
+    "name": "UMC Week05 Movie API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "실제 BE/movie 서버 검증용. 새 umc_movie DB에 schema.sql, seed.sql을 최초 한 번 적용한 상태를 기준으로 합니다. 실제 DB 비밀번호/토큰은 포함하지 않습니다. Postman 성공만으로 브라우저 CORS 성공을 증명할 수 없으므로 /api-test도 별도로 확인합니다."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    }
+  ],
+  "item": [
+    {
+      "name": "닉네임 중복",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/members/nickname/수현"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"응답 확인\", function () { pm.expect(pm.response.json()).to.eql({ available: false }); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "닉네임 사용 가능",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/members/nickname/꿀범"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"응답 확인\", function () { pm.expect(pm.response.json()).to.eql({ available: true }); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "이메일 중복",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/members/email/noco@umc.com"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"응답 확인\", function () { pm.expect(pm.response.json()).to.eql({ available: false }); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "이메일 사용 가능",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/members/email/new@umc.com"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"응답 확인\", function () { pm.expect(pm.response.json()).to.eql({ available: true }); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "회원 1 평점 최신순과 DTO",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/members/1/ratings"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"응답 확인\", function () { const body = pm.response.json(); pm.expect(body.map(item => item.ratingId)).to.eql([2, 1]); body.forEach(item => { pm.expect(item).to.have.all.keys(\"ratingId\", \"movieId\", \"score\", \"comment\", \"createdAt\", \"updatedAt\"); }); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "없는 회원 404",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/members/999/ratings"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 404\", function () { pm.response.to.have.status(404); });",
+              "pm.test(\"응답 확인\", function () { pm.expect(pm.response.json().message).to.eql(\"존재하지 않는 유저입니다.\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "닉네임 길이 오류",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/members/nickname/a"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "이메일 형식 오류",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/members/email/not-an-email"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "회원 ID 형식 오류",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/members/abc/ratings"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "CORS 응답 헤더",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Origin",
+            "value": "http://localhost:5173"
+          }
+        ],
+        "url": "{{baseUrl}}/members/1/ratings"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"응답 확인\", function () { pm.expect(pm.response.headers.get(\"Access-Control-Allow-Origin\")).to.eql(\"http://localhost:5173\"); });"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
