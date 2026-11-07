@@ -43,6 +43,14 @@ export function SignupPage() {
     !nicknameCheck.isChecking &&
     !isSubmitting &&
     !feedback?.success;
+  const remainingChecks = [
+    !valid.email ? "이메일 형식" : !emailCheck.isAvailable && "이메일 중복 확인",
+    !valid.nickname
+      ? "닉네임 2~12자"
+      : !nicknameCheck.isAvailable && "닉네임 중복 확인",
+    !valid.password && "비밀번호 조건",
+    !valid.passwordConfirm && "비밀번호 확인",
+  ].filter(Boolean);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -243,9 +251,11 @@ export function SignupPage() {
               </p>
             )}
           </div>
-          <p className="text-xs leading-5 text-zinc-500">
-            가입 전 이메일과 닉네임 중복 확인을 모두 완료해주세요.
-          </p>
+          {!feedback?.success && !isSubmitting && remainingChecks.length > 0 && (
+            <p role="status" className="text-xs leading-5 text-zinc-500">
+              가입 전에 확인할 항목 · {remainingChecks.join(", ")}
+            </p>
+          )}
           <button
             type="submit"
             disabled={!canSubmit}
