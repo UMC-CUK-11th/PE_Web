@@ -1,3 +1,5 @@
+import { Link } from "@tanstack/react-router";
+
 function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-gray-200 bg-white">
@@ -22,9 +24,12 @@ function Header() {
               영화
             </span>
 
-            <span className="cursor-pointer text-gray-500 transition hover:text-gray-900">
+            <Link
+              to="/search"
+              className="text-gray-500 transition hover:text-gray-900"
+            >
               검색
-            </span>
+            </Link>
 
             <span className="cursor-pointer text-gray-500 transition hover:text-gray-900">
               내 정보
@@ -34,16 +39,17 @@ function Header() {
 
         {/* 오른쪽 */}
         <div className="flex items-center gap-4">
-          <button
-            type="button"
+          <Link
+            to="/search"
+            aria-label="검색"
             className="flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-gray-100"
           >
             <img
               src="/icons/movie-icons/search.svg"
-              alt="검색"
+              alt=""
               className="h-5 w-5"
             />
-          </button>
+          </Link>
 
           <button
             type="button"

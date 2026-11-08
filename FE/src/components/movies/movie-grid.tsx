@@ -1,17 +1,14 @@
 import MovieCard from "./movie-card";
 import type { Movie } from "../../types/movie";
+import { useBookmarkStore } from "../../stores/bookmark-store";
 
 type MovieGridProps = {
   movies: Movie[];
-  bookmarkedIds: number[];
-  onToggleBookmark: (id: number) => void;
 };
 
-function MovieGrid({
-  movies,
-  bookmarkedIds,
-  onToggleBookmark,
-}: MovieGridProps) {
+function MovieGrid({ movies }: MovieGridProps) {
+  const { bookmarkedMovieIds, toggleBookmark } = useBookmarkStore();
+
   return (
     <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-5">
       {movies.map((movie) => (
@@ -21,8 +18,8 @@ function MovieGrid({
           title={movie.title}
           releaseDate={movie.releaseDate}
           poster={movie.posterPath}
-          isBookmarked={bookmarkedIds.includes(movie.id)}
-          onToggleBookmark={() => onToggleBookmark(movie.id)}
+          isBookmarked={bookmarkedMovieIds.includes(movie.id)}
+          onToggleBookmark={() => toggleBookmark(movie.id)}
         />
       ))}
     </div>
