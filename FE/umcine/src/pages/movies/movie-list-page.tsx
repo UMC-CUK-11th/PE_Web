@@ -1,54 +1,34 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getMovies } from "../../api/movies/get-movies";
+import type { TmdbMovieListItem } from "../../api/movies/models";
 import MovieGrid from "../../components/movies/movie-grid";
-import Pagination from "../../components/movies/pagination";
-import { movies as initialMovies } from "../../data/movies";
-
-//4주차 코드 추가
-import { readBookmarkIds, saveBookmarkIds } from "../../utils/bookmark-storage";
 
 export function MovieListPage() {
-  // 로컬 영화 데이터를 초기값으로 영화 목록 상태를 만든다.
-  //4주차 코드 추가
-  // 저장된 북마크를 영화 목록의 초기 상태에 반영한다.
-  const [movies, setMovies] = useState(() => {
-    const bookmarkedMovieIds = readBookmarkIds();
+  const [movies, setMovies] = useState<TmdbMovieListItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-    return initialMovies.map((movie) => ({
-      ...movie,
-      isBookmarked: bookmarkedMovieIds.includes(movie.id),
-    }));
-  });
+  useEffect(() => {
+    let ignore = false;
+    async function loadMovies() {
+      try {
+        const response = await getMovies();
+        if (!ignore) setMovies(response.results);
+      } catch {
+        if (!ignore) setErrorMessage("영화 목록을 불러오지 못했어요.");
+      } finally {
+        if (!ignore) setIsLoading(false);
+      }
+    }
+    void loadMovies();
+    return () => { ignore = true; };
+  }, []);
 
-  function handleToggleBookmark(movieId: number) {
-    //4주차 변경 코드
-    const nextMovies = movies.map((movie) =>
-      movie.id === movieId
-        ? {
-          ...movie,
-          isBookmarked: !movie.isBookmarked,
-        }
-      : movie,
-    );
-
-    setMovies(nextMovies);
-
-    const bookmarkedMovieIds = nextMovies
-      .filter((movie)=>movie.isBookmarked)
-      .map((movie)=>movie.id);
-
-    saveBookmarkIds(bookmarkedMovieIds);
-  }
-
-  return (
-    <main className="mx-auto w-full max-w-[1180px] px-6 py-6">
-      <h1 className="mb-5 text-[25px] font-bold text-[#20232a]">영화 목록</h1>
-
-      <MovieGrid
-        movies={movies}
-        onToggleBookmark={handleToggleBookmark}
-      />
-
-      <Pagination />
-    </main>
-  );
+  return <main className="mx-auto w-full max-w-[1180px] px-6 py-6">
+    <h1 className="mb-5 text-[25px] font-bold text-[#20232a]">영화 목록</h1>
+    {isLoading ? <p role="status">영화 목록을 불러오는 중이에요.</p>
+      : errorMessage ? <p role="alert">{errorMessage}</p>
+      : movies.length === 0 ? <p>조건에 맞는 영화가 없어요.</p>
+      : <MovieGrid movies={movies} />}
+  </main>;
 }

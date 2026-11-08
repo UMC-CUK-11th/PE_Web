@@ -4,6 +4,11 @@ import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 import "./index.css";
 
+// 5주차 순수 fetch 실습용 임시 실행. Network 확인 후 제거한다.
+if (import.meta.env.DEV) {
+  void import("./examples/fetch-movies");
+}
+
 // 자동 생성된 routeTree를 이용해 실제 router를 만든다.
 const router = createRouter({ routeTree });
 

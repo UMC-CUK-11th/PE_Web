@@ -1,0 +1,128 @@
+{
+  "recordedAt": "2026-11-02T07:53:24.032Z",
+  "runtime": "Node + Vite SSR (not browser)",
+  "checks": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:8080/members/nickname/%EC%88%98%ED%98%84",
+      "status": 200,
+      "response": {
+        "available": false
+      }
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:8080/members/nickname/umc_unused_1793606004943",
+      "status": 200,
+      "response": {
+        "available": true
+      }
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:8080/members/email/noco%40umc.com",
+      "status": 200,
+      "response": {
+        "available": false
+      }
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:8080/members/email/unused_1793606004995%40example.com",
+      "status": 200,
+      "response": {
+        "available": true
+      }
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:8080/members/1/ratings",
+      "status": 200,
+      "response": [
+        {
+          "ratingId": 2,
+          "movieId": 155,
+          "score": 4,
+          "comment": "다시 봐도 명작",
+          "createdAt": "2026-11-02T16:42:05",
+          "updatedAt": "2026-11-02T16:42:05"
+        },
+        {
+          "ratingId": 1,
+          "movieId": 550,
+          "score": 5,
+          "comment": "최고의 영화!",
+          "createdAt": "2026-11-02T16:42:05",
+          "updatedAt": "2026-11-02T16:42:05"
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:8080/members/999999999/ratings",
+      "status": 404,
+      "response": {
+        "timestamp": "2026-11-02T07:53:26.073+00:00",
+        "status": 404,
+        "error": "Not Found",
+        "path": "/members/999999999/ratings"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:8080/members/nickname/umc-check",
+      "status": 200,
+      "origin": "http://localhost:5173",
+      "allowedOrigin": "http://localhost:5173",
+      "response": {
+        "available": true
+      }
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:8080/members/nickname/umc-check",
+      "status": 200,
+      "origin": "http://127.0.0.1:5173",
+      "allowedOrigin": "http://127.0.0.1:5173",
+      "response": {
+        "available": true
+      }
+    },
+    {
+      "method": "OPTIONS",
+      "url": "http://127.0.0.1:8080/members",
+      "status": 200,
+      "origin": "http://localhost:5173",
+      "allowedOrigin": "http://localhost:5173",
+      "response": null
+    },
+    {
+      "check": "unapproved-origin",
+      "status": 403,
+      "allowedOrigin": null
+    },
+    {
+      "check": "tmdb-popular",
+      "page": 1,
+      "count": 20
+    },
+    {
+      "check": "tmdb-search",
+      "query": "스파이더맨",
+      "count": 14
+    },
+    {
+      "check": "tmdb-empty-search",
+      "count": 0
+    },
+    {
+      "check": "tmdb-detail",
+      "id": 155,
+      "title": "다크 나이트"
+    },
+    {
+      "check": "tmdb-detail-404",
+      "handled": true
+    }
+  ]
+}
