@@ -1,58 +1,31 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useParams } from "@tanstack/react-router";
 import { getMovieDetail } from "../../api/movies/get-movie-detail";
-import type { TmdbMovieDetail } from "../../api/movies/models";
 import { MovieCard } from "../../components/movies/movie-card.tsx";
 import { getMovieDetailErrorMessage } from "../../utils/movies/get-movie-detail-error-message";
 
 export function MovieDetailPage() {
-  const { movieId } = useParams({ from: "/movies/$movieId" });
-  const parsedMovieId = Number(movieId);
-  const isValidMovieId = Number.isInteger(parsedMovieId) && parsedMovieId > 0;
-  const [movie, setMovie] = useState<TmdbMovieDetail | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const { movieId: movieIdParam } = useParams({ from: "/movies/$movieId" });
+  const movieId = Number(movieIdParam);
+  const isValidMovieId = Number.isInteger(movieId) && movieId > 0;
 
-  useEffect(() => {
-    let ignore = false;
+  const movieDetailQuery = useQuery({
+    queryKey: ["movies", "detail", movieId],
+    queryFn: () => getMovieDetail(movieId),
+    enabled: isValidMovieId,
+    staleTime: 30 * 1000,
+  });
 
-    async function loadMovieDetail() {
-      setMovie(null);
-      setErrorMessage(null);
-
-      if (!Number.isInteger(parsedMovieId) || parsedMovieId <= 0) {
-        setErrorMessage("올바르지 않은 영화 번호예요.");
-        setIsLoading(false);
-        return;
-      }
-
-      setIsLoading(true);
-
-      try {
-        const response = await getMovieDetail(parsedMovieId);
-        if (!ignore) setMovie(response);
-      } catch (error) {
-        if (!ignore) setErrorMessage(getMovieDetailErrorMessage(error));
-      } finally {
-        if (!ignore) setIsLoading(false);
-      }
-    }
-
-    loadMovieDetail();
-
-    return () => {
-      ignore = true;
-    };
-  }, [parsedMovieId]);
+  const movie = movieDetailQuery.data;
 
   return (
     <main>
       {!isValidMovieId ? (
-        <p role="alert">올바르지 않은 영화 번호예요.</p>
-      ) : isLoading ? (
-        <p role="status">영화 정보를 불러오는 중이에요.</p>
-      ) : errorMessage ? (
-        <p role="alert">{errorMessage}</p>
+        <p>올바르지 않은 영화 번호예요.</p>
+      ) : movieDetailQuery.isPending ? (
+        <p>영화 상세 정보를 불러오는 중이에요.</p> // 기존 로딩 UI가 있다면 재사용해요.
+      ) : movieDetailQuery.isError ? (
+        <p>{getMovieDetailErrorMessage(movieDetailQuery.error)}</p> // 기존 오류 UI가 있다면 재사용해요.
       ) : movie ? (
         <MovieCard movie={movie} />
       ) : null}
