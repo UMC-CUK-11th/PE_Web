@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "@tanstack/react-router";
 
 import { DetailBookmarkButton } from "../../components/bookmark-button";
@@ -11,9 +12,14 @@ export function MovieDetailPage() {
   const parsedMovieId = Number(movieId);
   const isValidId = Number.isInteger(parsedMovieId) && parsedMovieId > 0;
 
-  const [movie, setMovie] = useState<any | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  // 영화 ID를 query key에 넣어 영화마다 캐시를 따로 저장해요. 상세는 전역 기본값(1분) 대신 30초만 최신으로 봐요.
+  const movieDetailQuery = useQuery({
+    queryKey: ["movies", "detail", parsedMovieId],
+    queryFn: () => getMovieDetail(parsedMovieId),
+    enabled: isValidId,
+    staleTime: 30 * 1000,
+  });
+  const movie = movieDetailQuery.data;
 
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState("");
@@ -27,36 +33,8 @@ export function MovieDetailPage() {
     return hours > 0 ? `${hours}시간 ${minutes}분` : `${minutes}분`;
   };
 
-  useEffect(() => {
-    let ignore = false;
-
-    if (!isValidId) {
-      setMovie(null);
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
-    setErrorMessage(null);
-    setMovie(null); // 새로운 요청 전 기존 데이터 초기화
-
-    getMovieDetail(parsedMovieId)
-      .then((response) => {
-        if (!ignore) setMovie(response);
-      })
-      .catch((error) => {
-        if (!ignore) setErrorMessage(getMovieDetailErrorMessage(error));
-      })
-      .finally(() => {
-        if (!ignore) setIsLoading(false);
-      });
-
-    return () => {
-      ignore = true;
-    };
-  }, [parsedMovieId, isValidId]);
-
-  if (!isValidId && !isLoading) {
+  // 잘못된 번호는 요청하지 않아도 isPending이 참이므로 로딩보다 먼저 처리해요.
+  if (!isValidId) {
     return (
       <main className="flex min-h-[calc(100vh-56px)] items-center justify-center bg-[#f6f7f9]">
         <p className="text-[14px] text-[#ef4444]">올바르지 않은 영화 번호예요.</p>
@@ -64,15 +42,15 @@ export function MovieDetailPage() {
     );
   }
 
-  if (errorMessage) {
+  if (movieDetailQuery.isError) {
     return (
       <main className="flex min-h-[calc(100vh-56px)] items-center justify-center bg-[#f6f7f9]">
-        <p className="text-[14px] text-[#ef4444]">{errorMessage}</p>
+        <p className="text-[14px] text-[#ef4444]">{getMovieDetailErrorMessage(movieDetailQuery.error)}</p>
       </main>
     );
   }
 
-  if (isLoading || !movie) {
+  if (movieDetailQuery.isPending || !movie) {
     return (
       <main className="flex min-h-[calc(100vh-56px)] items-center justify-center bg-[#f6f7f9]">
         <p className="text-[14px] text-[#8e949e]">영화를 불러오는 중입니다...</p>
@@ -96,7 +74,7 @@ export function MovieDetailPage() {
             <p className="mb-1.5 text-[10px]">{movie.original_title}</p>
             <div className="flex gap-[9px] text-[9px]">
               <span>{movie.release_date}</span>
-              <span>{movie.genres?.map((genre: any) => genre.name).join(", ") || "장르 정보 없음"}</span>
+              <span>{movie.genres?.map((genre) => genre.name).join(", ") || "장르 정보 없음"}</span>
               <span>{formatRuntime(movie.runtime)}</span>
             </div>
           </div>
