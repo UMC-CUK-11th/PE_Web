@@ -1,11 +1,17 @@
 package com.umc11th.service;
 
 import com.umc11th.dto.EmailCheckResponse;
+import com.umc11th.dto.MemberResponse;
 import com.umc11th.dto.NicknameCheckResponse;
+import com.umc11th.dto.SignUpRequest;
+import com.umc11th.entity.Member;
+import com.umc11th.exception.BusinessException;
+import com.umc11th.exception.ErrorCode;
 import com.umc11th.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.regex.Pattern;
 
@@ -18,6 +24,7 @@ public class MemberService {
     );
 
     private final MemberRepository memberRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
     public NicknameCheckResponse checkNickname(String nickname) {
@@ -36,5 +43,23 @@ public class MemberService {
         }
 
         return new EmailCheckResponse(!memberRepository.existsByEmail(email));
+    }
+
+    @Transactional
+    public MemberResponse signUp(SignUpRequest request) {
+        if (memberRepository.existsByEmail(request.email())) {
+            throw new BusinessException(ErrorCode.MEMBER_EMAIL_DUPLICATE);
+        }
+        if (memberRepository.existsByNickname(request.nickname())) {
+            throw new BusinessException(ErrorCode.MEMBER_NICKNAME_DUPLICATE);
+        }
+
+        Member member = Member.builder()
+                .email(request.email())
+                .password(passwordEncoder.encode(request.password()))
+                .nickname(request.nickname())
+                .build();
+
+        return MemberResponse.from(memberRepository.save(member));
     }
 }

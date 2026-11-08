@@ -1,20 +1,38 @@
 package com.umc11th.controller;
 
-import org.springframework.http.HttpStatus;
+import com.umc11th.dto.ApiResponse;
+import com.umc11th.exception.BusinessException;
+import com.umc11th.exception.ErrorCode;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<ApiResponse<Void>> handleBusinessException(BusinessException exception) {
+        ErrorCode errorCode = exception.getErrorCode();
+        return ResponseEntity.status(errorCode.getStatus())
+                .body(ApiResponse.failure(errorCode.getCode(), errorCode.getMessage()));
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolation(
+            DataIntegrityViolationException exception
+    ) {
+        String causeMessage = exception.getMostSpecificCause().getMessage();
+        ErrorCode errorCode = resolveConstraintError(causeMessage);
+
+        return ResponseEntity.status(errorCode.getStatus())
+                .body(ApiResponse.failure(errorCode.getCode(), errorCode.getMessage()));
+    }
+
     @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<Map<String, String>> handleResponseStatusException(
+    public ResponseEntity<ApiResponse<Void>> handleResponseStatusException(
             ResponseStatusException exception
     ) {
         String message = exception.getReason() == null
@@ -22,23 +40,44 @@ public class GlobalExceptionHandler {
                 : exception.getReason();
 
         return ResponseEntity.status(exception.getStatusCode())
-                .body(Map.of("message", message));
+                .body(ApiResponse.failure(
+                        "COMMON" + exception.getStatusCode().value(),
+                        message
+                ));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> handleValidationException(MethodArgumentNotValidException exception) {
+    public ResponseEntity<ApiResponse<Void>> handleValidationException(
+            MethodArgumentNotValidException exception
+    ) {
         String message = exception.getBindingResult().getFieldErrors().stream()
                 .findFirst()
                 .map(error -> error.getDefaultMessage())
                 .orElse("잘못된 요청입니다.");
 
-        return Map.of("message", message);
+        return ResponseEntity.badRequest()
+                .body(ApiResponse.failure("COMMON4001", message));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> handleIllegalArgumentException(IllegalArgumentException exception) {
-        return Map.of("message", exception.getMessage());
+    public ResponseEntity<ApiResponse<Void>> handleIllegalArgumentException(
+            IllegalArgumentException exception
+    ) {
+        return ResponseEntity.badRequest()
+                .body(ApiResponse.failure("COMMON4002", exception.getMessage()));
+    }
+
+    private ErrorCode resolveConstraintError(String causeMessage) {
+        if (causeMessage.contains("uk_member_email")) {
+            return ErrorCode.MEMBER_EMAIL_DUPLICATE;
+        }
+        if (causeMessage.contains("uk_member_nickname")) {
+            return ErrorCode.MEMBER_NICKNAME_DUPLICATE;
+        }
+        if (causeMessage.contains("uk_rating_member_movie")) {
+            return ErrorCode.RATING_DUPLICATE;
+        }
+
+        return ErrorCode.DATA_CONFLICT;
     }
 }

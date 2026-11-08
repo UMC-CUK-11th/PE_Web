@@ -1,11 +1,10 @@
-import { useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import { adaptTmdbMovie } from "../api/tmdb-adapter";
-import { getPopularMovies } from "../api/tmdb-service";
+import { popularMoviesQueryOptions } from "../api/movie-query-options";
 import { MovieGrid } from "../components/movie-grid";
 import { Pagination } from "../components/pagination";
 import { EmptyState, ErrorState, LoadingState } from "../components/request-state";
-import { useRequest } from "../hooks/use-request";
 import { useViewPreferenceStore } from "../stores/view-preference-store";
 import { cn } from "../utils/cn";
 
@@ -19,11 +18,7 @@ export function MovieListPage() {
   const currentPage = parsePage(searchParams.get("page"));
   const movieCardSize = useViewPreferenceStore((state) => state.movieCardSize);
   const setMovieCardSize = useViewPreferenceStore((state) => state.setMovieCardSize);
-  const requestPopularMovies = useCallback(
-    (signal: AbortSignal) => getPopularMovies(currentPage, signal),
-    [currentPage],
-  );
-  const movieRequest = useRequest(requestPopularMovies);
+  const movieQuery = useQuery(popularMoviesQueryOptions(currentPage));
 
   const handlePageChange = (page: number) => {
     setSearchParams(page === 1 ? {} : { page: String(page) });
@@ -61,17 +56,17 @@ export function MovieListPage() {
           </div>
         </div>
 
-        {movieRequest.status === "loading" && <LoadingState />}
-        {movieRequest.status === "error" && <ErrorState error={movieRequest.error} onRetry={movieRequest.retry} />}
-        {movieRequest.status === "success" && movieRequest.data.results.length === 0 && (
+        {movieQuery.isPending && <LoadingState />}
+        {movieQuery.isError && <ErrorState error={movieQuery.error} onRetry={() => void movieQuery.refetch()} />}
+        {movieQuery.isSuccess && movieQuery.data.results.length === 0 && (
           <EmptyState title="표시할 영화가 없어요." description="잠시 후 다시 확인해 주세요." />
         )}
-        {movieRequest.status === "success" && movieRequest.data.results.length > 0 && (
+        {movieQuery.isSuccess && movieQuery.data.results.length > 0 && (
           <>
-            <MovieGrid movies={movieRequest.data.results.map(adaptTmdbMovie)} cardSize={movieCardSize} />
+            <MovieGrid movies={movieQuery.data.results.map(adaptTmdbMovie)} cardSize={movieCardSize} />
             <Pagination
               currentPage={currentPage}
-              totalPages={Math.min(movieRequest.data.total_pages, 500)}
+              totalPages={Math.min(movieQuery.data.total_pages, 500)}
               onPageChange={handlePageChange}
             />
           </>

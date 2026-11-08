@@ -1,11 +1,11 @@
-import { type FormEvent, useCallback, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { type FormEvent, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { adaptTmdbMovie } from "../api/tmdb-adapter";
-import { searchMovies } from "../api/tmdb-service";
+import { searchMoviesQueryOptions } from "../api/movie-query-options";
 import { BookmarkButton } from "../components/bookmark-button";
 import { Pagination } from "../components/pagination";
 import { EmptyState, ErrorState, LoadingState } from "../components/request-state";
-import { useRequest } from "../hooks/use-request";
 
 function parsePage(value: string | null) {
   const page = Number(value);
@@ -17,11 +17,7 @@ export function SearchPage() {
   const query = searchParams.get("query")?.trim() ?? "";
   const currentPage = parsePage(searchParams.get("page"));
   const [searchInput, setSearchInput] = useState(query);
-  const requestSearchMovies = useCallback(
-    (signal: AbortSignal) => searchMovies(query, currentPage, signal),
-    [currentPage, query],
-  );
-  const searchRequest = useRequest(requestSearchMovies, Boolean(query));
+  const searchQuery = useQuery(searchMoviesQueryOptions(query, currentPage));
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -58,7 +54,7 @@ export function SearchPage() {
     );
   }
 
-  const results = searchRequest.status === "success" ? searchRequest.data.results.map(adaptTmdbMovie) : [];
+  const results = searchQuery.isSuccess ? searchQuery.data.results.map(adaptTmdbMovie) : [];
 
   return (
     <main className="flex-1">
@@ -78,16 +74,16 @@ export function SearchPage() {
           <button className="h-9 cursor-pointer rounded-md border-0 bg-[#18191b] px-4 text-xs font-bold text-white" type="submit">다시 검색</button>
         </form>
 
-        {searchRequest.status === "loading" && <LoadingState message="검색 결과를 불러오는 중이에요." />}
-        {searchRequest.status === "error" && <ErrorState error={searchRequest.error} onRetry={searchRequest.retry} />}
-        {searchRequest.status === "success" && results.length === 0 && (
+        {searchQuery.isPending && <LoadingState message="검색 결과를 불러오는 중이에요." />}
+        {searchQuery.isError && <ErrorState error={searchQuery.error} onRetry={() => void searchQuery.refetch()} />}
+        {searchQuery.isSuccess && results.length === 0 && (
           <EmptyState title="검색 결과가 없어요." description="다른 검색어로 다시 시도해 주세요." />
         )}
-        {searchRequest.status === "success" && results.length > 0 && (
+        {searchQuery.isSuccess && results.length > 0 && (
           <section aria-live="polite">
             <div className="flex items-center justify-between border-b border-[#dfe3e8] py-4">
               <h2 className="text-base font-bold">‘{query}’ 검색 결과</h2>
-              <span className="text-xs text-[#8b929c]">영화 {searchRequest.data.total_results.toLocaleString("ko-KR")}편</span>
+              <span className="text-xs text-[#8b929c]">영화 {searchQuery.data.total_results.toLocaleString("ko-KR")}편</span>
             </div>
             <div className="grid grid-cols-2 max-[760px]:grid-cols-1">
               {results.map((movie) => (
@@ -115,7 +111,7 @@ export function SearchPage() {
             </div>
             <Pagination
               currentPage={currentPage}
-              totalPages={Math.min(searchRequest.data.total_pages, 500)}
+              totalPages={Math.min(searchQuery.data.total_pages, 500)}
               onPageChange={handlePageChange}
             />
           </section>

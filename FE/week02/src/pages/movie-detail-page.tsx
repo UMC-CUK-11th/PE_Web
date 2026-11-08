@@ -1,11 +1,11 @@
-import { useCallback, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { HTTPError } from "ky";
 import { Link, useParams } from "react-router-dom";
 import { adaptTmdbMovieDetails } from "../api/tmdb-adapter";
-import { getMovieDetails } from "../api/tmdb-service";
+import { movieDetailsQueryOptions } from "../api/movie-query-options";
 import { BookmarkButton } from "../components/bookmark-button";
 import { ErrorState, LoadingState } from "../components/request-state";
-import { useRequest } from "../hooks/use-request";
 import { cn } from "../utils/cn";
 
 function MovieNotFound() {
@@ -27,24 +27,20 @@ export function MovieDetailPage() {
   const isValidMovieId = Number.isInteger(parsedMovieId) && parsedMovieId > 0;
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState("");
-  const requestMovie = useCallback(
-    (signal: AbortSignal) => getMovieDetails(parsedMovieId, signal),
-    [parsedMovieId],
-  );
-  const movieRequest = useRequest(requestMovie, isValidMovieId);
+  const movieQuery = useQuery(movieDetailsQueryOptions(parsedMovieId, isValidMovieId));
 
   if (!isValidMovieId) return <MovieNotFound />;
-  if (movieRequest.status === "loading" || movieRequest.status === "idle") {
+  if (movieQuery.isPending) {
     return <main className="flex-1"><LoadingState message="영화 상세 정보를 불러오는 중이에요." /></main>;
   }
-  if (movieRequest.status === "error") {
-    if (movieRequest.error instanceof HTTPError && movieRequest.error.response.status === 404) {
+  if (movieQuery.isError) {
+    if (movieQuery.error instanceof HTTPError && movieQuery.error.response.status === 404) {
       return <MovieNotFound />;
     }
-    return <main className="flex-1"><ErrorState error={movieRequest.error} onRetry={movieRequest.retry} /></main>;
+    return <main className="flex-1"><ErrorState error={movieQuery.error} onRetry={() => void movieQuery.refetch()} /></main>;
   }
 
-  const movie = adaptTmdbMovieDetails(movieRequest.data);
+  const movie = adaptTmdbMovieDetails(movieQuery.data);
 
   return (
     <main className="flex-1">
