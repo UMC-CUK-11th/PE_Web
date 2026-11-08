@@ -1,0 +1,560 @@
+﻿{
+    "info":  {
+                 "description":  "로컬 학습 DB에서 01부터 순서대로 실행. 01을 다시 실행하면 새 회원 ID를 사용합니다. 테스트 회원 2명은 DB에 남고 평점은 마지막에 삭제됩니다.",
+                 "name":  "UMC Week06 - Movie Write APIs",
+                 "schema":  "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+             },
+    "variable":  [
+                     {
+                         "key":  "baseUrl",
+                         "value":  "http://localhost:8080"
+                     },
+                     {
+                         "key":  "runId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "memberId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "otherMemberId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "ratingId",
+                         "value":  ""
+                     }
+                 ],
+    "item":  [
+                 {
+                     "name":  "01 회원가입 성공 - 필수 캡처",
+                     "request":  {
+                                     "method":  "POST",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Content-Type",
+                                                        "value":  "application/json"
+                                                    }
+                                                ],
+                                     "url":  "{{baseUrl}}/members",
+                                     "body":  {
+                                                  "raw":  "{\"email\":\"owner{{runId}}@example.com\",\"password\":\"Umc!1234\",\"nickname\":\"a{{runId}}\"}",
+                                                  "options":  {
+                                                                  "raw":  {
+                                                                              "language":  "json"
+                                                                          }
+                                                              },
+                                                  "mode":  "raw"
+                                              }
+                                 },
+                     "event":  [
+                                   {
+                                       "script":  {
+                                                      "exec":  [
+                                                                   "pm.test(\u0027HTTP 201\u0027, () =\u003e pm.response.to.have.status(201));",
+                                                                   "const b = pm.response.json(); pm.collectionVariables.set(\u0027memberId\u0027, b.result.memberId);",
+                                                                   "pm.test(\u0027password excluded\u0027, () =\u003e pm.expect(pm.response.json().result).not.to.have.property(\u0027password\u0027));"
+                                                               ],
+                                                      "type":  "text/javascript"
+                                                  },
+                                       "listen":  "test"
+                                   },
+                                   {
+                                       "script":  {
+                                                      "exec":  [
+                                                                   "pm.collectionVariables.set(\u0027runId\u0027, Date.now().toString().slice(-10));"
+                                                               ],
+                                                      "type":  "text/javascript"
+                                                  },
+                                       "listen":  "prerequest"
+                                   }
+                               ]
+                 },
+                 {
+                     "name":  "02 이메일 중복",
+                     "request":  {
+                                     "method":  "POST",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Content-Type",
+                                                        "value":  "application/json"
+                                                    }
+                                                ],
+                                     "url":  "{{baseUrl}}/members",
+                                     "body":  {
+                                                  "raw":  "{\"email\":\"owner{{runId}}@example.com\",\"password\":\"Umc!1234\",\"nickname\":\"c{{runId}}\"}",
+                                                  "options":  {
+                                                                  "raw":  {
+                                                                              "language":  "json"
+                                                                          }
+                                                              },
+                                                  "mode":  "raw"
+                                              }
+                                 },
+                     "event":  [
+                                   {
+                                       "script":  {
+                                                      "exec":  [
+                                                                   "pm.test(\u0027HTTP 409\u0027, () =\u003e pm.response.to.have.status(409));",
+                                                                   "pm.test(\u0027common error envelope\u0027, () =\u003e { const b = pm.response.json(); pm.expect(b.isSuccess).to.eql(false); pm.expect(b.code).to.be.a(\u0027string\u0027); pm.expect(b.message).to.be.a(\u0027string\u0027); pm.expect(b.result).to.eql(null); });",
+                                                                   "pm.test(\u0027email code\u0027, () =\u003e pm.expect(pm.response.json().code).to.eql(\u0027MEMBER4091\u0027));"
+                                                               ],
+                                                      "type":  "text/javascript"
+                                                  },
+                                       "listen":  "test"
+                                   }
+                               ]
+                 },
+                 {
+                     "name":  "03 닉네임 중복",
+                     "request":  {
+                                     "method":  "POST",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Content-Type",
+                                                        "value":  "application/json"
+                                                    }
+                                                ],
+                                     "url":  "{{baseUrl}}/members",
+                                     "body":  {
+                                                  "raw":  "{\"email\":\"new{{runId}}@example.com\",\"password\":\"Umc!1234\",\"nickname\":\"a{{runId}}\"}",
+                                                  "options":  {
+                                                                  "raw":  {
+                                                                              "language":  "json"
+                                                                          }
+                                                              },
+                                                  "mode":  "raw"
+                                              }
+                                 },
+                     "event":  [
+                                   {
+                                       "script":  {
+                                                      "exec":  [
+                                                                   "pm.test(\u0027HTTP 409\u0027, () =\u003e pm.response.to.have.status(409));",
+                                                                   "pm.test(\u0027common error envelope\u0027, () =\u003e { const b = pm.response.json(); pm.expect(b.isSuccess).to.eql(false); pm.expect(b.code).to.be.a(\u0027string\u0027); pm.expect(b.message).to.be.a(\u0027string\u0027); pm.expect(b.result).to.eql(null); });",
+                                                                   "pm.test(\u0027nickname code\u0027, () =\u003e pm.expect(pm.response.json().code).to.eql(\u0027MEMBER4092\u0027));"
+                                                               ],
+                                                      "type":  "text/javascript"
+                                                  },
+                                       "listen":  "test"
+                                   }
+                               ]
+                 },
+                 {
+                     "name":  "04 이메일 검증 실패 - 필수 캡처",
+                     "request":  {
+                                     "method":  "POST",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Content-Type",
+                                                        "value":  "application/json"
+                                                    }
+                                                ],
+                                     "url":  "{{baseUrl}}/members",
+                                     "body":  {
+                                                  "raw":  "{\"email\":\"invalid\",\"password\":\"Umc!1234\",\"nickname\":\"moviefan\"}",
+                                                  "options":  {
+                                                                  "raw":  {
+                                                                              "language":  "json"
+                                                                          }
+                                                              },
+                                                  "mode":  "raw"
+                                              }
+                                 },
+                     "event":  [
+                                   {
+                                       "script":  {
+                                                      "exec":  [
+                                                                   "pm.test(\u0027HTTP 400\u0027, () =\u003e pm.response.to.have.status(400));",
+                                                                   "pm.test(\u0027common error envelope\u0027, () =\u003e { const b = pm.response.json(); pm.expect(b.isSuccess).to.eql(false); pm.expect(b.code).to.be.a(\u0027string\u0027); pm.expect(b.message).to.be.a(\u0027string\u0027); pm.expect(b.result).to.eql(null); });"
+                                                               ],
+                                                      "type":  "text/javascript"
+                                                  },
+                                       "listen":  "test"
+                                   }
+                               ]
+                 },
+                 {
+                     "name":  "05 평점 등록 성공 - 필수 캡처",
+                     "request":  {
+                                     "method":  "POST",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Content-Type",
+                                                        "value":  "application/json"
+                                                    }
+                                                ],
+                                     "url":  "{{baseUrl}}/members/{{memberId}}/ratings",
+                                     "body":  {
+                                                  "raw":  "{\"movieId\":550,\"score\":5,\"comment\":\"재미있게 봤어요.\"}",
+                                                  "options":  {
+                                                                  "raw":  {
+                                                                              "language":  "json"
+                                                                          }
+                                                              },
+                                                  "mode":  "raw"
+                                              }
+                                 },
+                     "event":  [
+                                   {
+                                       "script":  {
+                                                      "exec":  [
+                                                                   "pm.test(\u0027HTTP 201\u0027, () =\u003e pm.response.to.have.status(201));",
+                                                                   "pm.collectionVariables.set(\u0027ratingId\u0027, pm.response.json().result);"
+                                                               ],
+                                                      "type":  "text/javascript"
+                                                  },
+                                       "listen":  "test"
+                                   }
+                               ]
+                 },
+                 {
+                     "name":  "06 평점 중복",
+                     "request":  {
+                                     "method":  "POST",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Content-Type",
+                                                        "value":  "application/json"
+                                                    }
+                                                ],
+                                     "url":  "{{baseUrl}}/members/{{memberId}}/ratings",
+                                     "body":  {
+                                                  "raw":  "{\"movieId\":550,\"score\":4}",
+                                                  "options":  {
+                                                                  "raw":  {
+                                                                              "language":  "json"
+                                                                          }
+                                                              },
+                                                  "mode":  "raw"
+                                              }
+                                 },
+                     "event":  [
+                                   {
+                                       "script":  {
+                                                      "exec":  [
+                                                                   "pm.test(\u0027HTTP 409\u0027, () =\u003e pm.response.to.have.status(409));",
+                                                                   "pm.test(\u0027common error envelope\u0027, () =\u003e { const b = pm.response.json(); pm.expect(b.isSuccess).to.eql(false); pm.expect(b.code).to.be.a(\u0027string\u0027); pm.expect(b.message).to.be.a(\u0027string\u0027); pm.expect(b.result).to.eql(null); });"
+                                                               ],
+                                                      "type":  "text/javascript"
+                                                  },
+                                       "listen":  "test"
+                                   }
+                               ]
+                 },
+                 {
+                     "name":  "07 별점 범위 실패",
+                     "request":  {
+                                     "method":  "POST",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Content-Type",
+                                                        "value":  "application/json"
+                                                    }
+                                                ],
+                                     "url":  "{{baseUrl}}/members/{{memberId}}/ratings",
+                                     "body":  {
+                                                  "raw":  "{\"movieId\":155,\"score\":6}",
+                                                  "options":  {
+                                                                  "raw":  {
+                                                                              "language":  "json"
+                                                                          }
+                                                              },
+                                                  "mode":  "raw"
+                                              }
+                                 },
+                     "event":  [
+                                   {
+                                       "script":  {
+                                                      "exec":  [
+                                                                   "pm.test(\u0027HTTP 400\u0027, () =\u003e pm.response.to.have.status(400));",
+                                                                   "pm.test(\u0027common error envelope\u0027, () =\u003e { const b = pm.response.json(); pm.expect(b.isSuccess).to.eql(false); pm.expect(b.code).to.be.a(\u0027string\u0027); pm.expect(b.message).to.be.a(\u0027string\u0027); pm.expect(b.result).to.eql(null); });"
+                                                               ],
+                                                      "type":  "text/javascript"
+                                                  },
+                                       "listen":  "test"
+                                   }
+                               ]
+                 },
+                 {
+                     "name":  "08 다른 회원 준비",
+                     "request":  {
+                                     "method":  "POST",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Content-Type",
+                                                        "value":  "application/json"
+                                                    }
+                                                ],
+                                     "url":  "{{baseUrl}}/members",
+                                     "body":  {
+                                                  "raw":  "{\"email\":\"other{{runId}}@example.com\",\"password\":\"Umc!1234\",\"nickname\":\"b{{runId}}\"}",
+                                                  "options":  {
+                                                                  "raw":  {
+                                                                              "language":  "json"
+                                                                          }
+                                                              },
+                                                  "mode":  "raw"
+                                              }
+                                 },
+                     "event":  [
+                                   {
+                                       "script":  {
+                                                      "exec":  [
+                                                                   "pm.test(\u0027HTTP 201\u0027, () =\u003e pm.response.to.have.status(201));",
+                                                                   "pm.collectionVariables.set(\u0027otherMemberId\u0027, pm.response.json().result.memberId);"
+                                                               ],
+                                                      "type":  "text/javascript"
+                                                  },
+                                       "listen":  "test"
+                                   }
+                               ]
+                 },
+                 {
+                     "name":  "09 타인 평점 수정 금지",
+                     "request":  {
+                                     "method":  "PATCH",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Content-Type",
+                                                        "value":  "application/json"
+                                                    }
+                                                ],
+                                     "url":  "{{baseUrl}}/members/{{otherMemberId}}/ratings/{{ratingId}}",
+                                     "body":  {
+                                                  "raw":  "{\"score\":2}",
+                                                  "options":  {
+                                                                  "raw":  {
+                                                                              "language":  "json"
+                                                                          }
+                                                              },
+                                                  "mode":  "raw"
+                                              }
+                                 },
+                     "event":  [
+                                   {
+                                       "script":  {
+                                                      "exec":  [
+                                                                   "pm.test(\u0027HTTP 403\u0027, () =\u003e pm.response.to.have.status(403));",
+                                                                   "pm.test(\u0027common error envelope\u0027, () =\u003e { const b = pm.response.json(); pm.expect(b.isSuccess).to.eql(false); pm.expect(b.code).to.be.a(\u0027string\u0027); pm.expect(b.message).to.be.a(\u0027string\u0027); pm.expect(b.result).to.eql(null); });"
+                                                               ],
+                                                      "type":  "text/javascript"
+                                                  },
+                                       "listen":  "test"
+                                   }
+                               ]
+                 },
+                 {
+                     "name":  "10 타인 평점 삭제 금지",
+                     "request":  {
+                                     "method":  "DELETE",
+                                     "header":  [
+
+                                                ],
+                                     "url":  "{{baseUrl}}/members/{{otherMemberId}}/ratings/{{ratingId}}"
+                                 },
+                     "event":  [
+                                   {
+                                       "script":  {
+                                                      "exec":  [
+                                                                   "pm.test(\u0027HTTP 403\u0027, () =\u003e pm.response.to.have.status(403));",
+                                                                   "pm.test(\u0027common error envelope\u0027, () =\u003e { const b = pm.response.json(); pm.expect(b.isSuccess).to.eql(false); pm.expect(b.code).to.be.a(\u0027string\u0027); pm.expect(b.message).to.be.a(\u0027string\u0027); pm.expect(b.result).to.eql(null); });"
+                                                               ],
+                                                      "type":  "text/javascript"
+                                                  },
+                                       "listen":  "test"
+                                   }
+                               ]
+                 },
+                 {
+                     "name":  "11 본인 평점 수정 성공",
+                     "request":  {
+                                     "method":  "PATCH",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Content-Type",
+                                                        "value":  "application/json"
+                                                    }
+                                                ],
+                                     "url":  "{{baseUrl}}/members/{{memberId}}/ratings/{{ratingId}}",
+                                     "body":  {
+                                                  "raw":  "{\"score\":4,\"comment\":\"수정한 후기입니다.\"}",
+                                                  "options":  {
+                                                                  "raw":  {
+                                                                              "language":  "json"
+                                                                          }
+                                                              },
+                                                  "mode":  "raw"
+                                              }
+                                 },
+                     "event":  [
+                                   {
+                                       "script":  {
+                                                      "exec":  [
+                                                                   "pm.test(\u0027HTTP 200\u0027, () =\u003e pm.response.to.have.status(200));"
+                                                               ],
+                                                      "type":  "text/javascript"
+                                                  },
+                                       "listen":  "test"
+                                   }
+                               ]
+                 },
+                 {
+                     "name":  "12 수정 결과 조회",
+                     "request":  {
+                                     "method":  "GET",
+                                     "header":  [
+
+                                                ],
+                                     "url":  "{{baseUrl}}/members/{{memberId}}/ratings"
+                                 },
+                     "event":  [
+                                   {
+                                       "script":  {
+                                                      "exec":  [
+                                                                   "pm.test(\u0027HTTP 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                   "pm.test(\u0027updated score\u0027, () =\u003e pm.expect(pm.response.json()[0].score).to.eql(4));"
+                                                               ],
+                                                      "type":  "text/javascript"
+                                                  },
+                                       "listen":  "test"
+                                   }
+                               ]
+                 },
+                 {
+                     "name":  "13 없는 평점 수정",
+                     "request":  {
+                                     "method":  "PATCH",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Content-Type",
+                                                        "value":  "application/json"
+                                                    }
+                                                ],
+                                     "url":  "{{baseUrl}}/members/{{memberId}}/ratings/9223372036854775807",
+                                     "body":  {
+                                                  "raw":  "{\"score\":3}",
+                                                  "options":  {
+                                                                  "raw":  {
+                                                                              "language":  "json"
+                                                                          }
+                                                              },
+                                                  "mode":  "raw"
+                                              }
+                                 },
+                     "event":  [
+                                   {
+                                       "script":  {
+                                                      "exec":  [
+                                                                   "pm.test(\u0027HTTP 404\u0027, () =\u003e pm.response.to.have.status(404));",
+                                                                   "pm.test(\u0027common error envelope\u0027, () =\u003e { const b = pm.response.json(); pm.expect(b.isSuccess).to.eql(false); pm.expect(b.code).to.be.a(\u0027string\u0027); pm.expect(b.message).to.be.a(\u0027string\u0027); pm.expect(b.result).to.eql(null); });"
+                                                               ],
+                                                      "type":  "text/javascript"
+                                                  },
+                                       "listen":  "test"
+                                   }
+                               ]
+                 },
+                 {
+                     "name":  "14 없는 평점 삭제",
+                     "request":  {
+                                     "method":  "DELETE",
+                                     "header":  [
+
+                                                ],
+                                     "url":  "{{baseUrl}}/members/{{memberId}}/ratings/9223372036854775807"
+                                 },
+                     "event":  [
+                                   {
+                                       "script":  {
+                                                      "exec":  [
+                                                                   "pm.test(\u0027HTTP 404\u0027, () =\u003e pm.response.to.have.status(404));",
+                                                                   "pm.test(\u0027common error envelope\u0027, () =\u003e { const b = pm.response.json(); pm.expect(b.isSuccess).to.eql(false); pm.expect(b.code).to.be.a(\u0027string\u0027); pm.expect(b.message).to.be.a(\u0027string\u0027); pm.expect(b.result).to.eql(null); });"
+                                                               ],
+                                                      "type":  "text/javascript"
+                                                  },
+                                       "listen":  "test"
+                                   }
+                               ]
+                 },
+                 {
+                     "name":  "15 없는 회원 평점 등록",
+                     "request":  {
+                                     "method":  "POST",
+                                     "header":  [
+                                                    {
+                                                        "key":  "Content-Type",
+                                                        "value":  "application/json"
+                                                    }
+                                                ],
+                                     "url":  "{{baseUrl}}/members/9223372036854775807/ratings",
+                                     "body":  {
+                                                  "raw":  "{\"movieId\":550,\"score\":5}",
+                                                  "options":  {
+                                                                  "raw":  {
+                                                                              "language":  "json"
+                                                                          }
+                                                              },
+                                                  "mode":  "raw"
+                                              }
+                                 },
+                     "event":  [
+                                   {
+                                       "script":  {
+                                                      "exec":  [
+                                                                   "pm.test(\u0027HTTP 404\u0027, () =\u003e pm.response.to.have.status(404));",
+                                                                   "pm.test(\u0027common error envelope\u0027, () =\u003e { const b = pm.response.json(); pm.expect(b.isSuccess).to.eql(false); pm.expect(b.code).to.be.a(\u0027string\u0027); pm.expect(b.message).to.be.a(\u0027string\u0027); pm.expect(b.result).to.eql(null); });"
+                                                               ],
+                                                      "type":  "text/javascript"
+                                                  },
+                                       "listen":  "test"
+                                   }
+                               ]
+                 },
+                 {
+                     "name":  "16 본인 평점 삭제 성공",
+                     "request":  {
+                                     "method":  "DELETE",
+                                     "header":  [
+
+                                                ],
+                                     "url":  "{{baseUrl}}/members/{{memberId}}/ratings/{{ratingId}}"
+                                 },
+                     "event":  [
+                                   {
+                                       "script":  {
+                                                      "exec":  [
+                                                                   "pm.test(\u0027HTTP 204\u0027, () =\u003e pm.response.to.have.status(204));",
+                                                                   "pm.test(\u0027empty body\u0027, () =\u003e pm.expect(pm.response.text()).to.eql(\u0027\u0027));"
+                                                               ],
+                                                      "type":  "text/javascript"
+                                                  },
+                                       "listen":  "test"
+                                   }
+                               ]
+                 },
+                 {
+                     "name":  "17 삭제 결과 조회",
+                     "request":  {
+                                     "method":  "GET",
+                                     "header":  [
+
+                                                ],
+                                     "url":  "{{baseUrl}}/members/{{memberId}}/ratings"
+                                 },
+                     "event":  [
+                                   {
+                                       "script":  {
+                                                      "exec":  [
+                                                                   "pm.test(\u0027HTTP 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                   "pm.test(\u0027empty ratings\u0027, () =\u003e pm.expect(pm.response.json()).to.eql([]));"
+                                                               ],
+                                                      "type":  "text/javascript"
+                                                  },
+                                       "listen":  "test"
+                                   }
+                               ]
+                 }
+             ]
+}

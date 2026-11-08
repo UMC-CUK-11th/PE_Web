@@ -1,6 +1,7 @@
 package com.umc.movie;
 
 import com.umc.movie.config.WebConfig;
+import com.umc.movie.config.PasswordConfig;
 import com.umc.movie.controller.MemberController;
 import com.umc.movie.controller.RatingController;
 import com.umc.movie.entity.Rating;
@@ -22,7 +23,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest({MemberController.class, RatingController.class})
-@Import({MemberService.class, RatingService.class, WebConfig.class})
+@Import({MemberService.class, RatingService.class, WebConfig.class, PasswordConfig.class})
 class MemberApiTests {
     @Autowired MockMvc mvc;
     @MockitoBean MemberRepository members;

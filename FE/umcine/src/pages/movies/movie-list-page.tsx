@@ -1,7 +1,6 @@
 import { MovieGrid } from "../../components/movie-grid";
-import { useEffect, useState } from "react";
-import { getMovies } from "../../api/movies/get-movies";
-import type { TmdbMovieListItem } from "../../api/movies/models";
+import { useQuery } from "@tanstack/react-query";
+import { movieListOptions } from "../../api/movies/movie-query-options";
 import { useDisplayPreferencesStore } from "../../stores/display-preferences-store";
 import { cn } from "../../utils/cn";
 import { useNavigate, useSearch } from "@tanstack/react-router";
@@ -11,39 +10,11 @@ import { toMovieCard } from "../../utils/movies/to-movie-card";
 
 export function MovieListPage() {
   const { page = 1 } = useSearch({ from: "/" });
-  const [attempt, setAttempt] = useState(0);
-  return <MovieListContent key={`${page}:${attempt}`} page={page} onRetry={() => setAttempt((value) => value + 1)} />;
-}
-
-function MovieListContent({ page, onRetry }: { page: number; onRetry: () => void }) {
   const navigate = useNavigate({ from: "/" });
-  const [totalPages, setTotalPages] = useState(0);
-  const [movies, setMovies] = useState<TmdbMovieListItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const moviesQuery = useQuery(movieListOptions(page));
+  const movies = moviesQuery.data?.results ?? [];
+  const totalPages = Math.min(moviesQuery.data?.total_pages ?? 0, 500);
 
-  useEffect(() => {
-    let ignore = false;
-    async function loadMovies() {
-      setIsLoading(true);
-      setErrorMessage(null);
-      try {
-        const response = await getMovies({ page });
-        if (!ignore) {
-          setMovies(response.results);
-          setTotalPages(Math.min(response.total_pages, 500));
-        }
-      } catch {
-        if (!ignore) setErrorMessage("영화 목록을 불러오지 못했어요.");
-      } finally {
-        if (!ignore) setIsLoading(false);
-      }
-    }
-    loadMovies();
-    return () => {
-      ignore = true;
-    };
-  }, [page]);
   const cardSize = useDisplayPreferencesStore((state) => state.cardSize);
   const setCardSize = useDisplayPreferencesStore((state) => state.setCardSize);
 
@@ -68,10 +39,10 @@ function MovieListContent({ page, onRetry }: { page: number; onRetry: () => void
           ))}
         </div>
       </div>
-      {isLoading ? (
+      {moviesQuery.isPending ? (
         <p className="py-20 text-center text-sm" role="status">영화 목록을 불러오는 중이에요.</p>
-      ) : errorMessage ? (
-        <div className="py-20 text-center text-sm"><p role="alert">{errorMessage}</p><RetryButton onRetry={onRetry} /></div>
+      ) : moviesQuery.isError ? (
+        <div className="py-20 text-center text-sm"><p role="alert">영화 목록을 불러오지 못했어요.</p><RetryButton onRetry={() => void moviesQuery.refetch()} /></div>
       ) : movies.length === 0 ? (
         <p className="py-20 text-center text-sm">조건에 맞는 영화가 없어요.</p>
       ) : (
