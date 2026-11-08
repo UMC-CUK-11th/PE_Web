@@ -1,5 +1,5 @@
 import { Link, useParams } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { getMovieDetail } from "../../api/movies/get-movie-detail";
 import type { TmdbMovieDetail } from "../../api/movies/models";
 import { TmdbFooter } from "../../components/layout/tmdb-footer";
@@ -47,34 +47,7 @@ function DetailMessage({ message, isError = false }: { message: string; isError?
   );
 }
 
-function MovieDetailContent({ movieId }: { movieId: number }) {
-  const [movie, setMovie] = useState<TmdbMovieDetail | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    let ignore = false;
-
-    getMovieDetail(movieId)
-      .then((response) => {
-        if (!ignore) setMovie(response);
-      })
-      .catch((error: unknown) => {
-        if (!ignore) setErrorMessage(getMovieDetailErrorMessage(error));
-      })
-      .finally(() => {
-        if (!ignore) setIsLoading(false);
-      });
-
-    return () => {
-      ignore = true;
-    };
-  }, [movieId]);
-
-  if (isLoading) return <DetailMessage message="영화 정보를 불러오는 중이에요." />;
-  if (errorMessage) return <DetailMessage message={errorMessage} isError />;
-  if (!movie) return <DetailMessage message="영화를 찾을 수 없어요." isError />;
-
+function MovieDetailContent({ movie }: { movie: TmdbMovieDetail }) {
   const genres = movie.genres.map((genre) => genre.name).join(" · ");
   const releaseDate = movie.release_date ? movie.release_date.replaceAll("-", ".") : "개봉일 미정";
   const runtime = movie.runtime == null ? "상영 시간 미정" : `${Math.floor(movie.runtime / 60)}시간 ${movie.runtime % 60}분`;
@@ -121,12 +94,28 @@ function MovieDetailContent({ movieId }: { movieId: number }) {
 }
 
 export function MovieDetailPage() {
-  const { movieId } = useParams({ from: "/movies/$movieId" });
-  const numericId = Number(movieId);
+  const { movieId: movieIdParam } = useParams({ from: "/movies/$movieId" });
+  const movieId = Number(movieIdParam);
+  const isValidMovieId = Number.isInteger(movieId) && movieId > 0;
+  const movieDetailQuery = useQuery({
+    queryKey: ["movies", "detail", movieId],
+    queryFn: () => getMovieDetail(movieId),
+    staleTime: 30 * 1000,
+    enabled: isValidMovieId,
+    retry: false,
+  });
 
-  if (!Number.isSafeInteger(numericId) || numericId <= 0) {
-    return <DetailMessage message="영화를 찾을 수 없어요." isError />;
+  if (!isValidMovieId) {
+    return <DetailMessage message="올바르지 않은 영화 번호예요." isError />;
   }
 
-  return <MovieDetailContent key={numericId} movieId={numericId} />;
+  if (movieDetailQuery.isPending) {
+    return <DetailMessage message="영화 정보를 불러오는 중이에요." />;
+  }
+
+  if (movieDetailQuery.isError) {
+    return <DetailMessage message={getMovieDetailErrorMessage(movieDetailQuery.error)} isError />;
+  }
+
+  return <MovieDetailContent movie={movieDetailQuery.data} />;
 }
