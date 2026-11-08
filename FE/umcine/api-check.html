@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ko">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>UMCine 로컬 API 확인</title>
+<style>body{font:16px/1.5 system-ui,sans-serif;max-width:1100px;margin:32px auto;padding:0 20px;color:#20232a}input,select,button,textarea{font:inherit;padding:8px;margin:4px}button{cursor:pointer}textarea{display:block;width:95%;height:140px}pre{white-space:pre-wrap;background:#f3f4f6;padding:20px;border:1px solid #ddd}#path{width:65%}.samples{display:flex;flex-wrap:wrap;gap:5px}.note{color:#666;font-size:14px}</style></head>
+<body>
+<h1>UMCine 로컬 API 확인</h1><p class="note">개발용 요청 도구입니다. 보내기를 누르면 실제 로컬 서버를 호출합니다. 샘플 비밀번호는 테스트 전용입니다.</p>
+<label>회원 ID <input id="member" type="number" min="1" value="1"></label><label>평점 ID <input id="rating" type="number" min="1" value="1"></label>
+<div class="samples"><button data-sample="signup">회원가입</button><button data-sample="invalid">입력 검증 실패</button><button data-sample="nickname">닉네임 확인</button><button data-sample="email">이메일 확인</button><button data-sample="list">평점 조회</button><button data-sample="create">평점 등록</button><button data-sample="update">평점 수정</button><button data-sample="delete">평점 삭제</button></div>
+<form id="form"><p><select id="method" aria-label="HTTP method"><option>GET</option><option>POST</option><option>PATCH</option><option>DELETE</option></select><input id="path" aria-label="요청 경로" value="/members/1/ratings"><button type="submit">보내기</button></p><label for="body">요청 JSON</label><textarea id="body" spellcheck="false"></textarea></form>
+<h2>실제 요청·응답</h2><p id="request">아직 요청하지 않았습니다.</p><p id="status" role="status"></p><pre id="response">응답 대기</pre>
+<script type="module">
+const $ = (id) => document.getElementById(id);
+document.querySelectorAll('[data-sample]').forEach((button) => button.addEventListener('click', () => {
+  const memberPath = '/members/' + $('member').value + '/ratings';
+  const stamp = String(Date.now());
+  const samples = {
+    signup: ['POST', '/members', { email: 'screen_' + stamp + '@example.com', nickname: '화면' + stamp.slice(-6), password: 'Umcine123!' }],
+    invalid: ['POST', '/members', { email: 'bad-email', nickname: '가', password: 'weak' }],
+    nickname: ['GET', '/members/nickname/' + encodeURIComponent('수현')],
+    email: ['GET', '/members/email/noco%40umc.com'],
+    list: ['GET', memberPath], create: ['POST', memberPath, { movieId: 550, score: 5, comment: 'API 확인용 후기' }],
+    update: ['PATCH', memberPath + '/' + $('rating').value, { score: 4, comment: '수정한 후기' }],
+    delete: ['DELETE', memberPath + '/' + $('rating').value],
+  };
+  const [method, path, body] = samples[button.dataset.sample];
+  $('method').value = method; $('path').value = path; $('body').value = body ? JSON.stringify(body, null, 2) : '';
+}));
+$('form').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const path = $('path').value.trim();
+  if (!/^\/members(?:\/|$)/.test(path)) { $('status').textContent = '이 도구는 /members API만 요청합니다.'; return; }
+  const method = $('method').value;
+  const body = $('body').value.trim();
+  const url = 'http://localhost:8080' + path;
+  $('request').textContent = method + ' ' + url; $('status').textContent = '실제 요청 중…'; $('response').textContent = '';
+  try {
+    if (body) JSON.parse(body);
+    const response = await fetch(url, { method, headers: body && method !== 'GET' ? { 'Content-Type': 'application/json' } : {}, body: body && method !== 'GET' ? body : undefined });
+    const text = await response.text();
+    const data = text ? JSON.parse(text) : null;
+    $('status').textContent = 'HTTP ' + response.status + ' ' + response.statusText;
+    $('response').textContent = text ? JSON.stringify(data, null, 2) : '응답 본문 없음 (' + response.status + ')';
+    if (response.status === 201 && path === '/members') $('member').value = data.result.memberId;
+    else if (response.status === 201 && /\/ratings$/.test(path)) $('rating').value = data.result;
+  } catch (error) { $('status').textContent = '요청 실패'; $('response').textContent = error.message; }
+});
+</script></body></html>

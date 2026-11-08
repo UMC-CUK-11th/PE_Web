@@ -1,7 +1,6 @@
 import { Link, useParams } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { getMovieDetail } from "../../api/movies/get-movie-detail";
-import type { TmdbMovieDetail } from "../../api/movies/models";
 import { BookmarkButton } from "../../components/bookmark-button";
 import { MovieImage } from "../../components/movies/movie-image";
 import { getTmdbBackdropUrl, getTmdbPosterUrl } from "../../utils/movies/tmdb-image";
@@ -11,27 +10,16 @@ export function MovieDetailPage() {
   const { movieId: movieIdParam } = useParams({ from: "/movies/$movieId" });
   const movieId = Number(movieIdParam);
   const isValidMovieId = Number.isInteger(movieId) && movieId > 0;
-  const [movie, setMovie] = useState<TmdbMovieDetail | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    let ignore = false;
-    setMovie(null);
-    setErrorMessage(null);
-    if (!isValidMovieId) { setIsLoading(false); return; }
-    setIsLoading(true);
-    getMovieDetail(movieId)
-      .then((data) => { if (!ignore) setMovie(data); })
-      .catch((error: unknown) => { if (!ignore) setErrorMessage(getMovieDetailErrorMessage(error)); })
-      .finally(() => { if (!ignore) setIsLoading(false); });
-    return () => { ignore = true; };
-  }, [movieId, isValidMovieId]);
-
+  const movieDetailQuery = useQuery({
+    queryKey: ["movies", "detail", movieId],
+    queryFn: () => getMovieDetail(movieId),
+    enabled: isValidMovieId,
+    staleTime: 30 * 1000,
+  });
   if (!isValidMovieId) return <main className="p-8">올바르지 않은 영화 번호예요.</main>;
-  if (isLoading) return <main className="p-8" role="status">영화 상세 정보를 불러오는 중이에요.</main>;
-  if (errorMessage) return <main className="p-8" role="alert">{errorMessage}</main>;
-  if (!movie) return <main className="p-8">영화를 찾을 수 없어요.</main>;
+  if (movieDetailQuery.isPending) return <main className="p-8" role="status">영화 상세 정보를 불러오는 중이에요.</main>;
+  if (movieDetailQuery.isError) return <main className="p-8" role="alert">{getMovieDetailErrorMessage(movieDetailQuery.error)}</main>;
+  const movie = movieDetailQuery.data;
   const runtime = movie.runtime === null ? "상영 시간 정보가 없어요."
     : Math.floor(movie.runtime / 60) + "시간 " + movie.runtime % 60 + "분";
   return <main className="min-h-[70vh] bg-[#f5f6f8] pb-12">

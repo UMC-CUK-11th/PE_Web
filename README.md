@@ -53,6 +53,10 @@ cd BE/movie
 - `/members`: 자체 BE의 닉네임·이메일 중복 확인 및 회원별 평점 조회
 - [API 명세와 ERD](docs/api-spec.md)
 - [5주차 진행·검증 기록](docs/week05-progress.md)
+- [6주차 진행·검증 기록](docs/week06-progress.md)
 - `node scripts/verify-week05.mjs`: 실행 중인 로컬 BE와 실제 TMDB를 검증하고 `docs/evidence/week05/api-responses.json`에 결과 저장
+- `node scripts/verify-week06.mjs`: 검증용 회원 생성·평점 수명주기 및 오류 응답을 실제 로컬 BE에서 확인
+- `node scripts/verify-query-cache.mjs`: 실제 QueryClient·TMDB를 이용한 1→2→1 캐시 재사용 확인
+- `/api-check.html`: 개발 서버에서만 직접 여는 API 요청·응답 확인 도구. 프로덕션 빌드 엔트리에 포함하지 않는다.
 
 Node/API 검증 기록은 브라우저 캡처와 구분한다. 브라우저에서 확인하지 않은 항목은 워크북에서도 미검증으로 기록한다.
