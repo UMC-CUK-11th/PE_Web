@@ -1,8 +1,8 @@
-// URL 검색어를 API에 전달하고 이전 검색의 늦은 응답은 cleanup으로 무시한다.
+// URL의 검색어를 읽어 영화 검색 결과를 표시한다.
+import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { useEffect, useState, type SubmitEvent } from "react";
+import type { SubmitEvent } from "react";
 import { searchMovies } from "../../api/movies/search-movies";
-import type { TmdbMovieListItem } from "../../api/movies/models";
 import { BookmarkButton } from "../../components/movies/bookmark-button";
 import { getTmdbPosterUrl } from "../../utils/movies/tmdb-image";
 
@@ -10,37 +10,19 @@ export function SearchPage() {
   const { query } = useSearch({ from: "/search" });
   const navigate = useNavigate({ from: "/search" });
   const normalizedQuery = query?.trim() ?? "";
-  const [movies, setMovies] = useState<TmdbMovieListItem[]>([]);
-  const [totalResults, setTotalResults] = useState(0);
-  const [isLoading, setIsLoading] = useState(Boolean(normalizedQuery));
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  // 검색어가 있을 때만 요청하고 검색어별로 결과를 저장한다.
+  const searchQuery = useQuery({
+    queryKey: ["movies", "search", normalizedQuery],
+    queryFn: () => searchMovies({ query: normalizedQuery }),
+    enabled: normalizedQuery.length > 0,
+  });
 
-  useEffect(() => {
-    let ignore = false;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- 워크북 방식으로 검색어 변경 시 이전 결과를 비우고 요청 상태를 초기화한다.
-    setMovies([]);
-    setTotalResults(0);
-    setErrorMessage(null);
-    if (!normalizedQuery) {
-      setIsLoading(false);
-      return;
-    }
-    setIsLoading(true);
-    searchMovies({ query: normalizedQuery })
-      .then((response) => {
-        if (!ignore) {
-          setMovies(response.results);
-          setTotalResults(response.total_results);
-        }
-      })
-      .catch(() => {
-        if (!ignore) setErrorMessage("검색 결과를 불러오지 못했어요.");
-      })
-      .finally(() => {
-        if (!ignore) setIsLoading(false);
-      });
-    return () => { ignore = true; };
-  }, [normalizedQuery]);
+  const movies = searchQuery.data?.results ?? [];
+  const totalResults = searchQuery.data?.total_results ?? 0;
+  const isLoading = searchQuery.isLoading;
+  const errorMessage = searchQuery.isError
+    ? "검색 결과를 불러오지 못했어요."
+    : null;
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
