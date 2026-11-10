@@ -2,15 +2,17 @@ import { Link } from "@tanstack/react-router";
 import { useState, type SubmitEvent } from "react";
 
 import { TextField } from "../../components/form/text-field";
+import { useLoginMutation } from "../../hooks/use-login-mutation";
 import { isValidEmail } from "../../utils/auth/validation";
 
 const DEFAULT_FORM = { email: "", password: "" };
 
 type FormKey = keyof typeof DEFAULT_FORM;
 
-// 7주차는 화면 퍼블리싱까지 해요. 로그인 API(POST /auth/login) 연동은 8주차에 진행해요.
+// 8주차: POST /auth/login으로 토큰을 받아 저장하고 홈으로 이동해요.
 export function LoginPage() {
   const [form, setForm] = useState(DEFAULT_FORM);
+  const loginMutation = useLoginMutation();
 
   const isEmailValid = isValidEmail(form.email);
   // 로그인에서는 비밀번호 규칙을 검사하지 않아요. 규칙이 바뀌기 전에 가입한 회원도 로그인할 수 있어야 해요.
@@ -23,9 +25,9 @@ export function LoginPage() {
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!canSubmit) return;
+    if (!canSubmit || loginMutation.isPending) return;
 
-    alert(`${form.email.trim()} 계정으로 로그인해요. 로그인 API 연동은 8주차에 진행해요.`);
+    loginMutation.mutate({ email: form.email.trim(), password: form.password });
   };
 
   return (
@@ -58,9 +60,9 @@ export function LoginPage() {
         <button
           className="mt-1 h-[34px] rounded-[6px] bg-[#4c63d9] text-[10px] font-bold text-white disabled:opacity-40"
           type="submit"
-          disabled={!canSubmit}
+          disabled={!canSubmit || loginMutation.isPending}
         >
-          로그인
+          {loginMutation.isPending ? "로그인 중" : "로그인"}
         </button>
 
         <p className="text-center text-[9px] text-[#8e949e]">

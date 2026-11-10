@@ -1,10 +1,10 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useState, type SubmitEvent } from "react";
 
 import { checkEmail } from "../../api/members/check-email";
 import { checkNickname } from "../../api/members/check-nickname";
-import { signup } from "../../api/members/signup";
 import { TextField } from "../../components/form/text-field";
+import { useSignupMutation } from "../../hooks/use-signup-mutation";
 import { isValidEmail, isValidNickname, isValidPassword } from "../../utils/auth/validation";
 
 const DEFAULT_FORM = {
@@ -25,13 +25,13 @@ type DuplicateCheckKey = "email" | "nickname";
 const DUPLICATE_LABEL: Record<DuplicateCheckKey, string> = { email: "이메일", nickname: "닉네임" };
 
 export function SignupPage() {
-  const navigate = useNavigate();
   const [form, setForm] = useState(DEFAULT_FORM);
   const [duplicateCheck, setDuplicateCheck] = useState({
     email: DEFAULT_DUPLICATE_CHECK,
     nickname: DEFAULT_DUPLICATE_CHECK,
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // 8주차: isSubmitting 상태 대신 useMutation이 요청의 진행·성공·실패를 관리해요.
+  const signupMutation = useSignupMutation();
 
   // 입력값 유효성 검사
   const isEmailValid = isValidEmail(form.email);
@@ -77,26 +77,17 @@ export function SignupPage() {
     }
   };
 
-  const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     // 폼 제출 시 페이지 새로고침을 막아요.
     event.preventDefault();
-    if (!canSubmit || isSubmitting) return;
+    if (!canSubmit || signupMutation.isPending) return;
 
-    setIsSubmitting(true);
-    try {
-      const response = await signup({
-        email: form.email.trim(),
-        nickname: form.nickname.trim(),
-        password: form.password,
-      });
-      alert(response.message);
-      navigate({ to: "/login" });
-    } catch {
-      // 실패하면 입력값을 그대로 두고 다시 요청할 수 있게 해요.
-      alert("회원가입에 실패했어요. 다시 시도해 주세요.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    // 성공(알림 후 /login 이동)과 실패(알림) 처리는 useSignupMutation의 onSuccess·onError에 있어요.
+    signupMutation.mutate({
+      email: form.email.trim(),
+      nickname: form.nickname.trim(),
+      password: form.password,
+    });
   };
 
   const renderCheckButton = (key: DuplicateCheckKey, isValid: boolean) => (
@@ -163,9 +154,9 @@ export function SignupPage() {
         <button
           className="mt-1 h-[34px] rounded-[6px] bg-[#4c63d9] text-[10px] font-bold text-white disabled:opacity-40"
           type="submit"
-          disabled={!canSubmit || isSubmitting}
+          disabled={!canSubmit || signupMutation.isPending}
         >
-          {isSubmitting ? "가입 중" : "가입하기"}
+          {signupMutation.isPending ? "가입 중" : "가입하기"}
         </button>
 
         <p className="text-center text-[9px] text-[#8e949e]">
