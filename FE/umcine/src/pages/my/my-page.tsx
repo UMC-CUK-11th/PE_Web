@@ -6,14 +6,17 @@ import { getMovieDetail } from "../../api/movies/get-movie-detail";
 import { BookmarkButton } from "../../components/bookmark-button";
 import Pagination from "../../components/movies/pagination";
 import { ProfileAvatar } from "../../components/profile-avatar";
-import { useBookmarkStore } from "../../stores/bookmark-store";
-import { useMyInfoStore } from "../../stores/my-info-store";
+import { useFavoriteListQuery } from "../../hooks/use-favorites";
+import { useMeQuery } from "../../hooks/use-me-query";
+import { useProfileImageStore } from "../../stores/profile-image-store";
 import { getTmdbPosterUrl } from "../../utils/movies/tmdb-image";
 
 const FAVORITES_PER_PAGE = 10;
 
+// 8주차: 임시 데이터 대신 GET /members/me(내 정보)와 GET /favorites(내 즐겨찾기)를 보여줘요.
 export function MyPage() {
-  const myInfo = useMyInfoStore((state) => state.myInfo);
+  const meQuery = useMeQuery();
+  const profileImageUrl = useProfileImageStore((state) => state.profileImageUrl);
 
   return (
     <main className="min-h-[calc(100vh-56px)] bg-[#f6f7f9] text-[#17191f]">
@@ -31,13 +34,21 @@ export function MyPage() {
         <article className="rounded-[8px] border border-[#e4e6ea] bg-white p-[16px]">
           <h2 className="mb-3 text-[11px] font-bold">기본 정보</h2>
           <div className="flex items-center gap-4">
-            <ProfileAvatar className="h-[52px] w-[52px]" imageUrl={myInfo.profileImageUrl} />
-            <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-[6px] text-[10px]">
-              <dt className="text-[#8e949e]">닉네임</dt>
-              <dd className="font-bold">{myInfo.nickname}</dd>
-              <dt className="text-[#8e949e]">이메일</dt>
-              <dd className="font-bold">{myInfo.email}</dd>
-            </dl>
+            <ProfileAvatar className="h-[52px] w-[52px]" imageUrl={profileImageUrl} />
+            {meQuery.isError ? (
+              <p className="text-[10px] text-[#ef4444]">내 정보를 불러오지 못했어요.</p>
+            ) : (
+              <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-[6px] text-[10px]">
+                <dt className="text-[#8e949e]">닉네임</dt>
+                <dd className="font-bold">{meQuery.data?.nickname ?? "불러오는 중"}</dd>
+                <dt className="text-[#8e949e]">이메일</dt>
+                <dd className="font-bold">{meQuery.data?.email ?? "불러오는 중"}</dd>
+                <dt className="text-[#8e949e]">가입일</dt>
+                <dd className="font-bold">
+                  {meQuery.data ? new Date(meQuery.data.createdAt).toLocaleDateString("ko-KR") : "불러오는 중"}
+                </dd>
+              </dl>
+            )}
           </div>
         </article>
 
@@ -47,9 +58,10 @@ export function MyPage() {
   );
 }
 
-// 4주차에 만든 북마크(localStorage)를 '내 즐겨찾기'로 보여줘요.
+// 서버에 저장한 내 즐겨찾기(GET /favorites, 최근 등록순)를 보여줘요. 영화 정보는 TMDB에서 가져와요.
 function FavoriteMovies() {
-  const bookmarkedMovieIds = useBookmarkStore((state) => state.bookmarkedMovieIds);
+  const favoriteListQuery = useFavoriteListQuery();
+  const bookmarkedMovieIds = favoriteListQuery.data?.map((favorite) => favorite.movieId) ?? [];
   const [page, setPage] = useState(1);
 
   const totalPages = Math.max(1, Math.ceil(bookmarkedMovieIds.length / FAVORITES_PER_PAGE));
@@ -72,7 +84,15 @@ function FavoriteMovies() {
         내 즐겨찾기 <span className="text-[10px] font-normal text-[#8e949e]">{bookmarkedMovieIds.length}편</span>
       </h2>
 
-      {bookmarkedMovieIds.length === 0 ? (
+      {favoriteListQuery.isPending ? (
+        <p className="rounded-[8px] border border-dashed border-[#dfe2e7] bg-white py-10 text-center text-[10px] text-[#8e949e]">
+          즐겨찾기를 불러오는 중입니다...
+        </p>
+      ) : favoriteListQuery.isError ? (
+        <p className="rounded-[8px] border border-dashed border-[#dfe2e7] bg-white py-10 text-center text-[10px] text-[#ef4444]">
+          즐겨찾기를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.
+        </p>
+      ) : bookmarkedMovieIds.length === 0 ? (
         <p className="rounded-[8px] border border-dashed border-[#dfe2e7] bg-white py-10 text-center text-[10px] text-[#8e949e]">
           아직 즐겨찾기한 영화가 없어요. 영화 카드의 북마크 버튼을 눌러 추가해 보세요.
         </p>

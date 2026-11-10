@@ -2,32 +2,60 @@ import { useNavigate } from "@tanstack/react-router";
 import { useState, type ChangeEvent, type SubmitEvent } from "react";
 
 import { checkNickname } from "../../api/members/check-nickname";
+import type { MemberInfo } from "../../api/members/models";
 import { TextField } from "../../components/form/text-field";
 import { ProfileAvatar } from "../../components/profile-avatar";
-import { useMyInfoStore } from "../../stores/my-info-store";
+import { useMeQuery } from "../../hooks/use-me-query";
+import { useUpdateMeMutation } from "../../hooks/use-update-me-mutation";
+import { useProfileImageStore } from "../../stores/profile-image-store";
 import { isValidNickname } from "../../utils/auth/validation";
 
 const MAX_PROFILE_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
 
-// 7주차는 화면 퍼블리싱 단계예요. 저장하면 임시 store만 바뀌고, PATCH /members/me 연동은 8주차에 해요.
+// 8주차: 내 정보는 query 캐시(GET /members/me)에서 읽고, 저장은 PATCH /members/me로 보내요.
 export function MyEditPage() {
-  const navigate = useNavigate();
-  const myInfo = useMyInfoStore((state) => state.myInfo);
-  const updateMyInfo = useMyInfoStore((state) => state.updateMyInfo);
+  const meQuery = useMeQuery();
 
-  const [nickname, setNickname] = useState(myInfo.nickname);
-  const [profileImageUrl, setProfileImageUrl] = useState(myInfo.profileImageUrl);
+  if (meQuery.isPending) {
+    return <EditPageMessage message="내 정보를 불러오는 중입니다..." />;
+  }
+  if (meQuery.isError) {
+    return <EditPageMessage message="내 정보를 불러오지 못했어요. 잠시 후 다시 시도해 주세요." />;
+  }
+
+  // 불러온 내 정보를 폼의 처음 값으로 써요.
+  return <MyEditForm me={meQuery.data} />;
+}
+
+function EditPageMessage({ message }: { message: string }) {
+  return (
+    <main className="grid min-h-[calc(100vh-56px)] place-items-center bg-[#f6f7f9] text-[11px] text-[#8e949e]">
+      {message}
+    </main>
+  );
+}
+
+function MyEditForm({ me }: { me: MemberInfo }) {
+  const navigate = useNavigate();
+  const updateMeMutation = useUpdateMeMutation();
+  const savedProfileImageUrl = useProfileImageStore((state) => state.profileImageUrl);
+  const setSavedProfileImageUrl = useProfileImageStore((state) => state.setProfileImageUrl);
+
+  const [nickname, setNickname] = useState(me.nickname);
+  const [profileImageUrl, setProfileImageUrl] = useState(savedProfileImageUrl);
   const [nicknameCheck, setNicknameCheck] = useState({ isChecking: false, isAvailable: false });
   const [imageError, setImageError] = useState<string | null>(null);
 
   const trimmedNickname = nickname.trim();
   const isNicknameValid = isValidNickname(nickname);
   // 지금 쓰는 닉네임 그대로면 중복 확인 없이 저장할 수 있어요.
-  const isNicknameUnchanged = trimmedNickname === myInfo.nickname;
+  const isNicknameUnchanged = trimmedNickname === me.nickname;
   const nicknameError = nickname.length > 0 && !isNicknameValid ? "닉네임은 2~12자로 입력해 주세요." : null;
 
-  const hasChanges = !isNicknameUnchanged || profileImageUrl !== myInfo.profileImageUrl;
-  const canSave = hasChanges && isNicknameValid && (isNicknameUnchanged || nicknameCheck.isAvailable);
+  const isImageChanged = profileImageUrl !== savedProfileImageUrl;
+  const hasChanges = !isNicknameUnchanged || isImageChanged;
+  const canSave =
+    hasChanges && isNicknameValid && (isNicknameUnchanged || nicknameCheck.isAvailable) && !updateMeMutation.isPending;
 
   const handleChangeNickname = (value: string) => {
     if (nicknameCheck.isChecking) return;
@@ -65,22 +93,37 @@ export function MyEditPage() {
     }
 
     setImageError(null);
-    // 서버에 올리기 전이라 브라우저 안에서만 쓰는 미리보기 주소를 만들어요.
+    // 이미지 업로드 API가 없어서 브라우저 안에서만 쓰는 미리보기 주소를 만들어요.
     setProfileImageUrl(URL.createObjectURL(file));
+  };
+
+  const finishEdit = () => {
+    alert("회원 정보를 수정했어요.");
+    navigate({ to: "/my" });
   };
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!canSave) return;
 
-    updateMyInfo({ nickname: trimmedNickname, profileImageUrl });
-    alert("회원 정보를 수정했어요.");
-    navigate({ to: "/my" });
+    // 프로필 이미지는 클라이언트 상태라 store에만 저장해요.
+    if (isImageChanged) {
+      setSavedProfileImageUrl(profileImageUrl);
+    }
+
+    // 닉네임이 그대로면 서버에 보낼 필요가 없어요.
+    if (isNicknameUnchanged) {
+      finishEdit();
+      return;
+    }
+
+    // 성공하면 hook에서 ["members", "me"] 캐시를 응답 값으로 바꿔서, 헤더와 마이페이지에 새 닉네임이 바로 보여요.
+    updateMeMutation.mutate({ nickname: trimmedNickname }, { onSuccess: finishEdit });
   };
 
   const handleWithdraw = () => {
     if (!confirm("정말 탈퇴할까요? 작성한 평점, 후기와 즐겨찾기가 모두 삭제돼요.")) return;
-    alert("회원 탈퇴 API 연동은 8주차 이후에 진행해요.");
+    alert("회원 탈퇴 API는 아직 제공되지 않아요.");
   };
 
   return (
@@ -100,7 +143,7 @@ export function MyEditPage() {
             type="submit"
             disabled={!canSave}
           >
-            변경사항 저장
+            {updateMeMutation.isPending ? "저장 중" : "변경사항 저장"}
           </button>
         </div>
 
@@ -125,7 +168,7 @@ export function MyEditPage() {
               placeholder="2~12자"
               value={nickname}
               onChange={(event) => handleChangeNickname(event.target.value)}
-              disabled={nicknameCheck.isChecking}
+              disabled={nicknameCheck.isChecking || updateMeMutation.isPending}
               error={nicknameError}
               action={
                 <button
@@ -142,7 +185,7 @@ export function MyEditPage() {
               label="이메일"
               name="email"
               type="email"
-              value={myInfo.email}
+              value={me.email}
               readOnly
               disabled
               hint="이메일은 변경할 수 없어요."

@@ -25,4 +25,12 @@ interface SignupResult {
   nickname: string;
 }
 
-export type { ApiResponse, AvailabilityResponse, MemberRating, SignupResult };
+// GET·PATCH /members/me 응답. memberId는 내 평점 목록(GET /members/{memberId}/ratings)을 찾을 때 써요.
+interface MemberInfo {
+  memberId: number;
+  email: string;
+  nickname: string;
+  createdAt: string;
+}
+
+export type { ApiResponse, AvailabilityResponse, MemberInfo, MemberRating, SignupResult };
