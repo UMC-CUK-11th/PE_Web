@@ -1,6 +1,11 @@
 import { Link } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAuthStore } from "../../stores/auth-store";
 
 export function Header() {
+  const isLoggedIn = useAuthStore((state) => !!state.session);
+  const clearSession = useAuthStore((state) => state.clearSession);
+  const queryClient = useQueryClient();
   return (
     <header className="flex items-center justify-between bg-white px-20 py-[21.5px] max-h-[91px] max-md:max-h-[151px] max-md:flex-col max-md:gap-10 max-md:px-4">
       <nav
@@ -39,7 +44,8 @@ export function Header() {
 
           <li>
             <Link
-              to="."
+              to="/mypage"
+              activeProps={{ style: { color: "#17191e", textDecoration: "underline" } }}
               id="nav-myinfo"
               className="text-[14px] font-bold text-[rgba(96,103,116,1)] transition duration-300 hover:text-[rgba(23,25,30,1)] hover:underline"
             >
@@ -51,7 +57,7 @@ export function Header() {
 
       <div
         id="top-action"
-        className="flex w-[142px] items-center justify-between p-0 max-md:order-2"
+        className="flex items-center gap-2 p-0 max-md:order-2"
       >
         <Link to="/search">
           <img
@@ -61,9 +67,16 @@ export function Header() {
           />
         </Link>
 
-        <button className="h-[42px] w-[95px] max-h-full rounded-lg border border-white bg-[rgba(37,99,235,1)] p-0 text-[14px] font-bold text-white">
-          마이페이지
-        </button>
+        <Link
+          to={isLoggedIn ? "/mypage" : "/login"}
+          className="flex h-[42px] w-[95px] items-center justify-center rounded-lg bg-[#2563eb] text-[14px] font-bold text-white no-underline hover:bg-[#1d4ed8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563eb]"
+        >
+          {isLoggedIn ? "마이페이지" : "로그인"}
+        </Link>
+        {isLoggedIn && <button type="button" className="text-xs text-[#69707d] cursor-pointer" onClick={() => {
+          clearSession();
+          queryClient.removeQueries({ queryKey: ["ratings"] });
+        }}>로그아웃</button>}
       </div>
     </header>
   );
