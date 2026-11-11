@@ -5,6 +5,7 @@ import {
   getTmdbPosterUrl,
 } from "../../utils/movies/tmdb-image";
 import { BookmarkButton } from "../bookmark-button";
+import { MovieRating } from "./movie-rating";
 
 interface MovieCardProps {
   movie: TmdbMovieDetail;
@@ -91,40 +92,7 @@ export function MovieCard({ movie }: MovieCardProps) {
           id="movie-card-rating"
           className="w-[325px] shrink-0 pl-7 border-l border-[#e1e4e8] box-border text-left max-[900px]:w-[280px] max-[700px]:w-full max-[700px]:mt-[30px] max-[700px]:pl-0 max-[700px]:pt-[25px] max-[700px]:border-l-0 max-[700px]:border-t"
         >
-          <h2 className="text-[18px] font-bold text-[#17191c]">내 평점</h2>
-          <p className="mt-[7px] text-[11px] text-[#9aa0aa]">
-            별점은 필수, 후기는 선택이에요.
-          </p>
-
-          <div id="star-list" className="flex gap-[5px] mt-2">
-            <button className="flex items-center justify-center w-[35px] h-[35px] p-0 border border-[#dfe3e8] rounded-[6px] bg-white text-[#687180] text-[22px] cursor-pointer">
-              ★
-            </button>
-            <button className="flex items-center justify-center w-[35px] h-[35px] p-0 border border-[#dfe3e8] rounded-[6px] bg-white text-[#687180] text-[22px] cursor-pointer">
-              ★
-            </button>
-            <button className="flex items-center justify-center w-[35px] h-[35px] p-0 border border-[#dfe3e8] rounded-[6px] bg-white text-[#687180] text-[22px] cursor-pointer">
-              ★
-            </button>
-            <button className="flex items-center justify-center w-[35px] h-[35px] p-0 border border-[#dfe3e8] rounded-[6px] bg-white text-[#687180] text-[22px] cursor-pointer">
-              ★
-            </button>
-            <button className="flex items-center justify-center w-[35px] h-[35px] p-0 border border-[#dfe3e8] rounded-[6px] bg-white text-[#687180] text-[22px] cursor-pointer">
-              ★
-            </button>
-          </div>
-
-          <textarea
-            placeholder="영화를 보고 느낀 점을 남겨보세요."
-            className="block w-full h-[91px] mt-2 p-3 box-border resize-none border border-[#dfe3e8] rounded-[6px] bg-white text-[11px] outline-none placeholder:text-[#a3a9b3]"
-          />
-
-          <button
-            id="rating-save-button"
-            className="w-full h-[37px] mt-[9px] border-none rounded-[6px] bg-[#17191c] text-white text-xs font-bold cursor-pointer"
-          >
-            평점 저장
-          </button>
+          <MovieRating key={movie.id} movieId={movie.id} />
         </div>
       </section>
 

@@ -1,0 +1,20 @@
+.movie-rating { color: #17191c; font-size: 12px; }
+.movie-rating h2 { margin: 0; font-size: 18px; font-weight: 700; }
+.movie-rating p { margin: 7px 0; line-height: 1.6; color: #69707d; }
+.movie-rating button { cursor: pointer; }
+.movie-rating button:disabled { opacity: .5; cursor: not-allowed; }
+.movie-rating button:focus-visible, .movie-rating a:focus-visible { outline: 2px solid #2563eb; outline-offset: 3px; }
+.rating-login-link { display: inline-block; margin-top: 8px; color: #2563eb; font-weight: 700; }
+.rating-stars { display: flex; gap: 5px; margin-top: 8px; }
+.rating-stars button { display: flex; align-items: center; justify-content: center; width: 35px; height: 35px; padding: 0; border: 1px solid #dfe3e8; border-radius: 6px; background: #fff; color: #687180; font-size: 22px; }
+.rating-stars button.is-selected { border-color: #f5c451; color: #edaa14; background: #fffbeb; }
+.movie-rating .rating-score, .movie-rating .rating-saved { font-size: 11px; }
+.rating-comment-label { display: block; margin-top: 12px; font-weight: 700; }
+.movie-rating textarea { display: block; width: 100%; height: 91px; margin-top: 8px; padding: 12px; box-sizing: border-box; resize: vertical; border: 1px solid #dfe3e8; border-radius: 6px; background: #fff; font-size: 12px; }
+.movie-rating textarea:focus { outline: 2px solid #2563eb; outline-offset: 1px; }
+.movie-rating textarea::placeholder { color: #a3a9b3; }
+.movie-rating .rating-count { text-align: right; font-size: 11px; }
+.movie-rating .rating-error { color: #dc2626; }
+.movie-rating .rating-notice { color: #1d4ed8; }
+.rating-save, .rating-delete { width: 100%; min-height: 37px; margin-top: 9px; border: 0; border-radius: 6px; background: #17191c; color: #fff; font-size: 12px; font-weight: 700; }
+.rating-delete { color: #dc2626; border: 1px solid #fecaca; background: #fff; }
