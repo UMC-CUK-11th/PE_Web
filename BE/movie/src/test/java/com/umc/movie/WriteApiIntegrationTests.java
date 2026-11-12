@@ -33,6 +33,8 @@ class WriteApiIntegrationTests {
     @Autowired MemberRepository members;
     @Autowired RatingRepository ratings;
     @Autowired PasswordEncoder encoder;
+    @Autowired com.umc.movie.util.JwtUtil jwt;
+    private String token(long id) { return "Bearer " + jwt.createAccessToken(id, "test@example.com"); }
 
     @BeforeEach
     void clean() {
@@ -91,29 +93,29 @@ class WriteApiIntegrationTests {
         long owner = signUp("owner@example.com", "owner");
         long other = signUp("other@example.com", "other");
         long rating = createRating(owner, 550);
-        mvc.perform(post("/members/{id}/ratings", owner).contentType(MediaType.APPLICATION_JSON)
+        mvc.perform(post("/ratings").header("Authorization", token(owner)).contentType(MediaType.APPLICATION_JSON)
                         .content("{\"movieId\":550,\"score\":5}"))
                 .andExpect(status().isConflict()).andExpect(jsonPath("$.isSuccess").value(false));
         assertEquals(1, ratings.count());
 
         for (String method : new String[]{"PATCH", "DELETE"}) {
-            var forbidden = method.equals("PATCH") ? patch("/members/{id}/ratings/{rating}", other, rating)
-                    : delete("/members/{id}/ratings/{rating}", other, rating);
+            var forbidden = method.equals("PATCH") ? patch("/ratings/{rating}", rating).header("Authorization", token(other))
+                    : delete("/ratings/{rating}", rating).header("Authorization", token(other));
             mvc.perform(forbidden.contentType(MediaType.APPLICATION_JSON).content("{\"score\":2}"))
-                    .andExpect(status().isForbidden()).andExpect(jsonPath("$.code").value("COMMON403"));
-            var missing = method.equals("PATCH") ? patch("/members/{id}/ratings/999999", owner)
-                    : delete("/members/{id}/ratings/999999", owner);
+                    .andExpect(status().isForbidden()).andExpect(jsonPath("$.code").value("RATING403_1"));
+            var missing = method.equals("PATCH") ? patch("/ratings/999999").header("Authorization", token(owner))
+                    : delete("/ratings/999999").header("Authorization", token(owner));
             mvc.perform(missing.contentType(MediaType.APPLICATION_JSON).content("{\"score\":2}"))
-                    .andExpect(status().isNotFound()).andExpect(jsonPath("$.code").value("COMMON404"));
+                    .andExpect(status().isNotFound()).andExpect(jsonPath("$.code").value("RATING404_1"));
         }
         assertEquals(5, ratings.findById(rating).orElseThrow().getScore());
-        mvc.perform(patch("/members/{id}/ratings/{rating}", owner, rating).contentType(MediaType.APPLICATION_JSON)
+        mvc.perform(patch("/ratings/{rating}", rating).header("Authorization", token(owner)).contentType(MediaType.APPLICATION_JSON)
                         .content("{\"score\":4,\"comment\":\"수정한 후기\"}"))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.code").value("COMMON200"));
         mvc.perform(get("/members/{id}/ratings", owner)).andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].score").value(4)).andExpect(jsonPath("$[0].comment").value("수정한 후기"));
-        mvc.perform(delete("/members/{id}/ratings/{rating}", owner, rating))
-                .andExpect(status().isNoContent()).andExpect(content().string(""));
+        mvc.perform(delete("/ratings/{rating}", rating).header("Authorization", token(owner)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.result").value(org.hamcrest.Matchers.nullValue()));
         mvc.perform(get("/members/{id}/ratings", owner)).andExpect(content().json("[]"));
         assertEquals(0, ratings.count());
     }
@@ -124,7 +126,7 @@ class WriteApiIntegrationTests {
             "{\"movieId\":550,\"score\":6}", "{\"movieId\":550,\"score\":1.5}",
             "{\"movieId\":550.5,\"score\":3}", "{\"movieId\":550,\"score\":null}"})
     void invalidRatingInputIs400(String body) throws Exception {
-        mvc.perform(post("/members/1/ratings").contentType(MediaType.APPLICATION_JSON).content(body))
+        mvc.perform(post("/ratings").header("Authorization", token(1)).contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("COMMON4001"));
         assertEquals(0, ratings.count());
     }
@@ -132,23 +134,23 @@ class WriteApiIntegrationTests {
     @Test
     void commentLengthAndPatchRequiredScoreAreValidated() throws Exception {
         String body = json.writeValueAsString(Map.of("movieId", 550, "score", 5, "comment", "a".repeat(501)));
-        mvc.perform(post("/members/1/ratings").contentType(MediaType.APPLICATION_JSON).content(body))
+        mvc.perform(post("/ratings").header("Authorization", token(1)).contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isBadRequest());
-        mvc.perform(patch("/members/1/ratings/1").contentType(MediaType.APPLICATION_JSON).content(body))
+        mvc.perform(patch("/ratings/1").header("Authorization", token(1)).contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isBadRequest());
-        mvc.perform(patch("/members/1/ratings/1").contentType(MediaType.APPLICATION_JSON).content("{}"))
+        mvc.perform(patch("/ratings/1").header("Authorization", token(1)).contentType(MediaType.APPLICATION_JSON).content("{}"))
                 .andExpect(status().isBadRequest());
         long owner = signUp("owner@example.com", "owner");
-        mvc.perform(post("/members/{id}/ratings", owner).contentType(MediaType.APPLICATION_JSON)
+        mvc.perform(post("/ratings").header("Authorization", token(owner)).contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(Map.of("movieId", 550, "score", 1, "comment", "a".repeat(500)))))
                 .andExpect(status().isCreated());
     }
 
     @Test
     void missingMemberOnCreateIs404() throws Exception {
-        mvc.perform(post("/members/999999/ratings").contentType(MediaType.APPLICATION_JSON)
+        mvc.perform(post("/ratings").header("Authorization", token(999999)).contentType(MediaType.APPLICATION_JSON)
                         .content("{\"movieId\":550,\"score\":5}"))
-                .andExpect(status().isNotFound()).andExpect(jsonPath("$.code").value("COMMON404"));
+                .andExpect(status().isNotFound()).andExpect(jsonPath("$.code").value("MEMBER404_1"));
     }
 
     @Test
@@ -177,10 +179,10 @@ class WriteApiIntegrationTests {
     }
 
     private long createRating(long member, long movie) throws Exception {
-        MvcResult result = mvc.perform(post("/members/{id}/ratings", member).contentType(MediaType.APPLICATION_JSON)
+        MvcResult result = mvc.perform(post("/ratings").header("Authorization", token(member)).contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(Map.of("movieId", movie, "score", 5))))
                 .andExpect(status().isCreated()).andExpect(jsonPath("$.code").value("COMMON201")).andReturn();
-        return read(result).path("result").asLong();
+        return read(result).path("result").path("ratingId").asLong();
     }
 
     private String signUpBody(String email, String password, String nickname) throws Exception {

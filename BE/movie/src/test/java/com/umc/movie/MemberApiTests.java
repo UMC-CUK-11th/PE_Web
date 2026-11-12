@@ -23,11 +23,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest({MemberController.class, RatingController.class})
-@Import({MemberService.class, RatingService.class, WebConfig.class, PasswordConfig.class})
+@Import({MemberService.class, RatingService.class, WebConfig.class, PasswordConfig.class, com.umc.movie.interceptor.AuthInterceptor.class})
 class MemberApiTests {
     @Autowired MockMvc mvc;
     @MockitoBean MemberRepository members;
     @MockitoBean RatingRepository ratings;
+    @MockitoBean com.umc.movie.util.JwtUtil jwtUtil;
 
     @Test
     void nicknameAvailabilityIsInverseOfExistence() throws Exception {

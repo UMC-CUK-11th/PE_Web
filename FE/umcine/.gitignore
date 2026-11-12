@@ -28,3 +28,7 @@ dist-ssr
 /src/assets/react.svg
 /src/assets/vite.svg
 /public/icons.svg
+
+# Browser test artifacts
+/playwright-report/
+/test-results/
