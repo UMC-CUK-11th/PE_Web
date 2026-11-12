@@ -1,5 +1,7 @@
 package com.umc.movie.controller;
 
+import com.umc.movie.exception.ApiException;
+
 import com.umc.movie.dto.ApiResponse;
 import com.umc.movie.exception.DuplicateMemberException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -13,6 +15,11 @@ import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<ApiResponse<Void>> handleApiException(ApiException ex) {
+        return ResponseEntity.status(ex.getStatus()).body(ApiResponse.failure(ex.getCode(), ex.getMessage()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Void>> handleValidation(MethodArgumentNotValidException ex) {
         String message = ex.getBindingResult().getFieldErrors().getFirst().getDefaultMessage();
