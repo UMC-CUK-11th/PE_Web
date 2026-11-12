@@ -1,13 +1,14 @@
 import { Link } from "@tanstack/react-router";
-import type { TmdbMovieListItem } from "../../api/movies/models";
+import type { TmdbMovie } from "../../api/movies/models";
 import { getTmdbPosterUrl } from "../../utils/tmdb-image";
 import { BookmarkButton } from "./bookmark-button";
 
 interface MovieCardProps {
-  movie: TmdbMovieListItem;
+  movie: TmdbMovie;
+  showBookmarkButton?: boolean;
 }
 
-export function MovieCard({ movie }: MovieCardProps) {
+export function MovieCard({ movie, showBookmarkButton = true }: MovieCardProps) {
   const posterUrl = getTmdbPosterUrl(movie.poster_path);
 
   return (
@@ -20,7 +21,7 @@ export function MovieCard({ movie }: MovieCardProps) {
             <span className="grid h-full place-items-center text-xs text-[#687080]">포스터 없음</span>
           )}
         </Link>
-        <BookmarkButton movie={movie} />
+        {showBookmarkButton && <BookmarkButton movie={movie} />}
       </div>
       <Link className="block overflow-hidden text-inherit no-underline" params={{ movieId: String(movie.id) }} to="/movies/$movieId">
         <h2 className="mt-1.5 overflow-hidden text-ellipsis whitespace-nowrap text-[11px] leading-[1.2] font-bold tracking-[-0.3px] text-[#222731]" title={movie.title}>{movie.title}</h2>
