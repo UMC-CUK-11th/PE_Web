@@ -1,11 +1,14 @@
 // src/main/java/com/umc/movie/service/MemberService.java
 package com.umc.movie.service;
 
-import com.umc.movie.dto.EmailCheckResponse;
-import com.umc.movie.dto.NicknameCheckResponse;
-import com.umc.movie.dto.MemberResponse;
-import com.umc.movie.dto.SignUpRequest;
+import com.umc.movie.dto.member.EmailCheckResponse;
+import com.umc.movie.dto.member.NicknameCheckResponse;
+import com.umc.movie.dto.member.MemberResponse;
+import com.umc.movie.dto.member.SignUpRequest;
 import com.umc.movie.entity.Member;
+import com.umc.movie.dto.member.MemberInfoResponse;
+import com.umc.movie.dto.member.MemberUpdateRequest;
+import com.umc.movie.exception.ApiException;
 import com.umc.movie.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +25,18 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+
+    @Transactional(readOnly = true)
+    public NicknameCheckResponse checkNickname(String nickname) {
+        boolean exists = memberRepository.existsByNickname(nickname);
+        return new NicknameCheckResponse(!exists);
+    }
+
+    @Transactional(readOnly = true)
+    public EmailCheckResponse checkEmail(String email) {
+        boolean exists = memberRepository.existsByEmail(email);
+        return new EmailCheckResponse(!exists);
+    }
 
     @Transactional // [1]
     public MemberResponse signUp(SignUpRequest request) {
@@ -44,17 +59,30 @@ public class MemberService {
         return new MemberResponse(savedMember.getMemberId(), savedMember.getEmail(), savedMember.getNickname()); // [7]
     }
 
-    @Transactional(readOnly = true)
-    public NicknameCheckResponse checkNickname(String nickname) {
-        boolean exists = memberRepository.existsByNickname(nickname);
-        return new NicknameCheckResponse(!exists);
+    public MemberInfoResponse getMyInfo(Long memberId) { // [8]
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "MEMBER404_1",
+                        "해당 회원을 찾을 수 없습니다."));
+
+        return MemberInfoResponse.from(member);
     }
 
-    @Transactional(readOnly = true)
-    public EmailCheckResponse checkEmail(String email) {
-        boolean exists = memberRepository.existsByEmail(email);
-        return new EmailCheckResponse(!exists);
+    public MemberInfoResponse updateMyInfo(Long memberId, MemberUpdateRequest request) { // [9]
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "MEMBER404_1",
+                        "해당 회원을 찾을 수 없습니다."));
+
+        if (memberRepository.existsByNicknameAndMemberIdNot(request.nickname(), memberId)) {
+            throw new ApiException(HttpStatus.CONFLICT, "MEMBER409_1",
+                    "이미 사용 중인 닉네임입니다.");
+        }
+
+        member.updateNickname(request.nickname());
+        memberRepository.save(member);
+
+        return MemberInfoResponse.from(member);
     }
+
 }
 
 /*
@@ -101,4 +129,20 @@ public class MemberService {
  * [7] 저장 결과에서 회원 ID·이메일·닉네임만 꺼내 MemberResponse 생성자에 넣어 반환한다.
  * 비밀번호는 해시된 값이라도 응답에 포함하지 않는다.
  * 서비스는 응답 DTO를 반환하고, 컨트롤러가 이를 ApiResponse로 감싸 HTTP 응답을 만든다.
+ *
+ * [8] 토큰으로 확인한 회원의 정보 조회
+ * 인터셉터가 토큰을 검증해 요청 속성에 저장한 회원 ID를 컨트롤러가 받아 전달한다.
+ * findById는 JpaRepository가 제공하는 기본 조회 메서드이며 Optional<Member>를 반환한다.
+ * 회원이 있으면 orElseThrow가 Member를 꺼내고, 없으면 404·MEMBER404_1 예외를 던진다.
+ * 유효한 토큰이 있어도 탈퇴 등으로 DB에 회원이 없을 수 있어 조회 결과를 확인한다.
+ * 찾은 회원은 MemberInfoResponse.from(member)로 필요한 값만 옮겨 반환한다.
+ * 이 메서드는 passwordEncoder를 사용하지 않는다. 기존 필드는 signUp의 비밀번호 해시에 필요하다.
+ *
+ * [9] 닉네임 수정: 회원 조회 → 자신을 제외한 중복 검사 → 엔티티 수정 → 저장 → DTO 반환.
+ * memberId는 인증한 회원 ID, request.nickname()은 클라이언트가 바디로 보낸 변경할 닉네임이다.
+ * existsByNicknameAndMemberIdNot은 같은 닉네임을 쓰면서 ID가 나와 다른 회원이 있는지 검사한다.
+ * 자기 닉네임 그대로 보내면 자신은 제외돼 통과하고, 다른 회원의 닉네임이면 409·MEMBER409_1을 던진다.
+ * 자기 자신을 중복에서 제외하는 역할은 이 파생 쿼리가 담당한다.
+ * updateNickname은 엔티티의 닉네임을 바꾸는 수정 메서드이고, save가 DB 저장을 처리한다.
+ * 마지막에 조회 API와 같은 MemberInfoResponse로 변환해 반환한다.
  */

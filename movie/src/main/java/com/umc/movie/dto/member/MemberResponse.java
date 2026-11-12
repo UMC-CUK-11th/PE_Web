@@ -1,4 +1,4 @@
-package com.umc.movie.dto;
+package com.umc.movie.dto.member;
 
 public record MemberResponse(
         Long memberId,

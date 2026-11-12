@@ -1,6 +1,6 @@
 package com.umc.movie.exception;
 
-import com.umc.movie.dto.ApiResponse;
+import com.umc.movie.dto.common.ApiResponse;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -32,6 +32,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status)
                 .body(ApiResponse.failure("COMMON" + status, exception.getReason()));
     }
+    @ExceptionHandler(ApiException.class) // [5]
+    public ResponseEntity<ApiResponse<Void>> handleApiException(ApiException exception) {
+        return ResponseEntity.status(exception.getStatus())
+                .body(ApiResponse.failure(exception.getCode(), exception.getMessage()));
+    }
+
 }
 
 /*
@@ -39,6 +45,11 @@ public class GlobalExceptionHandler {
  * [1]·[2]는 우리가 throw를 직접 쓰지 않아도 Spring의 검증·DB 처리 과정에서 발생하고,
  * [3]·[4]는 현재 서비스 코드에서 throw new ...로 직접 던진다.
  * 이 클래스의 핸들러들은 그렇게 발생한 예외를 받아 오류 응답으로 바꾸는 역할이다.
+ * 실제 HTTP 상태는 모두 ResponseEntity에서 설정한다. 상태를 결정하는 곳은 다음처럼 다르다.
+ * [1] badRequest()는 status(400)과 같은 의미로, 핸들러가 400을 지정한다.
+ * [2]·[3]은 핸들러가 status(409)로 고정한다. 예외 자체가 409를 의미하는 것은 아니다.
+ * [4]·[5]는 예외를 생성하는 곳에서 상태를 결정하고, 핸들러는 담겨 온 상태를 적용한다.
+ * ApiResponse.failure의 code는 본문의 문자열일 뿐 실제 HTTP 상태를 설정하지 않는다.
  *
  * [1] handleValidation: @Valid로 요청 DTO를 검사하다 검증 규칙을 어겼을 때 발생하는
  * MethodArgumentNotValidException을 처리한다.
@@ -81,4 +92,15 @@ public class GlobalExceptionHandler {
  * exception.getReason()은 생성할 때 지정한 이유인 "존재하지 않는 유저입니다."를 꺼낸다.
  * getMessage()는 상태 코드 등이 포함된 설명일 수 있으므로, 여기서는 이유 문구만 가져오는 getReason()을 사용한다.
  * 이유를 지정하지 않았다면 getReason()의 결과는 null일 수 있다.
+ *
+ * [5] handleApiException: 우리가 만든 ApiException을 처리한다.
+ * @ExceptionHandler(ApiException.class)를 보고 Spring이 해당 예외 객체를 exception 매개변수로 전달한다.
+ * exception.getStatus()는 Lombok getter로 꺼낸 HttpStatus이며 ResponseEntity.status에 바로 전달한다.
+ * [4]는 getStatusCode().value()로 숫자를 꺼내 전달하지만 status는 상태 객체와 숫자를 모두 받을 수 있다.
+ * exception.getCode()는 직접 저장한 코드, getMessage()는 부모 예외에 저장한 메시지를 꺼낸다.
+ * ApiResponse.failure(code, message)는 isSuccess=false, result=null인 공통 응답 본문을 만든다.
+ * ApiResponse<Void>는 result에 실제 데이터를 담지 않는다는 뜻이며 응답 객체 자체는 반환한다.
+ * 예외 생성 시 UNAUTHORIZED, "AUTH401", "로그인이 필요합니다."를 전달했다면
+ * HTTP 상태는 401이고 본문은 isSuccess=false, code="AUTH401", message="로그인이 필요합니다.", result=null이다.
+ * 서비스는 실패 정보를 담아 던지고, 이 핸들러는 그 정보를 HTTP 응답으로 바꾼다.
  */

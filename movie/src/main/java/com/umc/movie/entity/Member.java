@@ -33,6 +33,10 @@ public class Member extends BaseTimeEntity {
         this.password = password;
         this.nickname = nickname;
     }
+
+    public void updateNickname(String nickname) { // [4]
+        this.nickname = nickname;
+    }
 }
 
 /*
@@ -54,4 +58,8 @@ public class Member extends BaseTimeEntity {
  * IDENTITY는 MySQL의 AUTO_INCREMENT처럼 DB가 INSERT 시 ID를 생성하도록 맡기는 방식이다.
  * 따라서 회원 생성자에서 ID를 받지 않으며, 저장하면 JPA가 DB에서 생성된 ID를 엔티티에 반영한다.
  * ddl-auto=validate에서는 이 설정이 DB 컬럼을 변경하지 않는다. 기존 member_id도 AUTO_INCREMENT로 설정되어 있어야 한다.
+ *
+ * [4] 닉네임 수정 메서드다. 전달받은 값으로 현재 엔티티의 nickname을 변경한다.
+ * 자기 자신을 제외한 중복 검사는 서비스가 호출한 레포지토리 쿼리에서 수행한다.
+ * 이 메서드 자체가 DB에 저장하는 것은 아니며 서비스에서 변경 후 save를 호출한다.
  */
