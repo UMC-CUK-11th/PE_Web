@@ -84,6 +84,7 @@ web_modules/
 # dotenv environment variable files
 .env*
 !.env.example
+.env
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
@@ -160,3 +161,4 @@ vite.config.ts.timestamp-*
 CLAUDE.md
 .claude/
 .vercel
+
