@@ -1,4 +1,4 @@
-package com.umc.movie.dto;
+package com.umc.movie.dto.rating;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;

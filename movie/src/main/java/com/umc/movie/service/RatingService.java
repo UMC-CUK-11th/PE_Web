@@ -1,9 +1,9 @@
 // src/main/java/com/umc/movie/service/RatingService.java
 package com.umc.movie.service;
 
-import com.umc.movie.dto.RatingResponse;
-import com.umc.movie.dto.CreateRatingRequest;
-import com.umc.movie.dto.UpdateRatingRequest;
+import com.umc.movie.dto.rating.RatingResponse;
+import com.umc.movie.dto.rating.CreateRatingRequest;
+import com.umc.movie.dto.rating.UpdateRatingRequest;
 import com.umc.movie.entity.Member;
 import com.umc.movie.entity.Rating;
 import com.umc.movie.repository.RatingRepository;
@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
+import com.umc.movie.exception.ApiException;
 
 import java.util.List;
 
@@ -27,7 +27,7 @@ public class RatingService {
     public List<RatingResponse> getRatingsByMember(Long memberId) {
         if (!memberRepository.existsById(memberId)) { // [2]
             // 공통 예외 처리기가 404 상태와 공통 응답 형식으로 변환합니다.
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 유저입니다.");
+            throw new ApiException(HttpStatus.NOT_FOUND, "MEMBER404_1", "해당 회원을 찾을 수 없습니다.");
         }
 
         return ratingRepository.findByMember_MemberIdOrderByRatingIdDesc(memberId).stream()
@@ -36,12 +36,12 @@ public class RatingService {
     }
 
     @Transactional
-    public Long create(Long memberId, CreateRatingRequest request) { // [4]
+    public RatingResponse create(Long memberId, CreateRatingRequest request) { // [4]
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 유저입니다."));
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "MEMBER404_1", "해당 회원을 찾을 수 없습니다."));
 
         if (ratingRepository.existsByMember_MemberIdAndMovieId(memberId, request.movieId())) {
-            throw new IllegalArgumentException("이미 이 영화에 평점을 남기셨습니다.");
+            throw new ApiException(HttpStatus.CONFLICT, "RATING409_1", "이미 이 영화에 평점을 남기셨습니다.");
         }
 
         Rating rating = Rating.builder()
@@ -51,28 +51,30 @@ public class RatingService {
                 .comment(request.comment())
                 .build();
 
-        return ratingRepository.save(rating).getRatingId();
+        return RatingResponse.from(ratingRepository.save(rating));
     }
 
     @Transactional
-    public void update(Long ratingId, Long memberId, UpdateRatingRequest request) { // [5]
-        Rating rating = findOwnedRating(ratingId, memberId);
+    public RatingResponse update(Long memberId, Long ratingId, UpdateRatingRequest request) { // [5]
+        Rating rating = findOwnedRating(memberId, ratingId);
         rating.update(request.score(), request.comment());
         ratingRepository.save(rating);
+
+        return RatingResponse.from(rating);
     }
 
     @Transactional
-    public void delete(Long ratingId, Long memberId) { // [6]
-        Rating rating = findOwnedRating(ratingId, memberId);
+    public void delete(Long memberId, Long ratingId) { // [6]
+        Rating rating = findOwnedRating(memberId, ratingId);
         ratingRepository.delete(rating);
     }
 
-    private Rating findOwnedRating(Long ratingId, Long memberId) { // [7]
+    private Rating findOwnedRating(Long memberId, Long ratingId) { // [7]
         Rating rating = ratingRepository.findById(ratingId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 평점입니다."));
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "RATING404_1", "해당 평점을 찾을 수 없습니다."));
 
         if (!rating.getMember().getMemberId().equals(memberId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "본인이 작성한 평점만 수정하거나 삭제할 수 있습니다.");
+            throw new ApiException(HttpStatus.FORBIDDEN, "RATING403_1", "본인이 작성한 평점만 수정하거나 삭제할 수 있습니다.");
         }
 
         return rating;
@@ -97,6 +99,8 @@ public class RatingService {
  * 읽기 결과가 어떤 시점 기준으로 보이는지는 DB 격리 수준에도 영향을 받는다.
  *
  * [2] 회원 존재 여부를 확인하고 없으면 404를 던지는 이 if문이 서비스 검증이다.
+ * 기존 ResponseStatusException은 전역 처리기가 COMMON404로 응답했지만,
+ * 이제 ApiException에 MEMBER404_1을 직접 담아 회원 관련 실패를 구별한다.
  * @Transactional이 대신 회원을 검사하는 것이 아니라, 우리가 작성한 코드로 업무 규칙을 확인한다.
  *
  * [3] 조회한 Rating들을 트랜잭션 안에서 DTO로 변환한다.
@@ -131,17 +135,21 @@ public class RatingService {
  * 이 코드가 LAZY 회원 조회를 실제로 실행하는 것은 아니다. 연관 필드에 접근할 때 지연 로딩이 필요할 수 있다.
  * 트랜잭션이 있어야 모든 단순 조회가 가능하다는 뜻이 아니라, 서비스 작업의 경계를 명확하게 둔 것이다.
  *
- * [4] create(): 컨트롤러가 URL에서 받은 memberId와 JSON으로 받은 요청 DTO를 전달한다.
+ * [4] create(): 컨트롤러가 인증된 요청 속성에서 받은 memberId와 JSON으로 받은 요청 DTO를 전달한다.
  * findById()는 JpaRepository의 기본 조회 메서드로, 존재 여부만 확인하는 게 아니라 Optional<Member>를 반환한다.
  * orElseThrow()는 회원이 있으면 꺼내고, 없으면 람다로 만든 404 예외를 던져 아래 저장을 중단한다.
  * existsByMember_MemberIdAndMovieId()는 직접 선언한 파생 쿼리로, 같은 회원·같은 영화 조합의 중복을 확인한다.
  * 통과하면 빌더로 Rating 객체를 만들고, JpaRepository의 기본 메서드 save()로 저장한다.
- * 저장 후 DB가 자동 생성한 ratingId를 꺼내 반환하면 컨트롤러가 응답에 담는다.
+ * 저장 결과를 RatingResponse로 변환해 반환하면 컨트롤러가 응답의 result에 담는다.
  * 동시 요청의 중복까지 이 if문만으로 막을 수는 없으므로 DB의 복합 UNIQUE 제약도 필요하다.
+ * 기존 IllegalArgumentException도 공통 응답이 가능했지만 핸들러가 409·COMMON4092로 고정했다.
+ * ApiException으로 바꿔 409·RATING409_1처럼 업무별 실패 정보를 명시적으로 전달한다.
+ * 가입 서비스 등에서 쓰는 기존 예외·핸들러를 모두 없앤 것은 아니다.
+ * 생성한 Rating에는 여전히 .member(member)로 회원을 연결한다. 인증 도입으로 DB 관계가 바뀌지는 않는다.
  *
  * [5] update(): findOwnedRating()으로 평점 존재와 소유자를 확인한 뒤, 요청 DTO의 별점·후기를 전달한다.
  * rating.update()는 엔티티에 우리가 만든 메서드이고, ratingRepository.save()는 JPA가 제공하는 메서드다.
- * 전자는 객체 값 변경, 후자는 저장을 맡기는 역할이다.
+ * 전자는 객체 값 변경, 후자는 저장을 맡기는 역할이다. 수정 결과는 RatingResponse로 반환한다.
  * 관리 중인 엔티티는 트랜잭션의 변경 감지로도 반영되지만, 여기서는 워크북대로 save() 호출을 유지한다.
  *
  * [6] delete(): 수정과 같은 소유자 검사 후 JpaRepository의 기본 메서드 delete()로 삭제한다.
@@ -149,7 +157,9 @@ public class RatingService {
  * [7] findOwnedRating(): 수정·삭제에 반복되는 검사를 묶어 직접 만든 일반 메서드다.
  * ratingId로 평점을 조회해 없으면 404, 평점 작성자의 ID와 받은 memberId가 다르면 403 예외를 던진다.
  * 통과하면 찾아낸 Rating 객체를 반환한다. 회원 ID 조회가 아니라 평점 ID로 평점을 찾는 것에 주의한다.
- * 현재는 로그인 전 단계라 URL의 memberId를 신뢰하므로 실제 요청자의 신원까지 증명하지는 못한다.
- * 다른 사람의 memberId와 ratingId를 보내면 이 검사를 통과할 수 있다는 한계가 있다.
- * 이후 인증 도입 시에는 서버가 검증한 토큰의 회원 ID로 소유자를 비교해야 한다.
+ * memberId는 인터셉터가 검증한 토큰에서 얻는다. 서비스 인자 순서는 (memberId, ratingId)다.
+ * 실패는 ApiException으로 상태·도메인별 코드·메시지를 함께 전달한다.
+ * 평점 없음은 RATING404_1, 작성자 불일치는 RATING403_1로 구분한다.
+ * 인자 순서는 "누가 → 무엇을"로 맞춘 워크북의 통일 규칙이지, 검사 실행 순서나 보안 기능은 아니다.
+ * ratingId를 먼저 받는 설계도 가능하지만 호출부와 일관돼야 한다. 두 값이 Long이라 뒤바뀌어도 컴파일된다.
  */

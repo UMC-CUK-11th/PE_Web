@@ -49,6 +49,9 @@ public class Rating extends BaseTimeEntity {
  * [1] Rating에서 Member를 바라보는 관계는 다대일(ManyToOne)이다.
  * 한 회원은 여러 평점을 작성할 수 있지만, 평점 하나의 작성자는 회원 한 명이기 때문이다.
  * 회원 쪽에서 보면 일대다지만, 이 필드는 평점 쪽이므로 다대일로 표현한다.
+ * 7주차에 쓰기 URL에서 회원 ID를 제거해도 이 엔티티·DB 관계는 바뀌지 않는다.
+ * rating 테이블이 member의 PK를 FK로 참조하며, 등록의 .member(member), 소유권 검사의 getMember()에서 사용한다.
+ * 따라서 URL 변경을 이유로 @ManyToOne이나 LAZY 설정을 제거하지 않는다.
  *
  * fetch=LAZY는 평점을 조회할 때 연결된 회원의 모든 정보까지 무조건 가져오지 않도록 하는 지연 로딩 설정이다.
  * Hibernate는 보통 회원 객체 자리에 프록시를 두고, 회원 정보가 실제로 필요할 때 조회한다.

@@ -1,5 +1,5 @@
-// src/main/java/com/umc/movie/dto/RatingResponse.java
-package com.umc.movie.dto;
+// src/main/java/com/umc/movie/dto/rating/RatingResponse.java
+package com.umc.movie.dto.rating;
 
 import com.umc.movie.entity.Rating;
 

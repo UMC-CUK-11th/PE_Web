@@ -1,8 +1,8 @@
 package com.umc.movie.service;
 
 import com.umc.movie.config.PasswordConfig;
-import com.umc.movie.dto.MemberResponse;
-import com.umc.movie.dto.SignUpRequest;
+import com.umc.movie.dto.member.MemberResponse;
+import com.umc.movie.dto.member.SignUpRequest;
 import com.umc.movie.entity.Member;
 import com.umc.movie.repository.MemberRepository;
 import org.junit.jupiter.api.BeforeEach;

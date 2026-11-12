@@ -1,7 +1,7 @@
 package com.umc.movie.service;
 
-import com.umc.movie.dto.CreateRatingRequest;
-import com.umc.movie.dto.UpdateRatingRequest;
+import com.umc.movie.dto.rating.CreateRatingRequest;
+import com.umc.movie.dto.rating.UpdateRatingRequest;
 import com.umc.movie.entity.Member;
 import com.umc.movie.entity.Rating;
 import com.umc.movie.repository.MemberRepository;
@@ -14,7 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.server.ResponseStatusException;
+import com.umc.movie.exception.ApiException;
 
 import java.util.Optional;
 
@@ -51,7 +51,7 @@ class RatingServiceTest {
             return rating;
         });
 
-        assertThat(service.create(1L, new CreateRatingRequest(550L, 5, null))).isEqualTo(10L);
+        assertThat(service.create(1L, new CreateRatingRequest(550L, 5, null)).ratingId()).isEqualTo(10L);
         ArgumentCaptor<Rating> captor = ArgumentCaptor.forClass(Rating.class);
         verify(ratingRepository).save(captor.capture());
         assertThat(captor.getValue().getMember()).isSameAs(owner);
@@ -63,8 +63,8 @@ class RatingServiceTest {
     @Test
     void createRejectsMissingMember() {
         assertThatThrownBy(() -> service.create(99L, new CreateRatingRequest(550L, 5, null)))
-                .isInstanceOfSatisfying(ResponseStatusException.class,
-                        exception -> assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND));
+                .isInstanceOfSatisfying(ApiException.class,
+                        exception -> assertThat(exception.getStatus()).isEqualTo(HttpStatus.NOT_FOUND));
         verify(ratingRepository, never()).save(any());
     }
 
@@ -73,7 +73,7 @@ class RatingServiceTest {
         given(memberRepository.findById(1L)).willReturn(Optional.of(owner));
         given(ratingRepository.existsByMember_MemberIdAndMovieId(1L, 550L)).willReturn(true);
         assertThatThrownBy(() -> service.create(1L, new CreateRatingRequest(550L, 5, null)))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ApiException.class)
                 .hasMessage("이미 이 영화에 평점을 남기셨습니다.");
         verify(ratingRepository, never()).save(any());
     }
@@ -82,7 +82,7 @@ class RatingServiceTest {
     void ownerCanUpdate() {
         Rating rating = existingRating();
         given(ratingRepository.findById(10L)).willReturn(Optional.of(rating));
-        service.update(10L, 1L, new UpdateRatingRequest(3, "수정"));
+        service.update(1L, 10L, new UpdateRatingRequest(3, "수정"));
         assertThat(rating.getScore()).isEqualTo(3);
         assertThat(rating.getComment()).isEqualTo("수정");
         verify(ratingRepository).save(rating);
@@ -92,7 +92,7 @@ class RatingServiceTest {
     void ownerCanDelete() {
         Rating rating = existingRating();
         given(ratingRepository.findById(10L)).willReturn(Optional.of(rating));
-        service.delete(10L, 1L);
+        service.delete(1L, 10L);
         verify(ratingRepository).delete(rating);
     }
 
@@ -100,12 +100,12 @@ class RatingServiceTest {
     void nonOwnerCannotUpdateOrDelete() {
         Rating rating = existingRating();
         given(ratingRepository.findById(10L)).willReturn(Optional.of(rating));
-        assertThatThrownBy(() -> service.update(10L, 2L, new UpdateRatingRequest(3, null)))
-                .isInstanceOfSatisfying(ResponseStatusException.class,
-                        exception -> assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN));
-        assertThatThrownBy(() -> service.delete(10L, 2L))
-                .isInstanceOfSatisfying(ResponseStatusException.class,
-                        exception -> assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN));
+        assertThatThrownBy(() -> service.update(2L, 10L, new UpdateRatingRequest(3, null)))
+                .isInstanceOfSatisfying(ApiException.class,
+                        exception -> assertThat(exception.getStatus()).isEqualTo(HttpStatus.FORBIDDEN));
+        assertThatThrownBy(() -> service.delete(2L, 10L))
+                .isInstanceOfSatisfying(ApiException.class,
+                        exception -> assertThat(exception.getStatus()).isEqualTo(HttpStatus.FORBIDDEN));
         assertThat(rating.getScore()).isEqualTo(5);
         verify(ratingRepository, never()).save(any());
         verify(ratingRepository, never()).delete(any(Rating.class));
@@ -113,12 +113,12 @@ class RatingServiceTest {
 
     @Test
     void missingRatingCannotBeUpdatedOrDeleted() {
-        assertThatThrownBy(() -> service.update(99L, 1L, new UpdateRatingRequest(3, null)))
-                .isInstanceOfSatisfying(ResponseStatusException.class,
-                        exception -> assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND));
-        assertThatThrownBy(() -> service.delete(99L, 1L))
-                .isInstanceOfSatisfying(ResponseStatusException.class,
-                        exception -> assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND));
+        assertThatThrownBy(() -> service.update(1L, 99L, new UpdateRatingRequest(3, null)))
+                .isInstanceOfSatisfying(ApiException.class,
+                        exception -> assertThat(exception.getStatus()).isEqualTo(HttpStatus.NOT_FOUND));
+        assertThatThrownBy(() -> service.delete(1L, 99L))
+                .isInstanceOfSatisfying(ApiException.class,
+                        exception -> assertThat(exception.getStatus()).isEqualTo(HttpStatus.NOT_FOUND));
         verify(ratingRepository, never()).save(any());
         verify(ratingRepository, never()).delete(any(Rating.class));
     }
