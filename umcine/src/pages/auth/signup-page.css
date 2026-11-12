@@ -1,0 +1,29 @@
+.signup-page {
+  min-height: calc(100dvh - 80px);
+  background: #f6f7f9;
+  padding: clamp(64px, 14vw, 200px) 24px 80px;
+  color: #17191d;
+}
+
+.signup-panel { width: 100%; max-width: 430px; margin: 0 auto; }
+.signup-panel h1 { margin: 0 0 20px; font-size: 32px; font-weight: 700; line-height: 1.35; letter-spacing: -1.2px; }
+.signup-form { display: flex; flex-direction: column; gap: 16px; }
+.signup-field label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 700; }
+.signup-input-row { display: flex; align-items: center; min-height: 48px; border: 1px solid #e1e3e8; border-radius: 6px; background: #fff; }
+.signup-input-row:focus-within { border-color: #729df3; outline: 2px solid #dbe7fd; }
+.signup-input-row input { width: 100%; min-width: 0; border: 0; outline: none; border-radius: 6px; background: transparent; padding: 13px 14px; font: inherit; font-size: 14px; }
+.signup-input-row input::placeholder { color: #9b9ea5; }
+.signup-input-row button { flex-shrink: 0; border: 0; background: none; color: #365de5; padding: 12px 14px 12px 0; font-size: 12px; font-weight: 700; cursor: pointer; }
+.signup-input-row button:disabled { color: #9aabc8; cursor: not-allowed; }
+.signup-input-row input:disabled { color: #808590; background: #f1f3f7; cursor: not-allowed; }
+.signup-help { margin: 5px 0 0; color: #999da5; font-size: 11px; line-height: 1.5; }
+.signup-error { margin: 5px 0 0; color: #dc4545; font-size: 12px; line-height: 1.5; }
+.signup-error:empty { display: none; }
+.signup-submit { min-height: 46px; border: 0; border-radius: 5px; background: #365de5; color: white; font-size: 14px; font-weight: 700; cursor: pointer; }
+.signup-submit:disabled { background: #91b1ee; cursor: not-allowed; }
+.signup-submit:not(:disabled):hover { background: #294dcc; }
+.signup-login { margin: 16px 0 0; text-align: center; color: #808590; font-size: 12px; }
+.signup-login a { color: #365de5; font-weight: 700; text-decoration: underline; }
+.signup-login button { padding: 0; border: 0; background: none; color: #365de5; font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }
+.signup-notice { margin: 0; color: #586477; font-size: 12px; line-height: 1.6; }
+.signup-panel button:focus-visible { outline: 2px solid #365de5; outline-offset: 3px; }

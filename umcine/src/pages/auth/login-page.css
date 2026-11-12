@@ -1,0 +1,5 @@
+.login-page { min-height: calc(100dvh - 114px); padding-top: clamp(90px, 20vw, 310px); }
+.login-input-row { padding-left: 14px; gap: 8px; }
+.login-input-row > img { display: block; flex-shrink: 0; }
+.login-input-row input { padding-left: 0; }
+.signup-login a { color: #365de5; font-weight: 700; text-decoration: underline; }

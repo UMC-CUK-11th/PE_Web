@@ -40,9 +40,9 @@ export function Header() {
             검색
           </Link>
 
-          <a className={navLinkClass} href="#">
+          <Link className={navLinkClass} to="/profile" activeProps={{ className: activeNavLinkClass }}>
             내 정보
-          </a>
+          </Link>
         </nav>
       </div>
 
@@ -59,12 +59,12 @@ export function Header() {
           />
         </Link>
 
-        <button
-          className="h-10 cursor-pointer rounded-lg border-0 bg-[#3182f6] px-5 text-sm font-semibold text-white"
-          type="button"
+        <Link
+          className="inline-flex h-10 cursor-pointer items-center rounded-lg border-0 bg-[#3182f6] px-5 text-sm font-semibold text-white no-underline"
+          to="/login"
         >
           로그인
-        </button>
+        </Link>
       </div>
     </header>
   );
