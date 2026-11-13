@@ -8,6 +8,9 @@ version = '0.0.1-SNAPSHOT'
 java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 repositories { mavenCentral() }
 dependencies {
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -26,7 +29,7 @@ tasks.named('bootRun') {
     def localEnv = file('.env.local')
     if (localEnv.exists()) {
         localEnv.eachLine('UTF-8') { line ->
-            def entry = line =~ /^\s*(DB_URL|DB_USER|DB_PASSWORD|PORT)\s*=(.*)$/
+            def entry = line =~ /^\s*(DB_URL|DB_USER|DB_PASSWORD|PORT|JWT_SECRET|JWT_ACCESS_EXPIRATION)\s*=(.*)$/
             if (entry.matches()) {
                 def value = entry.group(2).trim()
                 if (value.length() >= 2 && ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'")))) {
