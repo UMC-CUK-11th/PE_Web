@@ -1,12 +1,14 @@
 # 영화 평점 서비스 백엔드
 
-Java 21·Spring Boot 3.5.0·JPA·MySQL을 사용하는 5주차 필수 미션입니다.
+Java 21·Spring Boot 3.5.0·JPA·MySQL을 사용하는 영화 평점 서버입니다.
 
 ## 실행
 
 MySQL에 `umc_movie` 데이터베이스를 만들고, `src/main/resources/db/schema.sql`과 `seed.sql`을 순서대로 실행합니다. 시드는 빈 학습 DB에 한 번만 실행합니다.
 
 `.env.example`을 `.env.local`로 복사하고 본인의 DB 접속 정보를 입력한 뒤 이 폴더에서 실행합니다.
+
+7주차 인증 기능에는 `JWT_SECRET`(32바이트 이상의 비밀키)과 `JWT_ACCESS_EXPIRATION=3600`(초)이 필요합니다. 실제 비밀키는 `.env.local`에만 작성합니다.
 
 ```powershell
 .\run-local.ps1
@@ -27,3 +29,7 @@ FE 개발 서버를 실행하고 `http://localhost:5173/members`를 엽니다. C
 ```
 
 실제 서버는 MySQL을 사용하고, 통합 테스트에서만 별도 H2 DB를 사용합니다. `.env.local`은 Git에서 제외됩니다.
+
+회원가입은 `POST /members`, 로그인은 `POST /auth/login`입니다. 새로 가입한 계정으로 로그인한 뒤 응답의 `result.accessToken`을 사용합니다. 이전 시드의 더미 비밀번호로는 로그인할 수 없습니다.
+
+`GET/PATCH /members/me`, `POST /ratings`, `PATCH/DELETE /ratings/{ratingId}`에는 `Authorization: Bearer {accessToken}` 헤더가 필요합니다. 평점 작성자 ID는 요청 대신 토큰에서 가져옵니다.
