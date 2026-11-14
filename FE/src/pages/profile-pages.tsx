@@ -1,53 +1,68 @@
 import { useState, type SubmitEvent } from "react";
-import { Link, Outlet, useNavigate } from "@tanstack/react-router";
-import { ProfileContext, useProfile } from "../components/profile-context";
+import { Link, Outlet } from "@tanstack/react-router";
 import { buttonClass, inputClass, linkClass, MemberForm } from "../components/member-form";
+import { useMeQuery } from "../hooks/use-me-query";
+import { useUpdateMeMutation } from "../hooks/use-update-me-mutation";
 import { nicknameError } from "../utils/member-validation";
 
 export function ProfileLayout() {
-  const [profile, setProfile] = useState({ nickname: "UMC 영화팬", email: "movie@example.com" });
-  return <ProfileContext.Provider value={{ profile, updateProfile: setProfile }}>
-    <Outlet />
-  </ProfileContext.Provider>;
+  return <Outlet />;
+}
+
+// 내 정보 조회 결과에 따라 로딩/실패 화면을 공통으로 보여 줌
+function useMeOrStatus() {
+  const meQuery = useMeQuery();
+  if (meQuery.isPending) return { me: null, status: <p className="text-sm text-gray-500">내 정보를 불러오는 중이에요.</p> };
+  if (meQuery.isError) return { me: null, status: <p role="alert" className="text-sm text-red-600">내 정보를 불러오지 못했어요. 다시 로그인해 주세요.</p> };
+  return { me: meQuery.data, status: null };
 }
 
 export function ProfilePage() {
-  const { profile } = useProfile();
+  const { me, status } = useMeOrStatus();
   return <MemberForm title="내 정보">
-    <p className="mb-6 text-sm text-gray-500">예시 회원 정보입니다. 로그인한 사용자의 정보가 아니며, 변경 내용은 이 화면을 나가면 초기화됩니다.</p>
-    <dl className="space-y-5">
-      <div><dt className="text-sm text-gray-500">닉네임</dt><dd className="mt-1 break-all font-semibold">{profile.nickname}</dd></div>
-      <div><dt className="text-sm text-gray-500">이메일</dt><dd className="mt-1 break-all font-semibold">{profile.email}</dd></div>
-    </dl>
-    <Link to="/my/edit" className={`${buttonClass} mt-6 inline-block no-underline`}>내 정보 수정</Link>
+    {status ?? (me && <>
+      <dl className="space-y-5">
+        <div><dt className="text-sm text-gray-500">닉네임</dt><dd className="mt-1 break-all font-semibold">{me.nickname}</dd></div>
+        <div><dt className="text-sm text-gray-500">이메일</dt><dd className="mt-1 break-all font-semibold">{me.email}</dd></div>
+      </dl>
+      <Link to="/my/edit" className={`${buttonClass} mt-6 inline-block no-underline`}>내 정보 수정</Link>
+    </>)}
   </MemberForm>;
 }
 
 export function ProfileEditPage() {
-  const { profile, updateProfile } = useProfile();
-  const [nickname, setNickname] = useState(profile.nickname);
-  const navigate = useNavigate();
-  const error = nicknameError(nickname);
-  async function submit(event: SubmitEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (error) return;
-    updateProfile({ ...profile, nickname: nickname.trim() });
-    await navigate({ to: "/my" });
-  }
+  const { me, status } = useMeOrStatus();
   return <MemberForm title="내 정보 수정">
-    <p className="mb-6 text-sm text-gray-500">예시 데이터의 닉네임을 수정합니다. 서버에 저장되지 않습니다.</p>
-    <form onSubmit={submit} className="space-y-5" noValidate>
-      <div>
-        <label htmlFor="profile-nickname" className="mb-2 block text-sm font-semibold">닉네임</label>
-        <input id="profile-nickname" className={inputClass} value={nickname} autoComplete="nickname" required
-          aria-invalid={Boolean(error)} aria-describedby="profile-nickname-error" onChange={event => setNickname(event.target.value)} />
-        <p id="profile-nickname-error" aria-live="polite" className="mt-1 text-sm text-red-600">{error}</p>
-      </div>
-      <p className="break-all text-sm text-gray-600">이메일: {profile.email}</p>
-      <div className="flex items-center gap-4">
-        <button className={buttonClass} disabled={Boolean(error)}>수정</button>
-        <Link to="/my" className={linkClass}>취소</Link>
-      </div>
-    </form>
+    {status ?? (me && <ProfileEditForm initialNickname={me.nickname} email={me.email} />)}
   </MemberForm>;
+}
+
+// 내 정보를 받아 온 뒤에 폼을 그려야 입력창의 처음 값을 서버 닉네임으로 채울 수 있음
+function ProfileEditForm({ initialNickname, email }: { initialNickname: string; email: string }) {
+  const [nickname, setNickname] = useState(initialNickname);
+  const updateMeMutation = useUpdateMeMutation();
+  const error = nicknameError(nickname);
+  const canSubmit = !error && !updateMeMutation.isPending;
+
+  function submit(event: SubmitEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!canSubmit) return;
+    updateMeMutation.mutate({ nickname: nickname.trim() });
+  }
+
+  return <form onSubmit={submit} className="space-y-5" noValidate>
+    <div>
+      <label htmlFor="profile-nickname" className="mb-2 block text-sm font-semibold">닉네임</label>
+      <input id="profile-nickname" className={inputClass} value={nickname} autoComplete="nickname" required
+        aria-invalid={Boolean(error)} aria-describedby="profile-nickname-error" onChange={event => setNickname(event.target.value)} />
+      <p id="profile-nickname-error" aria-live="polite" className="mt-1 text-sm text-red-600">{error}</p>
+    </div>
+    <p className="break-all text-sm text-gray-600">이메일: {email}</p>
+    <div className="flex items-center gap-4">
+      <button type="submit" className={buttonClass} disabled={!canSubmit}>
+        {updateMeMutation.isPending ? "저장 중" : "저장"}
+      </button>
+      <Link to="/my" className={linkClass}>취소</Link>
+    </div>
+  </form>;
 }
