@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useSearch } from "@tanstack/react-router";
 import AuthPanel from "../../components/auth/auth-panel";
 import {
   buttonClassName,
@@ -7,14 +7,24 @@ import {
   linkClassName,
 } from "../../components/auth/form-styles";
 
+import { useLoginMutation } from "../../hooks/use-login-mutation";
+import { EMAIL_REGEX } from "../../utils/auth/validation";
+import { getRequestErrorMessage } from "../../utils/auth/request-error";
+
 export function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
+  const { registered } = useSearch({ from: "/login" });
+  const loginMutation = useLoginMutation();
+  const canSubmit =
+    EMAIL_REGEX.test(email.trim()) &&
+    password.length > 0 &&
+    !loginMutation.isPending &&
+    !loginMutation.isSuccess;
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setMessage("로그인 기능을 준비 중이에요.");
+    if (canSubmit) loginMutation.mutate({ email: email.trim(), password });
   }
 
   return (
@@ -22,7 +32,16 @@ export function LoginPage() {
       title="로그인"
       description="다시 만나 반가워요. 오늘은 어떤 영화를 만나볼까요?"
     >
-      <form onSubmit={handleSubmit} className="space-y-5">
+      {registered && (
+        <p role="status" className="mb-4 text-sm text-emerald-700">
+          회원가입을 완료했어요. 가입한 계정으로 로그인해 주세요.
+        </p>
+      )}
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-5"
+        aria-busy={loginMutation.isPending}
+      >
         <div>
           <label htmlFor="login-email" className="mb-2 block text-sm font-bold">
             이메일
@@ -32,11 +51,12 @@ export function LoginPage() {
             name="email"
             type="email"
             autoComplete="email"
+            disabled={loginMutation.isPending}
             required
             value={email}
             onChange={(event) => {
               setEmail(event.target.value);
-              setMessage("");
+              loginMutation.reset();
             }}
             className={inputClassName}
             placeholder="you@example.com"
@@ -54,24 +74,27 @@ export function LoginPage() {
             name="password"
             type="password"
             autoComplete="current-password"
+            disabled={loginMutation.isPending}
             required
             value={password}
             onChange={(event) => {
               setPassword(event.target.value);
-              setMessage("");
+              loginMutation.reset();
             }}
             className={inputClassName}
           />
         </div>
-        <button
-          disabled={!email || !password}
-          className={`${buttonClassName} w-full`}
-        >
-          로그인
+        <button disabled={!canSubmit} className={`${buttonClassName} w-full`}>
+          {loginMutation.isPending ? "로그인 중" : "로그인"}
         </button>
-        <p role="status" className="text-sm text-zinc-500">
-          {message}
-        </p>
+        {loginMutation.isError && (
+          <p role="alert" className="text-sm text-red-700">
+            {getRequestErrorMessage(
+              loginMutation.error,
+              "로그인하지 못했어요.",
+            )}
+          </p>
+        )}
       </form>
       <p className="mt-6 text-center text-sm text-zinc-500">
         처음 오셨나요?{" "}

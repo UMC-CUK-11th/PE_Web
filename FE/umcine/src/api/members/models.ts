@@ -1,3 +1,5 @@
+import type { ApiResponse } from "../models";
+
 export interface CheckResponse {
   available: boolean;
 }
@@ -8,13 +10,14 @@ export interface SignupRequest {
   password: string;
 }
 
-export interface SignupResponse {
-  isSuccess: boolean;
-  code: string;
-  message: string;
-  result: {
-    memberId: number;
-    email: string;
-    nickname: string;
-  };
+export type SignupResponse = ApiResponse<{
+  memberId: number;
+  email: string;
+  nickname: string;
+}>;
+
+export interface MemberInfo {
+  email: string;
+  nickname: string;
+  createdAt: string;
 }

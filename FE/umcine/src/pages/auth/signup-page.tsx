@@ -1,6 +1,6 @@
-import { useRef, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { Link } from "@tanstack/react-router";
-import { checkEmail, checkNickname, signup } from "../../api/members";
+import { checkEmail, checkNickname } from "../../api/members";
 import AuthPanel from "../../components/auth/auth-panel";
 import {
   buttonClassName,
@@ -8,6 +8,7 @@ import {
   linkClassName,
 } from "../../components/auth/form-styles";
 import { useDuplicateCheck } from "../../hooks/use-duplicate-check";
+import { useSignupMutation } from "../../hooks/use-signup-mutation";
 import { validateSignup } from "../../utils/auth/validation";
 import { getRequestErrorMessage } from "../../utils/auth/request-error";
 
@@ -16,12 +17,7 @@ export function SignupPage() {
   const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [feedback, setFeedback] = useState<{
-    success: boolean;
-    message: string;
-  } | null>(null);
-  const submitting = useRef(false);
+  const signupMutation = useSignupMutation();
   const valid = validateSignup({ email, nickname, password, passwordConfirm });
   const emailCheck = useDuplicateCheck(
     email,
@@ -41,10 +37,12 @@ export function SignupPage() {
     nicknameCheck.isAvailable &&
     !emailCheck.isChecking &&
     !nicknameCheck.isChecking &&
-    !isSubmitting &&
-    !feedback?.success;
+    !signupMutation.isPending &&
+    !signupMutation.isSuccess;
   const remainingChecks = [
-    !valid.email ? "이메일 형식" : !emailCheck.isAvailable && "이메일 중복 확인",
+    !valid.email
+      ? "이메일 형식"
+      : !emailCheck.isAvailable && "이메일 중복 확인",
     !valid.nickname
       ? "닉네임 2~12자"
       : !nicknameCheck.isAvailable && "닉네임 중복 확인",
@@ -52,29 +50,9 @@ export function SignupPage() {
     !valid.passwordConfirm && "비밀번호 확인",
   ].filter(Boolean);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!canSubmit || submitting.current) return;
-    submitting.current = true;
-    setIsSubmitting(true);
-    setFeedback(null);
-    try {
-      const response = await signup({ email, nickname, password });
-      setFeedback({ success: true, message: response.message });
-      setPassword("");
-      setPasswordConfirm("");
-    } catch (error) {
-      setFeedback({
-        success: false,
-        message: getRequestErrorMessage(
-          error,
-          "회원가입에 실패했어요. 다시 시도해 주세요.",
-        ),
-      });
-    } finally {
-      submitting.current = false;
-      setIsSubmitting(false);
-    }
+    if (canSubmit) signupMutation.mutate({ email, nickname, password });
   }
 
   return (
@@ -82,9 +60,13 @@ export function SignupPage() {
       title="회원가입"
       description="나만의 영화 취향을 발견하는 첫걸음, UMCine과 함께해요."
     >
-      <form onSubmit={handleSubmit} noValidate aria-busy={isSubmitting}>
+      <form
+        onSubmit={handleSubmit}
+        noValidate
+        aria-busy={signupMutation.isPending}
+      >
         <fieldset
-          disabled={isSubmitting || feedback?.success}
+          disabled={signupMutation.isPending || signupMutation.isSuccess}
           className="space-y-5"
         >
           <div>
@@ -108,7 +90,7 @@ export function SignupPage() {
                 onChange={(event) => {
                   setEmail(event.target.value);
                   emailCheck.reset();
-                  setFeedback(null);
+                  signupMutation.reset();
                 }}
                 className={inputClassName}
                 placeholder="you@example.com"
@@ -154,7 +136,7 @@ export function SignupPage() {
                 onChange={(event) => {
                   setNickname(event.target.value);
                   nicknameCheck.reset();
-                  setFeedback(null);
+                  signupMutation.reset();
                 }}
                 className={inputClassName}
                 placeholder="2~12자 닉네임"
@@ -198,7 +180,7 @@ export function SignupPage() {
               aria-describedby="signup-password-help signup-password-error"
               onChange={(event) => {
                 setPassword(event.target.value);
-                setFeedback(null);
+                signupMutation.reset();
               }}
               className={inputClassName}
             />
@@ -238,7 +220,7 @@ export function SignupPage() {
               aria-describedby="signup-password-confirm-error"
               onChange={(event) => {
                 setPasswordConfirm(event.target.value);
-                setFeedback(null);
+                signupMutation.reset();
               }}
               className={inputClassName}
             />
@@ -251,25 +233,30 @@ export function SignupPage() {
               </p>
             )}
           </div>
-          {!feedback?.success && !isSubmitting && remainingChecks.length > 0 && (
-            <p role="status" className="text-xs leading-5 text-zinc-500">
-              가입 전에 확인할 항목 · {remainingChecks.join(", ")}
-            </p>
-          )}
+          {!signupMutation.isSuccess &&
+            !signupMutation.isPending &&
+            remainingChecks.length > 0 && (
+              <p role="status" className="text-xs leading-5 text-zinc-500">
+                가입 전에 확인할 항목 · {remainingChecks.join(", ")}
+              </p>
+            )}
           <button
             type="submit"
             disabled={!canSubmit}
             className={`${buttonClassName} w-full`}
           >
-            {isSubmitting ? "가입 중" : "가입하기"}
+            {signupMutation.isPending ? "가입 중" : "가입하기"}
           </button>
         </fieldset>
-        {feedback && (
+        {signupMutation.isError && (
           <p
-            role={feedback.success ? "status" : "alert"}
-            className={`mt-4 rounded-xl p-3 text-sm ${feedback.success ? "bg-emerald-50 text-emerald-800" : "bg-red-50 text-red-700"}`}
+            role="alert"
+            className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-700"
           >
-            {feedback.message}
+            {getRequestErrorMessage(
+              signupMutation.error,
+              "회원가입에 실패했어요. 다시 시도해 주세요.",
+            )}
           </p>
         )}
       </form>
