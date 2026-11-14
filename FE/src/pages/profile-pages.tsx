@@ -1,13 +1,9 @@
 import { useState, type SubmitEvent } from "react";
-import { Link, Outlet } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { buttonClass, inputClass, linkClass, MemberForm } from "../components/member-form";
 import { useMeQuery } from "../hooks/use-me-query";
 import { useUpdateMeMutation } from "../hooks/use-update-me-mutation";
 import { nicknameError } from "../utils/member-validation";
-
-export function ProfileLayout() {
-  return <Outlet />;
-}
 
 // 내 정보 조회 결과에 따라 로딩/실패 화면을 공통으로 보여 줌
 function useMeOrStatus() {
