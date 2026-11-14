@@ -18,6 +18,8 @@ export interface RatingResponse {
   updatedAt: string;
 }
 
-export function getMemberRatings(memberId: number) {
-  return apiClient.get(`members/${memberId}/ratings`).json<RatingResponse[]>();
+export function getMemberRatings(memberId: number, signal?: AbortSignal) {
+  return apiClient
+    .get(`members/${memberId}/ratings`, { signal })
+    .json<RatingResponse[]>();
 }

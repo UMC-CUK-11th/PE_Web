@@ -1,4 +1,7 @@
-import { useBookmarkStore } from "../../stores/bookmark-store";
+import { useNavigate } from "@tanstack/react-router";
+import { useFavorite } from "../../hooks/use-favorite";
+import { useAuthStore } from "../../stores/auth-store";
+import { getRequestErrorMessage } from "../../utils/auth/request-error";
 import { cn } from "../../utils/cn";
 
 interface BookmarkButtonProps {
@@ -12,17 +15,49 @@ export default function BookmarkButton({
   variant = "icon",
   className,
 }: BookmarkButtonProps) {
-  const isBookmarked = useBookmarkStore((state) =>
-    state.bookmarkedMovieIds.includes(movieId),
-  );
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const navigate = useNavigate();
+  const { status, toggle, isToggling } = useFavorite(movieId);
+  const isBookmarked = Boolean(accessToken && status.data?.isFavorite);
+  const disabled = Boolean(accessToken && (status.isLoading || isToggling));
+  const error =
+    accessToken && status.isError
+      ? getRequestErrorMessage(
+          status.error,
+          "즐겨찾기 상태를 불러오지 못했어요.",
+        )
+      : undefined;
 
-  const toggleBookmark = useBookmarkStore((state) => state.toggleBookmark);
+  function handleClick() {
+    if (!accessToken) {
+      void navigate({ to: "/login" });
+      return;
+    }
+    if (status.isError) {
+      void status.refetch();
+      return;
+    }
+    if (status.data && !disabled) {
+      toggle.mutate(!isBookmarked, {
+        onError: (failure) => {
+          if (useAuthStore.getState().accessToken === accessToken) {
+            window.alert(
+              getRequestErrorMessage(failure, "즐겨찾기를 변경하지 못했어요."),
+            );
+          }
+        },
+      });
+    }
+  }
 
   if (variant === "text") {
     return (
       <button
         type="button"
-        onClick={() => toggleBookmark(movieId)}
+        onClick={handleClick}
+        disabled={disabled}
+        aria-busy={disabled}
+        title={error}
         aria-pressed={isBookmarked}
         className={cn(
           `
@@ -44,6 +79,7 @@ export default function BookmarkButton({
           isBookmarked
             ? "bg-white text-zinc-950 shadow-lg"
             : "border border-white/30 bg-white/10 text-white backdrop-blur-md hover:bg-white/20",
+          "disabled:cursor-wait disabled:opacity-60",
           className,
         )}
       >
@@ -56,7 +92,11 @@ export default function BookmarkButton({
           className="h-5 w-5 object-contain"
         />
 
-        {isBookmarked ? "북마크 해제" : "북마크 추가"}
+        {error
+          ? "북마크 상태 다시 확인"
+          : isBookmarked
+            ? "북마크 해제"
+            : "북마크 추가"}
       </button>
     );
   }
@@ -64,8 +104,17 @@ export default function BookmarkButton({
   return (
     <button
       type="button"
-      onClick={() => toggleBookmark(movieId)}
-      aria-label={isBookmarked ? "북마크 해제" : "북마크 추가"}
+      onClick={handleClick}
+      disabled={disabled}
+      aria-busy={disabled}
+      title={error}
+      aria-label={
+        error
+          ? "북마크 상태 다시 확인"
+          : isBookmarked
+            ? "북마크 해제"
+            : "북마크 추가"
+      }
       aria-pressed={isBookmarked}
       className={cn(
         `
