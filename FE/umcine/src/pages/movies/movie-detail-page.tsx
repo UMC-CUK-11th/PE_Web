@@ -1,5 +1,6 @@
 import { Link, useParams } from "@tanstack/react-router";
 
+import { RatingPanel } from "../../components/movies/rating-panel";
 import BookmarkButton from "../../components/movies/bookmark-button";
 import { useQuery } from "@tanstack/react-query";
 import { movieDetailQueryOptions } from "../../queries/movie-query-options";
@@ -117,7 +118,7 @@ export function MovieDetailPage() {
               ★ {movie.vote_average.toFixed(1)} · 평가{" "}
               {movie.vote_count.toLocaleString()}개
             </p>
-            {/* Zustand Bookmark */}
+            {/* Favorite */}
             <BookmarkButton
               movieId={movie.id}
               variant="text"
@@ -188,6 +189,7 @@ export function MovieDetailPage() {
           </div>
         </div>
       </section>
+      <RatingPanel movieId={movie.id} />
     </main>
   );
 }
