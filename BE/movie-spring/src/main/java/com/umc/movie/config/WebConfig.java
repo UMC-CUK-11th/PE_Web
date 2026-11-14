@@ -50,7 +50,9 @@ public class WebConfig
                 "/members/nickname/**",
                 "/members/email/**",
                 "/members/*/ratings",
-                "/error"
+                "/error",
+                "/swagger-ui/**",
+                "/v3/api-docs/**"
             );
     }
 }
