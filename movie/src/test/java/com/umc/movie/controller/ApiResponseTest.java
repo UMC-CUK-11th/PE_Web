@@ -1,12 +1,12 @@
 package com.umc.movie.controller;
 
-import com.umc.movie.dto.EmailCheckResponse;
-import com.umc.movie.dto.NicknameCheckResponse;
-import com.umc.movie.dto.RatingResponse;
-import com.umc.movie.dto.MemberResponse;
-import com.umc.movie.dto.SignUpRequest;
-import com.umc.movie.dto.CreateRatingRequest;
-import com.umc.movie.dto.UpdateRatingRequest;
+import com.umc.movie.dto.member.EmailCheckResponse;
+import com.umc.movie.dto.member.NicknameCheckResponse;
+import com.umc.movie.dto.rating.RatingResponse;
+import com.umc.movie.dto.member.MemberResponse;
+import com.umc.movie.dto.member.SignUpRequest;
+import com.umc.movie.dto.rating.CreateRatingRequest;
+import com.umc.movie.dto.rating.UpdateRatingRequest;
 import com.umc.movie.service.MemberService;
 import com.umc.movie.service.RatingService;
 import org.junit.jupiter.api.Test;
@@ -39,6 +39,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest({MemberController.class, RatingController.class})
 class ApiResponseTest {
 
+    @MockitoBean
+    private com.umc.movie.util.JwtUtil jwtUtil;
+
+    @org.junit.jupiter.api.BeforeEach
+    void authenticateRequests() {
+        given(jwtUtil.getMemberId("test-token")).willReturn(1L);
+    }
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -50,19 +58,19 @@ class ApiResponseTest {
 
     @Test
     void createRatingReturns201AndId() throws Exception {
-        given(ratingService.create(1L, new CreateRatingRequest(550L, 5, null))).willReturn(10L);
-        mockMvc.perform(post("/members/1/ratings").contentType(MediaType.APPLICATION_JSON)
+        given(ratingService.create(1L, new CreateRatingRequest(550L, 5, null))).willReturn(new RatingResponse(10L, 550L, 5, null, null, null));
+        mockMvc.perform(post("/ratings").header("Authorization", "Bearer test-token").contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"movieId":550,"score":5}
                                 """))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.code").value("COMMON201"))
-                .andExpect(jsonPath("$.result").value(10));
+                .andExpect(jsonPath("$.result.ratingId").value(10));
     }
 
     @Test
     void invalidRatingInputDoesNotReachService() throws Exception {
-        mockMvc.perform(post("/members/1/ratings").contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post("/ratings").header("Authorization", "Bearer test-token").contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"movieId":0,"score":6}
                                 """))
@@ -70,30 +78,32 @@ class ApiResponseTest {
                 .andExpect(jsonPath("$.code").value("COMMON4001"));
         verify(ratingService, never()).create(any(), any());
 
-        mockMvc.perform(patch("/members/1/ratings/10").contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(patch("/ratings/10").header("Authorization", "Bearer test-token").contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest());
         verify(ratingService, never()).update(any(), any(), any());
     }
 
     @Test
-    void updateRatingReturns200AndNullResult() throws Exception {
-        mockMvc.perform(patch("/members/1/ratings/10").contentType(MediaType.APPLICATION_JSON)
+    void updateRatingReturns200AndRating() throws Exception {
+        given(ratingService.update(1L, 10L, new UpdateRatingRequest(3, "수정")))
+                .willReturn(new RatingResponse(10L, 550L, 3, "수정", null, null));
+        mockMvc.perform(patch("/ratings/10").header("Authorization", "Bearer test-token").contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"score":3,"comment":"수정"}
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("COMMON200"))
-                .andExpect(jsonPath("$.result").value(nullValue()));
-        verify(ratingService).update(10L, 1L, new UpdateRatingRequest(3, "수정"));
+                .andExpect(jsonPath("$.result.score").value(3));
+        verify(ratingService).update(1L, 10L, new UpdateRatingRequest(3, "수정"));
     }
 
     @Test
-    void deleteRatingReturns204WithoutBody() throws Exception {
-        mockMvc.perform(delete("/members/1/ratings/10"))
-                .andExpect(status().isNoContent())
-                .andExpect(content().string(""));
-        verify(ratingService).delete(10L, 1L);
+    void deleteRatingReturns200WithNullResult() throws Exception {
+        mockMvc.perform(delete("/ratings/10").header("Authorization", "Bearer test-token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value(nullValue()));
+        verify(ratingService).delete(1L, 10L);
     }
 
     @Test

@@ -3,10 +3,13 @@ package com.umc.movie.repository;
 
 import com.umc.movie.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.Optional; // Java 기본 제공: 값이 있거나 없음을 표현하는 타입
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
     boolean existsByNickname(String nickname); // [1]
     boolean existsByEmail(String email); // [2]
+    Optional<Member> findByEmail(String email); // [3]
+    boolean existsByNicknameAndMemberIdNot(String nickname, Long memberId); // [4]
 }
 
 /*
@@ -22,4 +25,13 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
  * [2] existsByEmail: "전달한 email과 같은 회원이 존재하는가?"
  * [1]과 같은 방식으로 Member.email을 조건으로 사용한다.
  * 같은 이메일이 있으면 true(중복), 없으면 false(사용 가능)를 반환한다.
+ *
+ * [3] findByEmail: email 조건으로 회원 객체 자체를 조회한다.
+ * existsByEmail이 boolean만 반환하는 것과 달리, 로그인에 필요한 비밀번호 해시·ID·닉네임을 얻을 수 있다.
+ * Optional<Member>는 회원이 있으면 Member를 담고, 없으면 비어 있는 조회 결과다.
+ * 서비스가 orElseThrow로 회원을 꺼내거나, 비어 있으면 로그인 실패 예외를 던진다.
+ *
+ * [4] 닉네임이 같고(Nickname) 동시에(And) 회원 ID가 다른(MemberIdNot) 회원의 존재 여부를 확인한다.
+ * 예: 1번 회원의 현재 닉네임이 영화광이면 ("영화광", 1L)은 자신을 제외하므로 false다.
+ * 다른 회원이 사용하는 닉네임을 전달하면 true이므로 서비스에서 중복 예외를 던진다.
  */

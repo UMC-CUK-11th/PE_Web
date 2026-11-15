@@ -4,6 +4,7 @@ if (!tmdbApiBaseUrl || !tmdbAccessToken) {
     throw new Error("TMDB 환경 변수가 필요해요.");
 }
 export const env = {
+    apiBaseUrl: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080",
     tmdbApiBaseUrl,
     tmdbAccessToken,
 };
