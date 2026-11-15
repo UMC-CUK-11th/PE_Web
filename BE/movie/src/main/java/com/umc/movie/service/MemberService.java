@@ -2,6 +2,7 @@ package com.umc.movie.service;
 
 import com.umc.movie.dto.*;
 import com.umc.movie.entity.Member;
+import com.umc.movie.exception.ApiException;
 import com.umc.movie.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -36,5 +37,25 @@ public class MemberService {
         Member saved = memberRepository.saveAndFlush(new Member(
                 request.email(), passwordEncoder.encode(request.password()), request.nickname()));
         return new MemberResponse(saved.getMemberId(), saved.getEmail(), saved.getNickname());
+    }
+
+    public MemberInfoResponse getMyInfo(Long memberId) {
+        return MemberInfoResponse.from(findMember(memberId));
+    }
+
+    @Transactional
+    public MemberInfoResponse updateMyInfo(Long memberId, MemberUpdateRequest request) {
+        Member member = findMember(memberId);
+        if (memberRepository.existsByNicknameAndMemberIdNot(request.nickname(), memberId)) {
+            throw new ApiException(HttpStatus.CONFLICT, "MEMBER409_1", "이미 사용 중인 닉네임입니다.");
+        }
+        member.updateNickname(request.nickname());
+        memberRepository.saveAndFlush(member);
+        return MemberInfoResponse.from(member);
+    }
+
+    private Member findMember(Long memberId) {
+        return memberRepository.findById(memberId).orElseThrow(() ->
+                new ApiException(HttpStatus.NOT_FOUND, "MEMBER404_1", "해당 회원을 찾을 수 없습니다."));
     }
 }

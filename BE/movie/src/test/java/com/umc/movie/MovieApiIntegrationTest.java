@@ -3,6 +3,7 @@ package com.umc.movie;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.umc.movie.entity.Member;
 import com.umc.movie.repository.MemberRepository;
+import com.umc.movie.util.JwtUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -20,6 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "spring.datasource.url=jdbc:h2:mem:movie-test;MODE=MySQL;DB_CLOSE_DELAY=-1",
         "spring.datasource.username=sa", "spring.datasource.password=",
         "spring.datasource.driver-class-name=org.h2.Driver", "spring.jpa.hibernate.ddl-auto=create-drop",
+        "jwt.secret=integration-test-key-only-0123456789-abcdef", "jwt.access-expiration=3600",
         "debug=false", "logging.level.root=WARN"
 })
 @AutoConfigureMockMvc
@@ -29,12 +31,14 @@ class MovieApiIntegrationTest {
     @Autowired ObjectMapper json;
     @Autowired MemberRepository members;
     @Autowired PasswordEncoder encoder;
+    @Autowired JwtUtil jwt;
     static final String PASSWORD = "Umcine123!";
 
     String body(Object value) throws Exception { return json.writeValueAsString(value); }
     Member member(String name) {
         return members.saveAndFlush(new Member(name + "@example.com", encoder.encode(PASSWORD), name));
     }
+    String bearer(Member member) { return "Bearer " + jwt.createAccessToken(member.getMemberId(), member.getEmail()); }
 
     @Test
     void signUpHashesPasswordAndRejectsDuplicates() throws Exception {
@@ -65,37 +69,40 @@ class MovieApiIntegrationTest {
     void ratingLifecycleChecksValidationOwnershipAndDeletion() throws Exception {
         Member owner = member("owner");
         Member other = member("other");
-        String collection = "/members/" + owner.getMemberId() + "/ratings";
-        String created = mvc.perform(post(collection).contentType(MediaType.APPLICATION_JSON)
+        String collection = "/ratings";
+        String publicCollection = "/members/" + owner.getMemberId() + "/ratings";
+        String created = mvc.perform(post(collection).header("Authorization", bearer(owner)).contentType(MediaType.APPLICATION_JSON)
                         .content(body(Map.of("movieId", 550, "score", 5, "comment", "좋아요"))))
                 .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
-        long ratingId = json.readTree(created).get("result").asLong();
+        long ratingId = json.readTree(created).get("result").get("ratingId").asLong();
         String rating = collection + "/" + ratingId;
-        mvc.perform(get(collection)).andExpect(status().isOk()).andExpect(jsonPath("$[0].score").value(5));
-        mvc.perform(post(collection).contentType(MediaType.APPLICATION_JSON).content(body(Map.of("movieId", 550, "score", 4))))
-                .andExpect(status().isConflict());
-        mvc.perform(post(collection).contentType(MediaType.APPLICATION_JSON).content(body(Map.of("movieId", 155, "score", 6))))
+        mvc.perform(get(publicCollection)).andExpect(status().isOk()).andExpect(jsonPath("$[0].score").value(5));
+        mvc.perform(post(collection).header("Authorization", bearer(owner)).contentType(MediaType.APPLICATION_JSON).content(body(Map.of("movieId", 550, "score", 4))))
+                .andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("RATING409_1"));
+        mvc.perform(post(collection).header("Authorization", bearer(owner)).contentType(MediaType.APPLICATION_JSON).content(body(Map.of("movieId", 155, "score", 6))))
                 .andExpect(status().isBadRequest());
-        mvc.perform(post(collection).contentType(MediaType.APPLICATION_JSON).content(body(Map.of("movieId", 155, "score", 2.5))))
+        mvc.perform(post(collection).header("Authorization", bearer(owner)).contentType(MediaType.APPLICATION_JSON).content(body(Map.of("movieId", 155, "score", 2.5))))
                 .andExpect(status().isBadRequest());
-        mvc.perform(patch("/members/" + other.getMemberId() + "/ratings/" + ratingId)
+        mvc.perform(patch(rating).header("Authorization", bearer(other))
                         .contentType(MediaType.APPLICATION_JSON).content(body(Map.of("score", 4))))
-                .andExpect(status().isForbidden());
-        mvc.perform(delete("/members/" + other.getMemberId() + "/ratings/" + ratingId)).andExpect(status().isForbidden());
-        mvc.perform(patch(collection + "/999999999").contentType(MediaType.APPLICATION_JSON).content(body(Map.of("score", 4))))
+                .andExpect(status().isForbidden()).andExpect(jsonPath("$.code").value("RATING403_1"));
+        mvc.perform(delete(rating).header("Authorization", bearer(other))).andExpect(status().isForbidden());
+        mvc.perform(patch(collection + "/999999999").header("Authorization", bearer(owner)).contentType(MediaType.APPLICATION_JSON).content(body(Map.of("score", 4))))
                 .andExpect(status().isNotFound());
-        mvc.perform(delete(collection + "/999999999")).andExpect(status().isNotFound());
-        mvc.perform(patch(rating).contentType(MediaType.APPLICATION_JSON).content(body(Map.of("score", 4, "comment", "수정"))))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.isSuccess").value(true));
-        mvc.perform(get(collection)).andExpect(jsonPath("$[0].score").value(4)).andExpect(jsonPath("$[0].comment").value("수정"));
-        mvc.perform(delete(rating)).andExpect(status().isNoContent()).andExpect(content().string(""));
-        mvc.perform(get(collection)).andExpect(content().json("[]"));
+        mvc.perform(delete(collection + "/999999999").header("Authorization", bearer(owner))).andExpect(status().isNotFound());
+        mvc.perform(patch(rating).header("Authorization", bearer(owner)).contentType(MediaType.APPLICATION_JSON).content(body(Map.of("score", 4, "comment", "수정"))))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.result.score").value(4));
+        mvc.perform(get(publicCollection)).andExpect(jsonPath("$[0].score").value(4)).andExpect(jsonPath("$[0].comment").value("수정"));
+        mvc.perform(delete(rating).header("Authorization", bearer(owner))).andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("COMMON200")).andExpect(jsonPath("$.result").isEmpty());
+        mvc.perform(get(publicCollection)).andExpect(content().json("[]"));
     }
 
     @Test
     void missingMemberReturns404AndMalformedJsonReturns400() throws Exception {
         mvc.perform(get("/members/999999999/ratings")).andExpect(status().isNotFound());
-        mvc.perform(post("/members/999999999/ratings").contentType(MediaType.APPLICATION_JSON)
+        mvc.perform(post("/ratings").header("Authorization", "Bearer " + jwt.createAccessToken(999999999L, "missing@example.com"))
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(body(Map.of("movieId", 550, "score", 5))))
                 .andExpect(status().isNotFound());
         mvc.perform(post("/members").contentType(MediaType.APPLICATION_JSON).content("{"))
