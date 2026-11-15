@@ -21,6 +21,11 @@ public class AuthInterceptor implements HandlerInterceptor {
             HttpServletResponse response,
             Object handler
     ) {
+        // CORS 사전 요청은 JWT 인증 없이 통과
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            return true;
+        }
+
         String authorization = request.getHeader("Authorization");
 
         if (authorization == null ||
