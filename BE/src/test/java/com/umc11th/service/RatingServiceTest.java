@@ -1,11 +1,11 @@
 package com.umc11th.service;
 
 import com.umc11th.dto.CreateRatingRequest;
+import com.umc11th.dto.RatingResponse;
 import com.umc11th.dto.UpdateRatingRequest;
 import com.umc11th.entity.Member;
 import com.umc11th.entity.Rating;
-import com.umc11th.exception.BusinessException;
-import com.umc11th.exception.ErrorCode;
+import com.umc11th.exception.ApiException;
 import com.umc11th.repository.MemberRepository;
 import com.umc11th.repository.RatingRepository;
 import org.junit.jupiter.api.Test;
@@ -58,8 +58,8 @@ class RatingServiceTest {
         when(memberRepository.existsById(999L)).thenReturn(false);
 
         assertThatThrownBy(() -> ratingService.getRatingsByMember(999L, 0, 10))
-                .isInstanceOfSatisfying(BusinessException.class, exception ->
-                        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND)
+                .isInstanceOfSatisfying(ApiException.class, exception ->
+                        assertThat(exception.getCode()).isEqualTo("MEMBER404_1")
                 );
 
         verifyNoInteractions(ratingRepository);
@@ -76,7 +76,9 @@ class RatingServiceTest {
         when(ratingRepository.save(org.mockito.ArgumentMatchers.any(Rating.class)))
                 .thenReturn(savedRating);
 
-        assertThat(ratingService.create(1L, request)).isEqualTo(3L);
+        RatingResponse response = ratingService.create(1L, request);
+
+        assertThat(response.ratingId()).isEqualTo(3L);
     }
 
     @Test
@@ -88,8 +90,8 @@ class RatingServiceTest {
         assertThatThrownBy(() -> ratingService.create(
                 1L,
                 new CreateRatingRequest(101L, 5, null)
-        )).isInstanceOfSatisfying(BusinessException.class, exception ->
-                assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.RATING_DUPLICATE)
+        )).isInstanceOfSatisfying(ApiException.class, exception ->
+                assertThat(exception.getCode()).isEqualTo("RATING409_1")
         );
     }
 
@@ -110,11 +112,11 @@ class RatingServiceTest {
         when(ratingRepository.findById(1L)).thenReturn(java.util.Optional.of(rating));
 
         assertThatThrownBy(() -> ratingService.update(
-                1L,
                 2L,
+                1L,
                 new UpdateRatingRequest(3, null)
-        )).isInstanceOfSatisfying(BusinessException.class, exception ->
-                assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.RATING_FORBIDDEN)
+        )).isInstanceOfSatisfying(ApiException.class, exception ->
+                assertThat(exception.getCode()).isEqualTo("RATING403_1")
         );
     }
 
@@ -122,9 +124,9 @@ class RatingServiceTest {
     void missingRatingCannotBeDeleted() {
         when(ratingRepository.findById(999L)).thenReturn(java.util.Optional.empty());
 
-        assertThatThrownBy(() -> ratingService.delete(999L, 1L))
-                .isInstanceOfSatisfying(BusinessException.class, exception ->
-                        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.RATING_NOT_FOUND)
+        assertThatThrownBy(() -> ratingService.delete(1L, 999L))
+                .isInstanceOfSatisfying(ApiException.class, exception ->
+                        assertThat(exception.getCode()).isEqualTo("RATING404_1")
                 );
     }
 

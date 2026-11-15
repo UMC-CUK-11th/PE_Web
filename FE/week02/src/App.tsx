@@ -1,5 +1,8 @@
 import { Route, Routes } from "react-router-dom";
 import { Header } from "./components/header";
+import { LoginPage } from "./pages/auth/login-page";
+import { MemberProfileEditPage } from "./pages/member/member-profile-edit-page";
+import { MemberProfilePage } from "./pages/member/member-profile-page";
 import { MovieDetailPage } from "./pages/movie-detail-page";
 import { MovieListPage } from "./pages/movie-list-page";
 import { SearchPage } from "./pages/search-page";
@@ -12,6 +15,9 @@ export default function App() {
         <Route path="/" element={<MovieListPage />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/movies/:movieId" element={<MovieDetailPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/my" element={<MemberProfilePage />} />
+        <Route path="/my/edit" element={<MemberProfileEditPage />} />
         <Route path="*" element={<MovieDetailPage />} />
       </Routes>
       <footer className="mt-auto h-14 shrink-0 border-t border-[#e1e4e8] bg-white">

@@ -3,14 +3,18 @@ package com.umc11th.controller;
 import com.umc11th.dto.ApiResponse;
 import com.umc11th.dto.EmailCheckResponse;
 import com.umc11th.dto.MemberResponse;
+import com.umc11th.dto.MemberInfoResponse;
+import com.umc11th.dto.MemberUpdateRequest;
 import com.umc11th.dto.NicknameCheckResponse;
 import com.umc11th.dto.SignUpRequest;
 import com.umc11th.service.MemberService;
+import com.umc11th.auth.LoginMember;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,5 +44,22 @@ public class MemberController {
         MemberResponse response = memberService.signUp(request);
         return ResponseEntity.status(201)
                 .body(ApiResponse.created("회원가입에 성공했습니다.", response));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<MemberInfoResponse>> getMyInfo(
+            @LoginMember Long memberId
+    ) {
+        MemberInfoResponse response = memberService.getMyInfo(memberId);
+        return ResponseEntity.ok(ApiResponse.ok("회원 정보를 조회했습니다.", response));
+    }
+
+    @PatchMapping("/me")
+    public ResponseEntity<ApiResponse<MemberInfoResponse>> updateMyInfo(
+            @LoginMember Long memberId,
+            @RequestBody @Valid MemberUpdateRequest request
+    ) {
+        MemberInfoResponse response = memberService.updateMyInfo(memberId, request);
+        return ResponseEntity.ok(ApiResponse.ok("회원 정보를 수정했습니다.", response));
     }
 }
