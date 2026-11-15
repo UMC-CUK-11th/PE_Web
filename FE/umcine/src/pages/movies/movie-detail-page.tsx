@@ -1,8 +1,8 @@
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "@tanstack/react-router";
 
 import { DetailBookmarkButton } from "../../components/bookmark-button";
+import { RatingPanel } from "../../components/movies/rating-panel";
 import { getMovieDetail } from "../../api/movies/get-movie-detail";
 import { getMovieDetailErrorMessage } from "../../utils/movies/get-movie-detail-error-message";
 
@@ -20,10 +20,6 @@ export function MovieDetailPage() {
     staleTime: 30 * 1000,
   });
   const movie = movieDetailQuery.data;
-
-  const [rating, setRating] = useState(0);
-  const [review, setReview] = useState("");
-  const [isReviewSaved, setIsReviewSaved] = useState(false);
 
   // 상영 시간을 'X시간 Y분' 형식으로 변환하는 헬퍼 함수
   const formatRuntime = (runtime: number | null | undefined) => {
@@ -95,19 +91,8 @@ export function MovieDetailPage() {
           </div>
         </div>
 
-        <aside className="border-l border-[#dfe2e7] pl-5 max-[700px]:mt-7 max-[700px]:border-l-0 max-[700px]:border-t max-[700px]:pl-0 max-[700px]:pt-[22px]">
-          <h2 className="mb-[5px] text-[14px] font-bold">내 평점</h2>
-          <p className="mb-[9px] text-[9px] text-[#9aa0aa]">별점은 필수, 후기는 선택이에요.</p>
-          <div className="mb-1.5 flex gap-1" aria-label={`평점 ${rating}점`}>
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button key={star} type="button" className="grid h-[25px] w-[25px] place-items-center rounded border border-[#dfe2e7] bg-white" onClick={() => setRating(star)} aria-label={`${star}점`}>
-                <img className="h-[15px] w-[15px]" src={`/icons/movie-icons/${star <= rating ? "star.svg" : "star-outline.svg"}`} alt="" />
-              </button>
-            ))}
-          </div>
-          <textarea className="box-border h-[68px] w-full resize-none rounded-[5px] border border-[#dfe2e7] bg-white p-[10px] text-[9px] text-[#50545c] outline-none placeholder:text-[#a8adb6]" value={review} onChange={(event) => setReview(event.target.value)} placeholder="영화를 보고 느낀 점을 남겨보세요." />
-          <button className="mt-[7px] h-[27px] w-full rounded-[5px] bg-[#17191f] text-[9px] font-bold text-white" type="button" onClick={() => setIsReviewSaved(true)}>{isReviewSaved ? "평점이 저장되었어요" : "평점 저장"}</button>
-        </aside>
+        {/* 8주차: 평점 조회·등록·수정·삭제를 서버와 연결했어요. */}
+        <RatingPanel movieId={movie.id} />
       </section>
 
       <footer className="flex min-h-[32px] items-center justify-end border-t border-[#e7e9ed] bg-white px-12 text-[8px] text-[#8e949e] max-[700px]:justify-center max-[700px]:px-4 max-[700px]:text-center">이 제품은 TMDB API를 사용하지만 TMDB에서 보증하거나 인증하지 않았습니다.</footer>

@@ -1,8 +1,8 @@
 spring:
   application:
     name: movie
-  # src/main/resources/.env(DB_PASSWORD=...)를 classpath에서 읽어서 실행 위치(IntelliJ/Gradle)와 무관하게 동작합니다.
-  # .env는 .gitignore에 포함되어 커밋되지 않습니다. 환경 변수 DB_PASSWORD로 넣어도 됩니다.
+  # src/main/resources/.env(DB_USER, DB_PW, JWT_SECRET, JWT_ACCESS_EXPIRATION)를 classpath에서 읽어서 실행 위치(IntelliJ/Gradle)와 무관하게 동작합니다.
+  # .env는 .gitignore에 포함되어 커밋되지 않습니다. 같은 이름의 환경 변수로 넣어도 됩니다.
   config:
     import: optional:classpath:.env[.properties]
   datasource:
@@ -13,3 +13,7 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+
+jwt:
+  secret: ${JWT_SECRET} # 서명에 쓸 비밀키(32자 이상). 코드에 직접 쓰지 않습니다
+  access-expiration: ${JWT_ACCESS_EXPIRATION} # 토큰 유효시간(초)
