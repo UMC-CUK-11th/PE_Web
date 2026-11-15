@@ -3,6 +3,10 @@ package com.umc.movie.service;
 import com.umc.movie.dto.AvailabilityResponse;
 import com.umc.movie.dto.MemberResponse;
 import com.umc.movie.dto.SignUpRequest;
+import com.umc.movie.dto.MemberInfoResponse;
+import com.umc.movie.dto.UpdateMemberRequest;
+import com.umc.movie.exception.ApiException;
+import org.springframework.http.HttpStatus;
 import com.umc.movie.entity.Member;
 import com.umc.movie.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +21,26 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+
+    public MemberInfoResponse getMe(Long memberId) {
+        return MemberInfoResponse.from(findMember(memberId));
+    }
+
+    @Transactional
+    public MemberInfoResponse updateMe(Long memberId, UpdateMemberRequest request) {
+        Member member = findMember(memberId);
+        if (!member.getNickname().equals(request.nickname())
+                && memberRepository.existsByNickname(request.nickname())) {
+            throw new ApiException(HttpStatus.CONFLICT, "MEMBER409_1", "이미 사용 중인 닉네임입니다.");
+        }
+        member.updateNickname(request.nickname());
+        return MemberInfoResponse.from(member);
+    }
+
+    private Member findMember(Long memberId) {
+        return memberRepository.findById(memberId).orElseThrow(() ->
+                new ApiException(HttpStatus.NOT_FOUND, "MEMBER404_1", "해당 회원을 찾을 수 없습니다."));
+    }
 
     public AvailabilityResponse checkNickname(String nickname) {
         return new AvailabilityResponse(!memberRepository.existsByNickname(nickname));

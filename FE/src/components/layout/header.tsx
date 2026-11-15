@@ -9,7 +9,7 @@ export function Header() {
         UMCine
       </Link>
       {/* activeProps는 현재 URL의 링크를 강조하고 보조 기술에 현재 페이지를 알려준다. */}
-      <nav className="flex gap-4 text-sm text-white" aria-label="주요 메뉴">
+      <nav className="flex flex-wrap gap-4 text-sm text-white" aria-label="주요 메뉴">
         <Link
           to="/"
           activeOptions={{ exact: true }}
@@ -33,6 +33,9 @@ export function Header() {
         <Link to="/members" activeProps={{ "aria-current": "page", className: "font-bold text-[#e50914]" }}>
           회원 · 평점
         </Link>
+        <Link to="/signup">회원가입</Link>
+        <Link to="/login">로그인</Link>
+        <Link to="/me">내 정보</Link>
       </nav>
     </header>
   );

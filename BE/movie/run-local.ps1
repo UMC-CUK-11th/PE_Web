@@ -3,7 +3,7 @@ Set-Location $PSScriptRoot
 $configFile = Join-Path $PSScriptRoot '.env.local'
 if (Test-Path -LiteralPath $configFile) {
     foreach ($configLine in Get-Content -LiteralPath $configFile) {
-        if ($configLine -match '^\s*(DB_URL|DB_USER|DB_PASSWORD|PORT)\s*=(.*)$') {
+        if ($configLine -match '^\s*(DB_URL|DB_USER|DB_PASSWORD|PORT|JWT_SECRET|JWT_ACCESS_EXPIRATION)\s*=(.*)$') {
             $configKey = $Matches[1]
             $configValue = $Matches[2].Trim().Trim('"').Trim("'")
             [Environment]::SetEnvironmentVariable($configKey, $configValue, 'Process')

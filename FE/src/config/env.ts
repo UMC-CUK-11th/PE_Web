@@ -1,5 +1,6 @@
 // VITE_ 변수는 브라우저에 포함된다. 실제 토큰은 Git에서 제외되는 .env.local에 작성한다.
 export const env = {
+  apiBaseUrl: import.meta.env.VITE_API_BASE_URL?.trim() || import.meta.env.VITE_BACKEND_API_BASE_URL?.trim() || "http://localhost:8080",
   backendApiBaseUrl: import.meta.env.VITE_BACKEND_API_BASE_URL?.trim() || "http://localhost:8080",
   tmdbApiBaseUrl: import.meta.env.VITE_TMDB_API_BASE_URL?.trim() ?? "",
   tmdbAccessToken: import.meta.env.VITE_TMDB_ACCESS_TOKEN?.trim() ?? "",
