@@ -1,0 +1,23 @@
+$kind: http-request
+name: "3. A 평점 등록 [캡처 4: Body와 201]"
+url: "{{baseUrl}}/ratings"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenA}}
+body:
+  type: json
+  content: |-
+    {
+      "movieId": 550,
+      "score": 5,
+      "comment": "7주차 실습"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('HTTP 201', () => pm.response.to.have.status(201));
+      pm.test('COMMON201', () => pm.expect(pm.response.json().code).to.eql('COMMON201'));
+      if (pm.response.code === 201) pm.collectionVariables.set('ratingId', pm.response.json().result.ratingId);
+    language: text/javascript
+order: 5000

@@ -18,3 +18,7 @@ spring:
 app:
   cors-enabled: ${CORS_ENABLED:true}
   cors-origins: ${CORS_ORIGINS:http://localhost:5173,http://127.0.0.1:5173}
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-expiration: ${JWT_ACCESS_EXPIRATION}

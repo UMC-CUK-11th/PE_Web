@@ -1,0 +1,7 @@
+# Use this workspace to collaborate
+workspace:
+  id: 5d20f006-659c-4b8d-86c1-9ce1c5f77ace
+
+localResources:
+  collections:
+    - ../postman/collections/UMC 11기 7주차 필수 인증·인가

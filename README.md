@@ -37,10 +37,13 @@ pnpm이 PATH에 설치되어 있으면 `pnpm install`, `pnpm dev`, `pnpm build`�
 DB_URL=jdbc:mysql://localhost:3306/umc_movie
 DB_USER=본인_DB_사용자
 DB_PASSWORD=본인_DB_비밀번호
+JWT_SECRET=직접_생성한_32바이트_이상_무작위_비밀키
+JWT_ACCESS_EXPIRATION=3600
 ```
 
 ```powershell
 cd BE/movie
+$env:GRADLE_USER_HOME = "$env:USERPROFILE\.gradle"
 .\gradlew.bat build
 .\gradlew.bat bootRun
 ```
@@ -51,11 +54,16 @@ cd BE/movie
 
 - `/`: TMDB 인기 영화, `/search`: 영화 검색, `/movies/155`: 영화 상세
 - `/members`: 자체 BE의 닉네임·이메일 중복 확인 및 회원별 평점 조회
+- `/signup`: 입력 검증·중복 확인·실제 회원가입 API 연결
+- `/login`, `/mypage`, `/mypage/edit`: 7주차 필수 화면. 로그인 FE API 연결은 8주차 범위이며, 내 정보는 예시 데이터의 입력·변경을 확인한다.
 - [API 명세와 ERD](docs/api-spec.md)
 - [5주차 진행·검증 기록](docs/week05-progress.md)
 - [6주차 진행·검증 기록](docs/week06-progress.md)
+- [7주차 진행·검증 기록](docs/week07-progress.md)
+- [7주차 Postman v3 컬렉션](<docs/postman/UMC 11기 7주차 필수 인증·인가/.resources/definition.yaml>): Postman Local Mode에서 `docs/postman/UMC 11기 7주차 필수 인증·인가`를 펼쳐 요청을 위에서 아래로 실행하고 캡처한다. 기존 JSON은 Postman의 Upgrade to v3로 17개 YAML 요청 파일로 변환됐다.
+- `node scripts/verify-week07.mjs`: 현재 토큰 기반 API와 실제 MySQL을 검증한다. 검증용 회원 2명을 만들고 평점은 삭제한다. 토큰·비밀번호는 기록에서 가린다.
 - `node scripts/verify-week05.mjs`: 실행 중인 로컬 BE와 실제 TMDB를 검증하고 `docs/evidence/week05/api-responses.json`에 결과 저장
-- `node scripts/verify-week06.mjs`: 검증용 회원 생성·평점 수명주기 및 오류 응답을 실제 로컬 BE에서 확인
+- `node scripts/verify-week06.mjs`: 6주차 커밋의 이전 API 계약용 검증기. 7주차 서버에는 `verify-week07.mjs`를 사용한다.
 - `node scripts/verify-query-cache.mjs`: 실제 QueryClient·TMDB를 이용한 1→2→1 캐시 재사용 확인
 - `/api-check.html`: 개발 서버에서만 직접 여는 API 요청·응답 확인 도구. 프로덕션 빌드 엔트리에 포함하지 않는다.
 

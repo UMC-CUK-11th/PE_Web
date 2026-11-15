@@ -2,6 +2,35 @@
 
 기본 주소: `http://localhost:8080`. 영화 목록·검색·상세는 FE가 TMDB에 직접 요청한다.
 
+## 현재 계약: 7주차 인증·인가
+
+공통 성공 응답은 `isSuccess/code/message/result`다. 아래 회원·평점 응답에서 password는 제외한다.
+
+| 기능 | Method / URL | 요청 | 성공 |
+| --- | --- | --- | --- |
+| 로그인 | POST `/auth/login` | email, password | 200 / COMMON200, result: nickname·accessToken |
+| 내 정보 | GET `/members/me` | Bearer 토큰 | 200 / COMMON200, result: email·nickname·createdAt |
+| 내 정보 수정 | PATCH `/members/me` | Bearer 토큰, nickname(2~12자) | 200 / COMMON200, 변경된 내 정보 |
+| 평점 등록 | POST `/ratings` | Bearer 토큰, movieId·score·comment(선택) | 201 / COMMON201, result: RatingResponse |
+| 평점 수정 | PATCH `/ratings/{ratingId}` | Bearer 토큰, score·comment(선택) | 200 / COMMON200, result: RatingResponse |
+| 평점 삭제 | DELETE `/ratings/{ratingId}` | Bearer 토큰 | 200 / COMMON200, result:null |
+
+평점 쓰기는 memberId를 경로·바디에서 읽지 않는다. 인터셉터가 검증한 JWT의 sub를 요청 속성으로 전달한다. 이전 `/members/{memberId}/ratings` 쓰기 매핑은 제거했으며 공개 GET만 유지한다. 회원가입과 이메일·닉네임 중복 확인도 계속 공개다.
+
+| 실패 | HTTP / code |
+| --- | --- |
+| 없는 이메일 또는 잘못된 비밀번호 | 401 / AUTH401_1 (동일한 메시지) |
+| Bearer 헤더 누락 | 401 / AUTH401_2 |
+| 변조·형식 오류 토큰 | 401 / AUTH401_3 |
+| 만료 토큰 | 401 / AUTH401_4 |
+| 없는 회원 | 404 / MEMBER404_1 |
+| 닉네임 변경 시 타인 닉네임 중복 | 409 / MEMBER409_1 |
+| 없는 평점 | 404 / RATING404_1 |
+| 타인 평점 수정·삭제 | 403 / RATING403_1 |
+| 같은 회원·영화의 중복 평점 | 409 / RATING409_1 |
+
+입력 검증·잘못된 JSON은 기존 COMMON400, 회원가입 중복·DB 제약 위반은 기존 COMMON409를 유지한다. JWT는 서명·만료를 검사하고 60초 clock skew를 적용한다. CORS는 기존 두 로컬 origin과 Authorization 헤더를 허용한다. 아래 6주차 명세는 이전 계약 기록이며 현재 쓰기 요청에는 적용하지 않는다.
+
 ## 5주차 조회 API
 
 | 기능 | Method / URL | 요청 | 성공 응답 |
