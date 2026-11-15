@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { addFavorite, getFavoriteStatus, removeFavorite } from "../api/favorites";
+import { addFavorite, getFavorites, getFavoriteStatus, removeFavorite } from "../api/favorites";
 import { useAuthStore } from "../stores/auth-store";
 
 // query key 규칙
@@ -11,6 +11,17 @@ export function useFavoriteStatusQuery(movieId: number) {
   return useQuery({
     queryKey: ["favorites", "status", movieId],
     queryFn: () => getFavoriteStatus(movieId),
+    enabled: Boolean(accessToken),
+    retry: false,
+  });
+}
+
+export function useFavoritesQuery() {
+  const accessToken = useAuthStore((state) => state.accessToken);
+
+  return useQuery({
+    queryKey: ["favorites", "list"],
+    queryFn: getFavorites,
     enabled: Boolean(accessToken),
     retry: false,
   });

@@ -14,3 +14,15 @@ export function addFavorite(movieId: number) {
 export function removeFavorite(movieId: number) {
   return authApi.delete(`favorites/${movieId}`).json<ApiResponse<null>>();
 }
+
+export interface FavoriteItem {
+  favoriteId: number;
+  movieId: number;
+  createdAt: string;
+}
+
+// 내 찜 목록 (최신 등록 순)
+export async function getFavorites(): Promise<FavoriteItem[]> {
+  const response = await authApi.get("favorites").json<ApiResponse<FavoriteItem[]>>();
+  return response.result;
+}
