@@ -1,16 +1,15 @@
-import ky, { HTTPError } from "ky";
-import { API_BASE_URL } from "../config/env";
-
-const memberClient = ky.create({ baseUrl: API_BASE_URL, timeout: 15000, retry: 0 });
+import { HTTPError } from "ky";
+import type { ApiResponse } from "../types/api";
+import { apiClient } from "./api-client";
 
 export async function checkAvailability(field: "email" | "nickname", value: string) {
-  const result = await memberClient.get(`members/${field}/${encodeURIComponent(value.trim())}`).json<{ available: boolean }>();
+  const result = await apiClient.get(`members/${field}/${encodeURIComponent(value.trim())}`).json<{ available: boolean }>();
   if (typeof result.available !== "boolean") throw new Error("응답 형식이 올바르지 않습니다.");
   return result.available;
 }
 
-export async function signUp(member: { email: string; nickname: string; password: string }) {
-  await memberClient.post("members", { json: member });
+export function signUp(member: { email: string; nickname: string; password: string }) {
+  return apiClient.post("members", { json: member }).json<ApiResponse<unknown>>();
 }
 
 export function memberRequestError(error: unknown): string {
