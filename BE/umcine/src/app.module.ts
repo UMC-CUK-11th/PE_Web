@@ -1,13 +1,16 @@
 // src/app.module.ts
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Member } from './entity/member.entity.js';
 import { Rating } from './entity/rating.entity.js';
 import { MemberController } from './controller/member.controller.js';
 import { RatingController } from './controller/rating.controller.js';
+import { AuthController } from './controller/auth.controller.js';
 import { MemberService } from './service/member.service.js';
 import { RatingService } from './service/rating.service.js';
+import { AuthService } from './service/auth.service.js';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -23,8 +26,22 @@ import { RatingService } from './service/rating.service.js';
       synchronize: false,
     }),
     TypeOrmModule.forFeature([Member, Rating]),
+
+    JwtModule.registerAsync({
+      global: true, // 전역 등록해두면 어느 서비스에서든 JwtService를 주입받을 수 있습니다
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'),
+        signOptions: {
+          // 초 단위 숫자로 넘깁니다. 환경변수는 문자열로 들어오므로 Number()로 바꿔주세요.
+          expiresIn: Number(
+            configService.get<string>('JWT_ACCESS_EXPIRATION') ?? 3600,
+          ),
+        },
+      }),
+    }),
   ],
-  controllers: [MemberController, RatingController],
-  providers: [MemberService, RatingService],
+  controllers: [MemberController, RatingController, AuthController],
+  providers: [MemberService, RatingService, AuthService],
 })
 export class AppModule {}
