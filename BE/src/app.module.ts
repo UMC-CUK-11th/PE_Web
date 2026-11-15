@@ -10,6 +10,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { Member } from './entity/member.entity.js';
 import { Rating } from './entity/rating.entity.js';
+import { Favorite } from './entity/favorite.entity.js';
+import { FavoriteController } from './controller/favorite.controller.js';
+import { MovieRecordController } from './controller/movie-record.controller.js';
+import { FavoriteService } from './service/favorite.service.js';
+import { MovieRecordService } from './service/movie-record.service.js';
 
 import { MemberController } from './controller/member.controller.js';
 import { RatingController } from './controller/rating.controller.js';
@@ -35,7 +40,7 @@ import { RatingService } from './service/rating.service.js';
       synchronize: false,
     }),
 
-    TypeOrmModule.forFeature([Member, Rating]),
+    TypeOrmModule.forFeature([Member, Rating, Favorite]),
     JwtModule.registerAsync({
       global: true,
       inject: [ConfigService],
@@ -52,6 +57,8 @@ import { RatingService } from './service/rating.service.js';
     AuthController,
     MemberController,
     RatingController,
+    FavoriteController,
+    MovieRecordController,
   ],
 
   providers: [
@@ -59,6 +66,8 @@ import { RatingService } from './service/rating.service.js';
     AuthGuard,
     MemberService,
     RatingService,
+    FavoriteService,
+    MovieRecordService,
   ],
 })
 export class AppModule {}
