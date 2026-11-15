@@ -15,3 +15,7 @@ spring:
   jackson:
     deserialization:
       accept-float-as-int: false
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-expiration: ${JWT_ACCESS_EXPIRATION}

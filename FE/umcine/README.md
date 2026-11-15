@@ -1,5 +1,12 @@
 # React + TypeScript + Vite
 
+## Week 07 회원가입과 인증 화면
+
+회원가입 검증·중복 확인·API 연동과 로그인·내 정보 조회/수정 화면을 구현했습니다.
+로그인·내 정보는 7주차 퍼블리싱 범위이며 예시 프로필을 사용합니다.
+
+실행 방법, 실제 캡처, 검증 결과 및 제출 순서는 [7주차 제출 안내](docs/week07-submission.md)를 참고하세요.
+
 ## Week 06 TanStack Query 미션
 
 영화 목록·검색·상세 요청을 TanStack Query로 관리합니다. 공통 staleTime은 60초,
