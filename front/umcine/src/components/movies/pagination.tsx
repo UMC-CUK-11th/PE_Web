@@ -4,10 +4,11 @@ interface PaginationProps {
   currentPage: number;
   pageCount: number;
   onPageChange: (page: number) => void;
+  showSinglePage?: boolean;
 }
 
-export function Pagination({ currentPage, pageCount, onPageChange }: PaginationProps) {
-  if (pageCount <= 1) {
+export function Pagination({ currentPage, pageCount, onPageChange, showSinglePage = false }: PaginationProps) {
+  if (pageCount < 1 || (pageCount === 1 && !showSinglePage)) {
     return null;
   }
 

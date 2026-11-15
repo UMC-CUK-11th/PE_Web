@@ -23,13 +23,19 @@ export function Header() {
         >
           검색
         </Link>
-        <a className="text-xs font-semibold text-[#8b919c] no-underline" href="#my-page">내 정보</a>
+        <Link
+          to="/my-page"
+          className="text-xs font-semibold text-[#8b919c] no-underline"
+          activeProps={{ className: cn("text-xs font-semibold no-underline", "text-[#252b35]") }}
+        >
+          내 정보
+        </Link>
       </nav>
       <div className="flex items-center gap-3">
         <Link className="grid h-[34px] w-[34px] place-items-center rounded-[7px] border border-[#dce0e6] bg-white p-1.5" to="/search" aria-label="검색">
           <img className="h-[18px] w-[18px]" src="/icons/search.svg" alt="" />
         </Link>
-        <button className="h-8 min-w-[50px] rounded-[5px] border-0 bg-[#2f65dd] px-[11px] text-[11px] font-bold text-white" type="button">로그인</button>
+        <Link to="/login" className="inline-flex h-8 min-w-[50px] items-center justify-center rounded-[5px] bg-[#2f65dd] px-[11px] text-[11px] font-bold text-white no-underline">로그인</Link>
       </div>
     </header>
   );
