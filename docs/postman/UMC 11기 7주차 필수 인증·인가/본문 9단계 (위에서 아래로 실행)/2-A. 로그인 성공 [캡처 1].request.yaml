@@ -1,0 +1,20 @@
+$kind: http-request
+url: "{{baseUrl}}/auth/login"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "email": "umc07a_{{stamp}}@example.com",
+      "password": "{{testPassword}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('HTTP 200', () => pm.response.to.have.status(200));
+      pm.test('COMMON200', () => pm.expect(pm.response.json().code).to.eql('COMMON200'));
+      if (pm.response.code === 200) pm.collectionVariables.set('tokenA', pm.response.json().result.accessToken);
+    language: text/javascript
+order: 3000

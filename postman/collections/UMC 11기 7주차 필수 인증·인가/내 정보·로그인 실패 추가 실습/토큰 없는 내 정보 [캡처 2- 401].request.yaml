@@ -1,0 +1,11 @@
+$kind: http-request
+name: "토큰 없는 내 정보 [캡처 2: 401]"
+url: "{{baseUrl}}/members/me"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('HTTP 401', () => pm.response.to.have.status(401));
+      pm.test('AUTH401_2', () => pm.expect(pm.response.json().code).to.eql('AUTH401_2'));
+    language: text/javascript
+order: 1000

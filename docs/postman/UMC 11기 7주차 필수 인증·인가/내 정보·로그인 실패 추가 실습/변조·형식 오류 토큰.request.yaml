@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{baseUrl}}/members/me"
+method: GET
+headers:
+  Authorization: Bearer {{invalidToken}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('HTTP 401', () => pm.response.to.have.status(401));
+      pm.test('AUTH401_3', () => pm.expect(pm.response.json().code).to.eql('AUTH401_3'));
+    language: text/javascript
+order: 6000

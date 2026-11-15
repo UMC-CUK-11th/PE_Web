@@ -1,0 +1,11 @@
+$kind: collection
+description: 로컬 Spring Boot를 실행한 뒤 위에서 아래로 요청합니다. 테스트 회원 2명을 생성하고 평점은 마지막에 삭제합니다. 최종 제출 캡처는 실제 요청 결과에서 촬영하세요.
+variables:
+  baseUrl: http://127.0.0.1:8080
+  testPassword: Umcine123!
+  stamp: ""
+  shortStamp: ""
+  tokenA: ""
+  tokenB: ""
+  ratingId: ""
+  invalidToken: invalid

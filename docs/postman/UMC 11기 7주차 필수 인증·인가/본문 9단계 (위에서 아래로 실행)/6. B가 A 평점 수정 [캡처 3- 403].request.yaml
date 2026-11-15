@@ -1,0 +1,20 @@
+$kind: http-request
+name: "6. B가 A 평점 수정 [캡처 3: 403]"
+url: "{{baseUrl}}/ratings/{{ratingId}}"
+method: PATCH
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenB}}
+body:
+  type: json
+  content: |-
+    {
+      "score": 2
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('HTTP 403', () => pm.response.to.have.status(403));
+      pm.test('RATING403_1', () => pm.expect(pm.response.json().code).to.eql('RATING403_1'));
+    language: text/javascript
+order: 8000

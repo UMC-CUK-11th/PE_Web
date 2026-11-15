@@ -1,0 +1,26 @@
+$kind: http-request
+url: "{{baseUrl}}/members"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "email": "umc07a_{{stamp}}@example.com",
+      "nickname": "A{{shortStamp}}",
+      "password": "{{testPassword}}"
+    }
+scripts:
+  - type: beforeRequest
+    code: |-
+      const stamp = Date.now().toString();
+      pm.collectionVariables.set('stamp', stamp);
+      pm.collectionVariables.set('shortStamp', stamp.slice(-8));
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      pm.test('HTTP 201', () => pm.response.to.have.status(201));
+      pm.test('COMMON201', () => pm.expect(pm.response.json().code).to.eql('COMMON201'));
+    language: text/javascript
+order: 1000

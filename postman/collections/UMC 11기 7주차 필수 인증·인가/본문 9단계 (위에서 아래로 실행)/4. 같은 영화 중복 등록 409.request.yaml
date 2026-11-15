@@ -1,0 +1,20 @@
+$kind: http-request
+url: "{{baseUrl}}/ratings"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenA}}
+body:
+  type: json
+  content: |-
+    {
+      "movieId": 550,
+      "score": 4
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('HTTP 409', () => pm.response.to.have.status(409));
+      pm.test('RATING409_1', () => pm.expect(pm.response.json().code).to.eql('RATING409_1'));
+    language: text/javascript
+order: 6000

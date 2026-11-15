@@ -1,0 +1,496 @@
+{
+  "recordedAt": "2026-11-11T13:13:29.854Z",
+  "runtime": "Node fetch → running Spring Boot → local MySQL; not Postman screenshots",
+  "passed": true,
+  "checks": [
+    {
+      "name": "1. A 가입",
+      "method": "POST",
+      "url": "http://127.0.0.1:8080/members",
+      "request": {
+        "email": "umc07a_1794402807123@example.com",
+        "nickname": "검증A807123",
+        "password": "[test password redacted]"
+      },
+      "status": 201,
+      "response": {
+        "isSuccess": true,
+        "code": "COMMON201",
+        "message": "회원가입에 성공했습니다.",
+        "result": {
+          "memberId": 8,
+          "email": "umc07a_1794402807123@example.com",
+          "nickname": "검증A807123"
+        }
+      }
+    },
+    {
+      "name": "1. B 가입",
+      "method": "POST",
+      "url": "http://127.0.0.1:8080/members",
+      "request": {
+        "email": "umc07b_1794402807123@example.com",
+        "nickname": "검증B807123",
+        "password": "[test password redacted]"
+      },
+      "status": 201,
+      "response": {
+        "isSuccess": true,
+        "code": "COMMON201",
+        "message": "회원가입에 성공했습니다.",
+        "result": {
+          "memberId": 9,
+          "email": "umc07b_1794402807123@example.com",
+          "nickname": "검증B807123"
+        }
+      }
+    },
+    {
+      "name": "2. A 로그인",
+      "method": "POST",
+      "url": "http://127.0.0.1:8080/auth/login",
+      "request": {
+        "email": "umc07a_1794402807123@example.com",
+        "password": "[test password redacted]"
+      },
+      "status": 200,
+      "response": {
+        "isSuccess": true,
+        "code": "COMMON200",
+        "message": "로그인에 성공했습니다.",
+        "result": {
+          "nickname": "검증A807123",
+          "accessToken": "[access token redacted; received and used in memory]"
+        }
+      }
+    },
+    {
+      "name": "2. B 로그인",
+      "method": "POST",
+      "url": "http://127.0.0.1:8080/auth/login",
+      "request": {
+        "email": "umc07b_1794402807123@example.com",
+        "password": "[test password redacted]"
+      },
+      "status": 200,
+      "response": {
+        "isSuccess": true,
+        "code": "COMMON200",
+        "message": "로그인에 성공했습니다.",
+        "result": {
+          "nickname": "검증B807123",
+          "accessToken": "[access token redacted; received and used in memory]"
+        }
+      }
+    },
+    {
+      "name": "JWT 로컬 디코딩 (jwt.io 화면 검증과 구분)",
+      "header": {
+        "alg": "HS512"
+      },
+      "payload": {
+        "sub": "8",
+        "email": "umc07a_1794402807123@example.com",
+        "iat": 1794402808,
+        "exp": 1794406408
+      }
+    },
+    {
+      "name": "3. A 평점 등록",
+      "method": "POST",
+      "url": "http://127.0.0.1:8080/ratings",
+      "request": {
+        "movieId": 550,
+        "score": 5,
+        "comment": "7주차 실제 API 검증"
+      },
+      "authorization": "Bearer [token redacted]",
+      "status": 201,
+      "response": {
+        "isSuccess": true,
+        "code": "COMMON201",
+        "message": "평점 등록에 성공했습니다.",
+        "result": {
+          "ratingId": 7,
+          "movieId": 550,
+          "score": 5,
+          "comment": "7주차 실제 API 검증",
+          "createdAt": "2026-11-11T22:13:28.950476",
+          "updatedAt": "2026-11-11T22:13:28.950476"
+        }
+      }
+    },
+    {
+      "name": "4. 같은 영화 중복",
+      "method": "POST",
+      "url": "http://127.0.0.1:8080/ratings",
+      "request": {
+        "movieId": 550,
+        "score": 4
+      },
+      "authorization": "Bearer [token redacted]",
+      "status": 409,
+      "response": {
+        "isSuccess": false,
+        "code": "RATING409_1",
+        "message": "이미 이 영화에 평점을 남기셨습니다.",
+        "result": null
+      }
+    },
+    {
+      "name": "5. A 본인 수정",
+      "method": "PATCH",
+      "url": "http://127.0.0.1:8080/ratings/7",
+      "request": {
+        "score": 4,
+        "comment": "본인 수정 확인"
+      },
+      "authorization": "Bearer [token redacted]",
+      "status": 200,
+      "response": {
+        "isSuccess": true,
+        "code": "COMMON200",
+        "message": "평점 수정에 성공했습니다.",
+        "result": {
+          "ratingId": 7,
+          "movieId": 550,
+          "score": 4,
+          "comment": "본인 수정 확인",
+          "createdAt": "2026-11-11T22:13:29",
+          "updatedAt": "2026-11-11T22:13:29.0373"
+        }
+      }
+    },
+    {
+      "name": "6. B가 A 평점 수정",
+      "method": "PATCH",
+      "url": "http://127.0.0.1:8080/ratings/7",
+      "request": {
+        "score": 2
+      },
+      "authorization": "Bearer [token redacted]",
+      "status": 403,
+      "response": {
+        "isSuccess": false,
+        "code": "RATING403_1",
+        "message": "본인이 작성한 평점만 수정하거나 삭제할 수 있습니다.",
+        "result": null
+      }
+    },
+    {
+      "name": "7. 토큰 없이 수정",
+      "method": "PATCH",
+      "url": "http://127.0.0.1:8080/ratings/7",
+      "request": {
+        "score": 2
+      },
+      "status": 401,
+      "response": {
+        "isSuccess": false,
+        "code": "AUTH401_2",
+        "message": "로그인이 필요한 요청입니다.",
+        "result": null
+      }
+    },
+    {
+      "name": "8. 없는 평점 삭제",
+      "method": "DELETE",
+      "url": "http://127.0.0.1:8080/ratings/999999999",
+      "authorization": "Bearer [token redacted]",
+      "status": 404,
+      "response": {
+        "isSuccess": false,
+        "code": "RATING404_1",
+        "message": "해당 평점을 찾을 수 없습니다.",
+        "result": null
+      }
+    },
+    {
+      "name": "9. A 본인 삭제",
+      "method": "DELETE",
+      "url": "http://127.0.0.1:8080/ratings/7",
+      "authorization": "Bearer [token redacted]",
+      "status": 200,
+      "response": {
+        "isSuccess": true,
+        "code": "COMMON200",
+        "message": "평점을 삭제했습니다.",
+        "result": null
+      }
+    },
+    {
+      "name": "내 정보 조회",
+      "method": "GET",
+      "url": "http://127.0.0.1:8080/members/me",
+      "authorization": "Bearer [token redacted]",
+      "status": 200,
+      "response": {
+        "isSuccess": true,
+        "code": "COMMON200",
+        "message": "회원 정보를 조회했습니다.",
+        "result": {
+          "email": "umc07a_1794402807123@example.com",
+          "nickname": "검증A807123",
+          "createdAt": "2026-11-11T22:13:28"
+        }
+      }
+    },
+    {
+      "name": "제출 캡처용 무토큰 내 정보",
+      "method": "GET",
+      "url": "http://127.0.0.1:8080/members/me",
+      "status": 401,
+      "response": {
+        "isSuccess": false,
+        "code": "AUTH401_2",
+        "message": "로그인이 필요한 요청입니다.",
+        "result": null
+      }
+    },
+    {
+      "name": "내 닉네임 유지",
+      "method": "PATCH",
+      "url": "http://127.0.0.1:8080/members/me",
+      "request": {
+        "nickname": "검증A807123"
+      },
+      "authorization": "Bearer [token redacted]",
+      "status": 200,
+      "response": {
+        "isSuccess": true,
+        "code": "COMMON200",
+        "message": "회원 정보를 수정했습니다.",
+        "result": {
+          "email": "umc07a_1794402807123@example.com",
+          "nickname": "검증A807123",
+          "createdAt": "2026-11-11T22:13:28"
+        }
+      }
+    },
+    {
+      "name": "타인 닉네임 중복",
+      "method": "PATCH",
+      "url": "http://127.0.0.1:8080/members/me",
+      "request": {
+        "nickname": "검증B807123"
+      },
+      "authorization": "Bearer [token redacted]",
+      "status": 409,
+      "response": {
+        "isSuccess": false,
+        "code": "MEMBER409_1",
+        "message": "이미 사용 중인 닉네임입니다.",
+        "result": null
+      }
+    },
+    {
+      "name": "닉네임 검증 실패",
+      "method": "PATCH",
+      "url": "http://127.0.0.1:8080/members/me",
+      "request": {
+        "nickname": "가"
+      },
+      "authorization": "Bearer [token redacted]",
+      "status": 400,
+      "response": {
+        "isSuccess": false,
+        "code": "COMMON400",
+        "message": "닉네임은 2자 이상 12자 이하여야 합니다.",
+        "result": null
+      }
+    },
+    {
+      "name": "닉네임 변경",
+      "method": "PATCH",
+      "url": "http://127.0.0.1:8080/members/me",
+      "request": {
+        "nickname": "변경2807123"
+      },
+      "authorization": "Bearer [token redacted]",
+      "status": 200,
+      "response": {
+        "isSuccess": true,
+        "code": "COMMON200",
+        "message": "회원 정보를 수정했습니다.",
+        "result": {
+          "email": "umc07a_1794402807123@example.com",
+          "nickname": "변경2807123",
+          "createdAt": "2026-11-11T22:13:28"
+        }
+      }
+    },
+    {
+      "name": "변경 저장 재조회",
+      "method": "GET",
+      "url": "http://127.0.0.1:8080/members/me",
+      "authorization": "Bearer [token redacted]",
+      "status": 200,
+      "response": {
+        "isSuccess": true,
+        "code": "COMMON200",
+        "message": "회원 정보를 조회했습니다.",
+        "result": {
+          "email": "umc07a_1794402807123@example.com",
+          "nickname": "변경2807123",
+          "createdAt": "2026-11-11T22:13:28"
+        }
+      }
+    },
+    {
+      "name": "B 정보 유지 확인",
+      "method": "GET",
+      "url": "http://127.0.0.1:8080/members/me",
+      "authorization": "Bearer [token redacted]",
+      "status": 200,
+      "response": {
+        "isSuccess": true,
+        "code": "COMMON200",
+        "message": "회원 정보를 조회했습니다.",
+        "result": {
+          "email": "umc07b_1794402807123@example.com",
+          "nickname": "검증B807123",
+          "createdAt": "2026-11-11T22:13:28"
+        }
+      }
+    },
+    {
+      "name": "틀린 비밀번호",
+      "method": "POST",
+      "url": "http://127.0.0.1:8080/auth/login",
+      "request": {
+        "email": "umc07a_1794402807123@example.com",
+        "password": "[test password redacted]"
+      },
+      "status": 401,
+      "response": {
+        "isSuccess": false,
+        "code": "AUTH401_1",
+        "message": "이메일 또는 비밀번호가 올바르지 않습니다.",
+        "result": null
+      }
+    },
+    {
+      "name": "없는 이메일",
+      "method": "POST",
+      "url": "http://127.0.0.1:8080/auth/login",
+      "request": {
+        "email": "missing_1794402807123@example.com",
+        "password": "[test password redacted]"
+      },
+      "status": 401,
+      "response": {
+        "isSuccess": false,
+        "code": "AUTH401_1",
+        "message": "이메일 또는 비밀번호가 올바르지 않습니다.",
+        "result": null
+      }
+    },
+    {
+      "name": "payload 변조",
+      "method": "GET",
+      "url": "http://127.0.0.1:8080/members/me",
+      "authorization": "Bearer [token redacted]",
+      "status": 401,
+      "response": {
+        "isSuccess": false,
+        "code": "AUTH401_3",
+        "message": "유효하지 않은 토큰입니다.",
+        "result": null
+      }
+    },
+    {
+      "name": "형식 오류 토큰",
+      "method": "GET",
+      "url": "http://127.0.0.1:8080/members/me",
+      "authorization": "Bearer [token redacted]",
+      "status": 401,
+      "response": {
+        "isSuccess": false,
+        "code": "AUTH401_3",
+        "message": "유효하지 않은 토큰입니다.",
+        "result": null
+      }
+    },
+    {
+      "name": "별점 소수 거부",
+      "method": "POST",
+      "url": "http://127.0.0.1:8080/ratings",
+      "request": {
+        "movieId": 155,
+        "score": 2.5
+      },
+      "authorization": "Bearer [token redacted]",
+      "status": 400,
+      "response": {
+        "isSuccess": false,
+        "code": "COMMON400",
+        "message": "요청 값의 형식이 올바르지 않습니다.",
+        "result": null
+      }
+    },
+    {
+      "name": "별점 범위 거부",
+      "method": "POST",
+      "url": "http://127.0.0.1:8080/ratings",
+      "request": {
+        "movieId": 155,
+        "score": 6
+      },
+      "authorization": "Bearer [token redacted]",
+      "status": 400,
+      "response": {
+        "isSuccess": false,
+        "code": "COMMON400",
+        "message": "별점은 5점 이하여야 합니다.",
+        "result": null
+      }
+    },
+    {
+      "name": "공개 평점 조회 유지",
+      "method": "GET",
+      "url": "http://127.0.0.1:8080/members/8/ratings",
+      "status": 200,
+      "response": []
+    },
+    {
+      "name": "가입한 이메일 중복 확인",
+      "method": "GET",
+      "url": "http://127.0.0.1:8080/members/email/umc07a_1794402807123%40example.com",
+      "status": 200,
+      "response": {
+        "available": false
+      }
+    },
+    {
+      "name": "사용 가능 닉네임 확인",
+      "method": "GET",
+      "url": "http://127.0.0.1:8080/members/nickname/%EC%83%88%EA%B0%922807123",
+      "status": 200,
+      "response": {
+        "available": true
+      }
+    },
+    {
+      "name": "실제 CORS preflight",
+      "status": 200,
+      "allowOrigin": "http://127.0.0.1:5173",
+      "allowHeaders": "authorization, content-type"
+    },
+    {
+      "name": "기존 memberId 쓰기 경로 제거",
+      "method": "POST",
+      "url": "http://127.0.0.1:8080/members/8/ratings",
+      "request": {
+        "movieId": 550,
+        "score": 5
+      },
+      "status": 405,
+      "response": {
+        "timestamp": "2026-11-11T13:13:29.844+00:00",
+        "status": 405,
+        "error": "Method Not Allowed",
+        "path": "/members/8/ratings"
+      }
+    }
+  ]
+}
