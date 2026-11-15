@@ -1,0 +1,851 @@
+{
+  "info": {
+    "name": "7주차 BE 필수 미션",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "워크북 9단계를 순서대로 실행한 다음 본문 실습 API를 확인합니다. 기존 DB에 같은 계정이 있으면 emailA/emailB와 nicknameA/nicknameB를 사용하지 않은 값으로 바꾸세요. 실제 JWT는 Collection Variables에만 런타임 저장됩니다."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "emailA",
+      "value": "a@umc.com",
+      "type": "string"
+    },
+    {
+      "key": "emailB",
+      "value": "b@umc.com",
+      "type": "string"
+    },
+    {
+      "key": "password",
+      "value": "Movie123!",
+      "type": "string"
+    },
+    {
+      "key": "nicknameA",
+      "value": "영화광A",
+      "type": "string"
+    },
+    {
+      "key": "nicknameB",
+      "value": "영화광B",
+      "type": "string"
+    },
+    {
+      "key": "tokenA",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tokenB",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tamperedToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "memberIdA",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "ratingId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. 준비: 회원 A, B 가입",
+      "item": [
+        {
+          "name": "1-1. 회원 A 가입",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/members",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailA}}\",\n  \"password\": \"{{password}}\",\n  \"nickname\": \"{{nicknameA}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "['tokenA', 'tokenB', 'ratingId', 'memberIdA'].forEach(key => pm.collectionVariables.set(key, ''));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.test('code COMMON201', () => pm.expect(body.code).to.eql('COMMON201'));",
+                  "pm.test('isSuccess', () => pm.expect(body.isSuccess).to.eql(true));",
+                  "pm.test('회원 ID', () => pm.expect(body.result.memberId).to.be.a('number'));",
+                  "pm.collectionVariables.set('memberIdA', body.result.memberId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1-2. 회원 B 가입",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/members",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailB}}\",\n  \"password\": \"{{password}}\",\n  \"nickname\": \"{{nicknameB}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.test('code COMMON201', () => pm.expect(body.code).to.eql('COMMON201'));",
+                  "pm.test('isSuccess', () => pm.expect(body.isSuccess).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. 로그인: 토큰 A, B 발급",
+      "item": [
+        {
+          "name": "2-1. A 로그인 (제출 캡처)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailA}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('code COMMON200', () => pm.expect(body.code).to.eql('COMMON200'));",
+                  "pm.test('isSuccess', () => pm.expect(body.isSuccess).to.eql(true));",
+                  "pm.test('JWT 발급', () => pm.expect(body.result.accessToken.split('.')).to.have.lengthOf(3));",
+                  "pm.test('비밀번호 미노출', () => pm.expect(body.result).not.to.have.property('password'));",
+                  "pm.collectionVariables.set('tokenA', body.result.accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2-2. B 로그인",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailB}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('code COMMON200', () => pm.expect(body.code).to.eql('COMMON200'));",
+                  "pm.test('isSuccess', () => pm.expect(body.isSuccess).to.eql(true));",
+                  "pm.test('JWT 발급', () => pm.expect(body.result.accessToken.split('.')).to.have.lengthOf(3));",
+                  "pm.test('비밀번호 미노출', () => pm.expect(body.result).not.to.have.property('password'));",
+                  "pm.collectionVariables.set('tokenB', body.result.accessToken);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. 본인 토큰으로 평점 등록 (201 제출 캡처)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/ratings",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tokenA}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"movieId\": 1,\n  \"score\": 5,\n  \"comment\": \"재미있게 봤습니다.\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "const body = pm.response.json();",
+              "pm.test('code COMMON201', () => pm.expect(body.code).to.eql('COMMON201'));",
+              "pm.test('isSuccess', () => pm.expect(body.isSuccess).to.eql(true));",
+              "pm.test('ratingId 응답', () => pm.expect(body.result.ratingId).to.be.a('number'));",
+              "pm.test('요청 body에 memberId 없음', () => pm.expect(JSON.parse(pm.request.body.raw)).not.to.have.property('memberId'));",
+              "pm.collectionVariables.set('ratingId', body.result.ratingId);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. 같은 영화 중복 등록",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/ratings",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tokenA}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"movieId\": 1,\n  \"score\": 4\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409', () => pm.response.to.have.status(409));",
+              "const body = pm.response.json();",
+              "pm.test('code RATING409_1', () => pm.expect(body.code).to.eql('RATING409_1'));",
+              "pm.test('isSuccess', () => pm.expect(body.isSuccess).to.eql(false));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. A의 평점을 A가 수정",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/ratings/{{ratingId}}",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tokenA}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"score\": 4,\n  \"comment\": \"다시 봐도 좋았습니다.\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('code COMMON200', () => pm.expect(body.code).to.eql('COMMON200'));",
+              "pm.test('isSuccess', () => pm.expect(body.isSuccess).to.eql(true));",
+              "pm.test('수정 반영', () => pm.expect(body.result.score).to.eql(4));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. A의 평점을 B가 수정 (403 제출 캡처)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/ratings/{{ratingId}}",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tokenB}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"score\": 1\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));",
+              "const body = pm.response.json();",
+              "pm.test('code RATING403_1', () => pm.expect(body.code).to.eql('RATING403_1'));",
+              "pm.test('isSuccess', () => pm.expect(body.isSuccess).to.eql(false));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. 토큰 없이 평점 수정",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/ratings/{{ratingId}}",
+        "auth": {
+          "type": "noauth"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"score\": 1\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 401', () => pm.response.to.have.status(401));",
+              "const body = pm.response.json();",
+              "pm.test('code AUTH401_2', () => pm.expect(body.code).to.eql('AUTH401_2'));",
+              "pm.test('isSuccess', () => pm.expect(body.isSuccess).to.eql(false));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. 없는 평점 삭제",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/ratings/99999",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tokenA}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 404', () => pm.response.to.have.status(404));",
+              "const body = pm.response.json();",
+              "pm.test('code RATING404_1', () => pm.expect(body.code).to.eql('RATING404_1'));",
+              "pm.test('isSuccess', () => pm.expect(body.isSuccess).to.eql(false));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. A의 평점을 A가 삭제",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/ratings/{{ratingId}}",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{tokenA}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.test('code COMMON200', () => pm.expect(body.code).to.eql('COMMON200'));",
+              "pm.test('isSuccess', () => pm.expect(body.isSuccess).to.eql(true));",
+              "pm.test('삭제 응답 result null', () => pm.expect(body.result).to.eql(null));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "본문 실습: 내 정보 및 인증 확인",
+      "item": [
+        {
+          "name": "토큰 없이 GET /members/me (401 제출 캡처)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/members/me",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 401', () => pm.response.to.have.status(401));",
+                  "const body = pm.response.json();",
+                  "pm.test('code AUTH401_2', () => pm.expect(body.code).to.eql('AUTH401_2'));",
+                  "pm.test('isSuccess', () => pm.expect(body.isSuccess).to.eql(false));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "내 정보 조회",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/members/me",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('code COMMON200', () => pm.expect(body.code).to.eql('COMMON200'));",
+                  "pm.test('isSuccess', () => pm.expect(body.isSuccess).to.eql(true));",
+                  "pm.test('내 정보 응답', () => { pm.expect(body.result.email).to.eql(pm.collectionVariables.get('emailA')); pm.expect(body.result.createdAt).to.be.a('string'); pm.expect(body.result).not.to.have.property('password'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "닉네임 수정",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/members/me",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nickname\": \"영화광수정A\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('code COMMON200', () => pm.expect(body.code).to.eql('COMMON200'));",
+                  "pm.test('isSuccess', () => pm.expect(body.isSuccess).to.eql(true));",
+                  "pm.test('닉네임 반영', () => pm.expect(body.result.nickname).to.eql('영화광수정A'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "변경한 내 정보 조회",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/members/me",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('code COMMON200', () => pm.expect(body.code).to.eql('COMMON200'));",
+                  "pm.test('isSuccess', () => pm.expect(body.isSuccess).to.eql(true));",
+                  "pm.test('수정 상태 유지', () => pm.expect(body.result.nickname).to.eql('영화광수정A'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "중복 닉네임 수정 거절",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/members/me",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nickname\": \"{{nicknameB}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 409', () => pm.response.to.have.status(409));",
+                  "const body = pm.response.json();",
+                  "pm.test('code MEMBER409_1', () => pm.expect(body.code).to.eql('MEMBER409_1'));",
+                  "pm.test('isSuccess', () => pm.expect(body.isSuccess).to.eql(false));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "잘못된 비밀번호",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailA}}\",\n  \"password\": \"wrong-password\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 401', () => pm.response.to.have.status(401));",
+                  "const body = pm.response.json();",
+                  "pm.test('code AUTH401_1', () => pm.expect(body.code).to.eql('AUTH401_1'));",
+                  "pm.test('isSuccess', () => pm.expect(body.isSuccess).to.eql(false));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "없는 이메일 로그인",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"nobody@example.invalid\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 401', () => pm.response.to.have.status(401));",
+                  "const body = pm.response.json();",
+                  "pm.test('code AUTH401_1', () => pm.expect(body.code).to.eql('AUTH401_1'));",
+                  "pm.test('isSuccess', () => pm.expect(body.isSuccess).to.eql(false));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "변조한 토큰",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/members/me",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tamperedToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const parts = pm.collectionVariables.get('tokenA').split('.');",
+                  "parts[1] = (parts[1][0] === 'a' ? 'b' : 'a') + parts[1].slice(1);",
+                  "pm.collectionVariables.set('tamperedToken', parts.join('.'));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 401', () => pm.response.to.have.status(401));",
+                  "const body = pm.response.json();",
+                  "pm.test('code AUTH401_3', () => pm.expect(body.code).to.eql('AUTH401_3'));",
+                  "pm.test('isSuccess', () => pm.expect(body.isSuccess).to.eql(false));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
