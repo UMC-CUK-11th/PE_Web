@@ -69,7 +69,7 @@ export function MyInfoPage() {
             {favoritesQuery.data.map((favorite) => (
               <li key={favorite.movieId}>
                 <Link className="text-[#2669ee]" to="/movies/$movieId" params={{ movieId: String(favorite.movieId) }}>
-                  {favorite.title || `영화 #${favorite.movieId}`}
+                  {`영화 #${favorite.movieId}`}
                 </Link>
               </li>
             ))}

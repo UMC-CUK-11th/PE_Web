@@ -32,14 +32,20 @@ export function BookmarkButton({ movieId, movieTitle, variant = "inline" }: Book
   const isError = Boolean(accessToken) && (isDetail ? detailQuery.isError : listQuery.isError);
 
   const mutation = useMutation({
-    mutationFn: () => isBookmarked ? removeFavorite(movieId) : addFavorite(movieId),
-    onSuccess: () => {
+    mutationFn: async (): Promise<Favorite | null> => {
+      if (isBookmarked) {
+        await removeFavorite(movieId);
+        return null;
+      }
+      return addFavorite(movieId);
+    },
+    onSuccess: (saved) => {
       queryClient.setQueryData<boolean>(["favorites", "detail", movieId], !isBookmarked);
       queryClient.setQueryData<Favorite[]>(["favorites", "list"], (old) => {
         if (!old) return old;
         return isBookmarked
           ? old.filter((favorite) => favorite.movieId !== movieId)
-          : [...old, { movieId, title: movieTitle }];
+          : saved ? [...old, saved] : old;
       });
     },
     onError: () => alert("즐겨찾기를 변경하지 못했어요. 다시 시도해 주세요."),
