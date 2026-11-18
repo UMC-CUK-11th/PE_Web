@@ -1,10 +1,9 @@
-import { useState, type SubmitEvent } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
-import { useMemberPreviewStore } from "../../stores/member-preview-store";
+import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import "./auth-pages.css";
 import { checkEmailDuplicate } from "../../api/members/check-email-duplicate";
 import { checkNicknameDuplicate } from "../../api/members/check-nickname-duplicate";
-import { signup } from "../../api/members/signup";
+import { useSignupMutation } from "../../hooks/use-signup-mutation";
 
 // 이메일 형식 검사
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -33,9 +32,6 @@ export function SignupPage() {
     email: DEFAULT_DUPLICATE_CHECK,
     nickname: DEFAULT_DUPLICATE_CHECK,
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const navigate = useNavigate();
-  const updateProfile = useMemberPreviewStore((state) => state.updateProfile);
 
   // 입력값의 유효성 검사
   const isEmailValid = EMAIL_REGEX.test(form.email.trim());
@@ -67,8 +63,22 @@ export function SignupPage() {
     duplicateCheck.email.isAvailable &&
     duplicateCheck.nickname.isAvailable;
 
+  const signupMutation = useSignupMutation();
+
+  const handleSubmit = (event: React.SubmitEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!canSubmit || signupMutation.isPending) return;
+
+    signupMutation.mutate({
+      email: form.email.trim(),
+      nickname: form.nickname.trim(),
+      password: form.password,
+    });
+  };
+
   const handleChangeField = (key: DefaultFormKey, value: string) => {
-    if (isSubmitting) return;
+    if (signupMutation.isPending) return;
     if (key === "email" || key === "nickname") {
       if (duplicateCheck[key].isChecking) return;
       // 확인한 값을 바꾸면 다시 중복 확인해야 함
@@ -80,30 +90,10 @@ export function SignupPage() {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!canSubmit || isSubmitting) return;
-
-    setIsSubmitting(true);
-    try {
-      const response = await signup({
-        email: form.email.trim(),
-        nickname: form.nickname.trim(),
-        password: form.password,
-      });
-      alert(response.message);
-      updateProfile({ email: response.result.email, nickname: response.result.nickname });
-      navigate({ to: "/login" });
-    } catch {
-      alert("회원가입에 실패했어요. 다시 시도해 주세요.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const handleCheckDuplicate = async (key: DuplicateCheckKey) => {
     const isValid = key === "email" ? isEmailValid : isNicknameValid;
-    if (!isValid || duplicateCheck[key].isChecking || isSubmitting) return;
+    if (!isValid || duplicateCheck[key].isChecking || signupMutation.isPending)
+      return;
 
     const label = key === "email" ? "이메일" : "닉네임";
     setDuplicateCheck((prev) => ({
@@ -159,7 +149,9 @@ export function SignupPage() {
                 className="auth-input auth-input-with-action"
                 placeholder="name@example.com"
                 value={form.email}
-                disabled={duplicateCheck.email.isChecking || isSubmitting}
+                disabled={
+                  duplicateCheck.email.isChecking || signupMutation.isPending
+                }
                 onChange={(e) => handleChangeField("email", e.target.value)}
                 aria-invalid={showEmailError}
                 aria-describedby={
@@ -172,7 +164,9 @@ export function SignupPage() {
                 className="auth-check"
                 aria-label="이메일 중복 확인"
                 disabled={
-                  !isEmailValid || duplicateCheck.email.isChecking || isSubmitting
+                  !isEmailValid ||
+                  duplicateCheck.email.isChecking ||
+                  signupMutation.isPending
                 }
                 onClick={() => handleCheckDuplicate("email")}
               >
@@ -196,7 +190,9 @@ export function SignupPage() {
                 className="auth-input auth-input-with-action"
                 placeholder="2~12자"
                 value={form.nickname}
-                disabled={duplicateCheck.nickname.isChecking || isSubmitting}
+                disabled={
+                  duplicateCheck.nickname.isChecking || signupMutation.isPending
+                }
                 onChange={(e) => handleChangeField("nickname", e.target.value)}
                 aria-invalid={showNicknameError}
                 aria-describedby={
@@ -209,7 +205,9 @@ export function SignupPage() {
                 className="auth-check"
                 aria-label="닉네임 중복 확인"
                 disabled={
-                  !isNicknameValid || duplicateCheck.nickname.isChecking || isSubmitting
+                  !isNicknameValid ||
+                  duplicateCheck.nickname.isChecking ||
+                  signupMutation.isPending
                 }
                 onClick={() => handleCheckDuplicate("nickname")}
               >
@@ -232,7 +230,7 @@ export function SignupPage() {
               className="auth-input"
               placeholder="8자 이상"
               value={form.password}
-              disabled={isSubmitting}
+              disabled={signupMutation.isPending}
               onChange={(e) => handleChangeField("password", e.target.value)}
               aria-invalid={showPasswordError}
               aria-describedby={
@@ -263,7 +261,7 @@ export function SignupPage() {
               className="auth-input"
               placeholder="다시 입력"
               value={form.passwordConfirm}
-              disabled={isSubmitting}
+              disabled={signupMutation.isPending}
               onChange={(e) =>
                 handleChangeField("passwordConfirm", e.target.value)
               }
@@ -284,9 +282,9 @@ export function SignupPage() {
           <button
             className="auth-submit"
             type="submit"
-            disabled={!canSubmit || isSubmitting}
+            disabled={!canSubmit || signupMutation.isPending}
           >
-            {isSubmitting ? "가입 중" : "가입하기"}
+            {signupMutation.isPending ? "가입 중" : "가입하기"}
           </button>
         </form>
         <p className="auth-switch">
