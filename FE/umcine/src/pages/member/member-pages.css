@@ -16,6 +16,9 @@
 .member-page h2 { margin: 0; font-size: 16px; line-height: 24px; font-weight: 700; }
 .member-basic { padding: 10px 0 12px; border-bottom: 1px solid #e1e4e8; }
 .member-basic-row { display: grid; grid-template-columns: 82px minmax(180px,365px) 1fr; gap: 28px; align-items: center; margin-top: 14px; }
+.member-basic-actions { display: flex; justify-content: flex-end; margin-top: 12px; }
+.member-logout { padding: 6px 0 6px 12px; border: 0; background: transparent; color: #69707d; font-size: 12px; cursor: pointer; }
+.member-logout:hover { color: #17191e; text-decoration: underline; }
 .profile-avatar { display: flex; align-items: center; justify-content: center; width: 82px; height: 82px; border-radius: 50%; background: #e3e6eb; overflow: hidden; }
 .profile-avatar-photo { width: 100%; height: 100%; object-fit: cover; }
 .profile-avatar-placeholder { width: 48px; height: 48px; }
