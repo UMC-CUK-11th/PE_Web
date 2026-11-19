@@ -1,14 +1,12 @@
 import { Link, useParams } from "@tanstack/react-router";
-import { useState } from "react";
+import { RatingPanel } from "../../components/ratings/rating-panel";
 import { BookmarkButton } from "../../components/bookmark-button";
 import { useQuery } from "@tanstack/react-query";
 import { movieDetailOptions } from "../../api/movies/movie-query-options";
 import { getMovieDetailErrorMessage } from "../../utils/movies/get-movie-detail-error-message";
 import { getTmdbBackdropUrl, getTmdbPosterUrl } from "../../utils/movies/tmdb-image";
-import { cn } from "../../utils/cn";
 import { RetryButton } from "../../components/retry-button";
 
-const iconPath = "/icons/movie-icons/movie-icons";
 
 export function MovieDetailPage() {
   const { movieId } = useParams({ from: "/movies/$movieId" });
@@ -23,7 +21,6 @@ function MovieDetailContent({ parsedMovieId }: { parsedMovieId: number }) {
   const errorMessage = movieDetailQuery.isError
     ? getMovieDetailErrorMessage(movieDetailQuery.error)
     : null;
-  const [rating, setRating] = useState(0);
 
   if (!isValidMovieId || isLoading || errorMessage || !movie) {
     return (
@@ -92,26 +89,7 @@ function MovieDetailContent({ parsedMovieId }: { parsedMovieId: number }) {
           <BookmarkButton movieId={movie.id} movieTitle={movie.title} variant="detail" />
         </article>
 
-        <aside className="h-fit border-t border-[#e2e3e7] pt-6 md:mt-8 md:border-l md:border-t-0 md:pl-7 md:pt-0" aria-label="별점 남기기">
-          <h2 className="text-sm font-extrabold">내 별점</h2>
-          <div className="mt-3 flex gap-1">
-            {[1, 2, 3, 4, 5].map((score) => (
-              <button
-                className="rounded p-0.5 transition hover:bg-[#eef0f4]"
-                type="button"
-                aria-label={`${score}점`}
-                aria-pressed={rating === score}
-                onClick={() => setRating(score)}
-                key={score}
-              >
-                <img className={cn("size-5 opacity-45", score <= rating && "opacity-100 [filter:invert(44%)_sepia(90%)_saturate(3300%)_hue-rotate(210deg)_brightness(98%)]")} src={`${iconPath}/${score <= rating ? "star.svg" : "star-outline.svg"}`} alt="" />
-              </button>
-            ))}
-          </div>
-          <p className="mt-4 min-h-16 rounded bg-white p-3 text-[10px] leading-4 text-[#8b8e96]">
-            {rating ? `${rating}점을 남겼어요.` : "이 영화는 어떠셨나요? 별점을 남겨 보세요."}
-          </p>
-        </aside>
+        <RatingPanel movieId={movie.id} />
       </section>
     </main>
   );

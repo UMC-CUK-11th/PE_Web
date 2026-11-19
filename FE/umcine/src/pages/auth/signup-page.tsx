@@ -4,7 +4,7 @@ import { Link } from "@tanstack/react-router";
 import { ApiError, memberErrorMessage } from "../../api/api-client";
 import { checkEmailDuplicate } from "../../api/members/check-email-duplicate";
 import { checkNicknameDuplicate } from "../../api/members/check-nickname-duplicate";
-import { signup } from "../../api/members/signup";
+import { useSignupMutation } from "../../hooks/use-signup-mutation";
 import { AuthCard } from "../../components/auth/auth-card";
 import { inputStyle, primaryButtonStyle } from "../../components/auth/form-styles";
 import { validEmail, validNickname, validPassword } from "./signup-validation";
@@ -18,11 +18,22 @@ const EMPTY_CHECK: DuplicateCheck = { status: "idle", value: "", message: "" };
 export function SignupPage() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [checks, setChecks] = useState({ email: EMPTY_CHECK, nickname: EMPTY_CHECK });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const submitting = useRef(false);
   const checking = useRef({ email: false, nickname: false });
+  const signupMutation = useSignupMutation({
+    onSuccess: () => { setForm(EMPTY_FORM); setChecks({ email: EMPTY_CHECK, nickname: EMPTY_CHECK }); },
+    onError: (cause) => {
+      if (cause instanceof ApiError && cause.status === 409) {
+        const key = cause.code === "MEMBER4091" ? "email" : cause.code === "MEMBER4092" ? "nickname" : null;
+        setChecks((previous) => key ? { ...previous, [key]: { status: "taken", value: form[key].trim(), message: cause.message } } : { email: EMPTY_CHECK, nickname: EMPTY_CHECK });
+      }
+    },
+    onSettled: () => { submitting.current = false; },
+  });
+  const isSubmitting = signupMutation.isPending;
+  const error = signupMutation.isError ? memberErrorMessage(signupMutation.error) : "";
+  const success = signupMutation.isSuccess ? signupMutation.data.message : "";
+
 
   const valid = {
     email: validEmail(form.email), nickname: validNickname(form.nickname),
@@ -37,8 +48,7 @@ export function SignupPage() {
     if (submitting.current || (key === "email" || key === "nickname") && checking.current[key]) return;
     setForm((previous) => ({ ...previous, [key]: value }));
     if (key === "email" || key === "nickname") setChecks((previous) => ({ ...previous, [key]: EMPTY_CHECK }));
-    setError("");
-    setSuccess("");
+    signupMutation.reset();
   }
 
   async function check(key: DuplicateKey) {
@@ -61,31 +71,11 @@ export function SignupPage() {
     }
   }
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
+  function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!canSubmit || submitting.current) return;
+    if (!canSubmit || submitting.current || signupMutation.isPending) return;
     submitting.current = true;
-    setIsSubmitting(true);
-    setError("");
-    setSuccess("");
-    try {
-      const response = await signup({ email: form.email.trim(), nickname: form.nickname.trim(), password: form.password });
-      setSuccess(response.message);
-      setForm(EMPTY_FORM);
-      setChecks({ email: EMPTY_CHECK, nickname: EMPTY_CHECK });
-    } catch (cause) {
-      setError(memberErrorMessage(cause));
-      // 사전 확인 후 다른 사용자가 먼저 가입했을 수 있으므로 해당 확인을 무효화합니다.
-      if (cause instanceof ApiError && cause.status === 409) {
-        const key = cause.code === "MEMBER4091" ? "email" : cause.code === "MEMBER4092" ? "nickname" : null;
-        setChecks((previous) => key
-          ? { ...previous, [key]: { status: "taken", value: form[key].trim(), message: cause.message } }
-          : { email: EMPTY_CHECK, nickname: EMPTY_CHECK });
-      }
-    } finally {
-      submitting.current = false;
-      setIsSubmitting(false);
-    }
+    signupMutation.mutate({ email: form.email.trim(), nickname: form.nickname.trim(), password: form.password });
   }
 
   return (

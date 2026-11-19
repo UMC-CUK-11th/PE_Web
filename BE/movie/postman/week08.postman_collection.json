@@ -1,0 +1,1134 @@
+{
+  "info": {
+    "name": "UMC BE 8주차 · 즐겨찾기와 영화 기록",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:8088"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 signup-a",
+      "request": {
+        "method": "POST",
+        "auth": {
+          "type": "noauth"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/members",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "members"
+          ]
+        },
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{emailA}}\",\n  \"password\": \"Umc!1234\",\n  \"nickname\": \"{{nickA}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const run = Date.now().toString(36);",
+              "for (const id of ['A','B']) { pm.collectionVariables.set('email'+id, 'w8'+id+run+'@example.com'); pm.collectionVariables.set('nick'+id, id+run); }"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "pm.test(\"code COMMON201\", () => pm.expect(pm.response.json().code).to.eql(\"COMMON201\"));",
+              "pm.test(\"응답 확인\", () => { const result = pm.response.json().result; pm.collectionVariables.set('memberA', result.memberId); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 signup-b",
+      "request": {
+        "method": "POST",
+        "auth": {
+          "type": "noauth"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/members",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "members"
+          ]
+        },
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{emailB}}\",\n  \"password\": \"Umc!1234\",\n  \"nickname\": \"{{nickB}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "pm.test(\"code COMMON201\", () => pm.expect(pm.response.json().code).to.eql(\"COMMON201\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 login-a",
+      "request": {
+        "method": "POST",
+        "auth": {
+          "type": "noauth"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        },
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{emailA}}\",\n  \"password\": \"Umc!1234\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"code COMMON200\", () => pm.expect(pm.response.json().code).to.eql(\"COMMON200\"));",
+              "pm.test(\"응답 확인\", () => { const result = pm.response.json().result; pm.collectionVariables.set('tokenA', result.accessToken); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 login-b",
+      "request": {
+        "method": "POST",
+        "auth": {
+          "type": "noauth"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        },
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{emailB}}\",\n  \"password\": \"Umc!1234\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"code COMMON200\", () => pm.expect(pm.response.json().code).to.eql(\"COMMON200\"));",
+              "pm.test(\"응답 확인\", () => { const result = pm.response.json().result; pm.collectionVariables.set('tokenB', result.accessToken); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 favorite-before",
+      "request": {
+        "method": "GET",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "type": "string",
+              "value": "{{tokenA}}"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/favorites/550",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "favorites",
+            "550"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"code COMMON200\", () => pm.expect(pm.response.json().code).to.eql(\"COMMON200\"));",
+              "pm.test(\"응답 확인\", () => { const result = pm.response.json().result; pm.expect(result.isFavorite).to.eql(false); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 favorite-create",
+      "request": {
+        "method": "POST",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "type": "string",
+              "value": "{{tokenA}}"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/favorites",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "favorites"
+          ]
+        },
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"movieId\": 550\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "pm.test(\"code COMMON201\", () => pm.expect(pm.response.json().code).to.eql(\"COMMON201\"));",
+              "pm.test(\"응답 확인\", () => { const result = pm.response.json().result; pm.expect(result.movieId).to.eql(550); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 favorite-duplicate",
+      "request": {
+        "method": "POST",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "type": "string",
+              "value": "{{tokenA}}"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/favorites",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "favorites"
+          ]
+        },
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"movieId\": 550\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));",
+              "pm.test(\"code FAVORITE409_1\", () => pm.expect(pm.response.json().code).to.eql(\"FAVORITE409_1\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 favorite-list",
+      "request": {
+        "method": "GET",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "type": "string",
+              "value": "{{tokenA}}"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/favorites",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "favorites"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"code COMMON200\", () => pm.expect(pm.response.json().code).to.eql(\"COMMON200\"));",
+              "pm.test(\"응답 확인\", () => { const result = pm.response.json().result; pm.expect(result.map(f=>f.movieId)).to.eql([550]); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 favorite-status",
+      "request": {
+        "method": "GET",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "type": "string",
+              "value": "{{tokenA}}"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/favorites/550",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "favorites",
+            "550"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"code COMMON200\", () => pm.expect(pm.response.json().code).to.eql(\"COMMON200\"));",
+              "pm.test(\"응답 확인\", () => { const result = pm.response.json().result; pm.expect(result.isFavorite).to.eql(true); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 isolation-list",
+      "request": {
+        "method": "GET",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "type": "string",
+              "value": "{{tokenB}}"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/favorites",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "favorites"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"code COMMON200\", () => pm.expect(pm.response.json().code).to.eql(\"COMMON200\"));",
+              "pm.test(\"응답 확인\", () => { const result = pm.response.json().result; pm.expect(result).to.eql([]); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 isolation-delete",
+      "request": {
+        "method": "DELETE",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "type": "string",
+              "value": "{{tokenB}}"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/favorites/550",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "favorites",
+            "550"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));",
+              "pm.test(\"code FAVORITE404_1\", () => pm.expect(pm.response.json().code).to.eql(\"FAVORITE404_1\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 favorite-delete",
+      "request": {
+        "method": "DELETE",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "type": "string",
+              "value": "{{tokenA}}"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/favorites/550",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "favorites",
+            "550"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"code COMMON200\", () => pm.expect(pm.response.json().code).to.eql(\"COMMON200\"));",
+              "pm.test(\"응답 확인\", () => { const result = pm.response.json().result; pm.expect(result).to.eql(null); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "13 favorite-after",
+      "request": {
+        "method": "GET",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "type": "string",
+              "value": "{{tokenA}}"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/favorites/550",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "favorites",
+            "550"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"code COMMON200\", () => pm.expect(pm.response.json().code).to.eql(\"COMMON200\"));",
+              "pm.test(\"응답 확인\", () => { const result = pm.response.json().result; pm.expect(result.isFavorite).to.eql(false); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "14 favorite-empty",
+      "request": {
+        "method": "GET",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "type": "string",
+              "value": "{{tokenA}}"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/favorites",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "favorites"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"code COMMON200\", () => pm.expect(pm.response.json().code).to.eql(\"COMMON200\"));",
+              "pm.test(\"응답 확인\", () => { const result = pm.response.json().result; pm.expect(result).to.eql([]); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "15 favorite-missing",
+      "request": {
+        "method": "DELETE",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "type": "string",
+              "value": "{{tokenA}}"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/favorites/550",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "favorites",
+            "550"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));",
+              "pm.test(\"code FAVORITE404_1\", () => pm.expect(pm.response.json().code).to.eql(\"FAVORITE404_1\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "16 favorite-invalid",
+      "request": {
+        "method": "POST",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "type": "string",
+              "value": "{{tokenA}}"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/favorites",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "favorites"
+          ]
+        },
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"movieId\": 0\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"code COMMON4001\", () => pm.expect(pm.response.json().code).to.eql(\"COMMON4001\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "17 favorite-unauthorized",
+      "request": {
+        "method": "POST",
+        "auth": {
+          "type": "noauth"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/favorites",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "favorites"
+          ]
+        },
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"movieId\": 550\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));",
+              "pm.test(\"code AUTH401_2\", () => pm.expect(pm.response.json().code).to.eql(\"AUTH401_2\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "18 movie-record-create",
+      "request": {
+        "method": "POST",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "type": "string",
+              "value": "{{tokenA}}"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/movie-records",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "movie-records"
+          ]
+        },
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"movieId\": 238,\n  \"score\": 5,\n  \"comment\": \"다시 보고 싶은 영화입니다.\",\n  \"addToFavorites\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "pm.test(\"code COMMON201\", () => pm.expect(pm.response.json().code).to.eql(\"COMMON201\"));",
+              "pm.test(\"응답 확인\", () => { const result = pm.response.json().result; pm.expect([result.rating.movieId,result.favorite.movieId]).to.eql([238,238]); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "19 movie-record-duplicate",
+      "request": {
+        "method": "POST",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "type": "string",
+              "value": "{{tokenA}}"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/movie-records",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "movie-records"
+          ]
+        },
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"movieId\": 238,\n  \"score\": 5,\n  \"addToFavorites\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));",
+              "pm.test(\"code RATING409_1\", () => pm.expect(pm.response.json().code).to.eql(\"RATING409_1\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "20 rollback-setup",
+      "request": {
+        "method": "POST",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "type": "string",
+              "value": "{{tokenA}}"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/favorites",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "favorites"
+          ]
+        },
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"movieId\": 155\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "pm.test(\"code COMMON201\", () => pm.expect(pm.response.json().code).to.eql(\"COMMON201\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "21 rollback-conflict",
+      "request": {
+        "method": "POST",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "type": "string",
+              "value": "{{tokenA}}"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/movie-records",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "movie-records"
+          ]
+        },
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"movieId\": 155,\n  \"score\": 5,\n  \"addToFavorites\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));",
+              "pm.test(\"code FAVORITE409_1\", () => pm.expect(pm.response.json().code).to.eql(\"FAVORITE409_1\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "22 rollback-ratings",
+      "request": {
+        "method": "GET",
+        "auth": {
+          "type": "noauth"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/members/{{memberA}}/ratings",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "members",
+            "{{memberA}}",
+            "ratings"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"응답 확인\", () => { const result = pm.response.json(); pm.expect(result.map(r=>r.movieId)).to.eql([238]); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "23 rollback-favorites",
+      "request": {
+        "method": "GET",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "type": "string",
+              "value": "{{tokenA}}"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/favorites",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "favorites"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"code COMMON200\", () => pm.expect(pm.response.json().code).to.eql(\"COMMON200\"));",
+              "pm.test(\"응답 확인\", () => { const result = pm.response.json().result; pm.expect(result.map(f=>f.movieId)).to.eql([155,238]); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "24 rating-only",
+      "request": {
+        "method": "POST",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "type": "string",
+              "value": "{{tokenA}}"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/movie-records",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "movie-records"
+          ]
+        },
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"movieId\": 680,\n  \"score\": 4,\n  \"addToFavorites\": false\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "pm.test(\"code COMMON201\", () => pm.expect(pm.response.json().code).to.eql(\"COMMON201\"));",
+              "pm.test(\"응답 확인\", () => { const result = pm.response.json().result; pm.expect(result.favorite).to.eql(null); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "25 movie-record-unauthorized",
+      "request": {
+        "method": "POST",
+        "auth": {
+          "type": "noauth"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/movie-records",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "movie-records"
+          ]
+        },
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"movieId\": 999,\n  \"score\": 4,\n  \"addToFavorites\": false\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));",
+              "pm.test(\"code AUTH401_2\", () => pm.expect(pm.response.json().code).to.eql(\"AUTH401_2\"));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

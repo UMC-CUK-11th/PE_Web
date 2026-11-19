@@ -1,0 +1,159 @@
+{
+  "database": "H2 in-memory",
+  "tmdb": "mocked fixture",
+  "tokenPersisted": true,
+  "profileUpdateAdditionalGET": 0,
+  "deletionPersisted": true,
+  "calls": [
+    {
+      "method": "POST",
+      "path": "/auth/login",
+      "status": 200,
+      "authenticated": false
+    },
+    {
+      "method": "GET",
+      "path": "/members/me",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "method": "GET",
+      "path": "/favorites",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "method": "GET",
+      "path": "/members/me",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "method": "PATCH",
+      "path": "/members/me",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "method": "GET",
+      "path": "/members/me",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "method": "GET",
+      "path": "/favorites/550",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "method": "GET",
+      "path": "/members/13/ratings",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "method": "POST",
+      "path": "/favorites",
+      "status": 201,
+      "authenticated": true
+    },
+    {
+      "method": "POST",
+      "path": "/ratings",
+      "status": 201,
+      "authenticated": true
+    },
+    {
+      "method": "GET",
+      "path": "/members/13/ratings",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "method": "PATCH",
+      "path": "/ratings/5",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "method": "GET",
+      "path": "/members/13/ratings",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "method": "GET",
+      "path": "/members/me",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "method": "GET",
+      "path": "/favorites",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "method": "GET",
+      "path": "/members/13/ratings",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "method": "GET",
+      "path": "/members/me",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "method": "GET",
+      "path": "/members/13/ratings",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "method": "GET",
+      "path": "/favorites",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "method": "GET",
+      "path": "/members/me",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "method": "GET",
+      "path": "/favorites/550",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "method": "GET",
+      "path": "/members/13/ratings",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/ratings/5",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "method": "GET",
+      "path": "/members/13/ratings",
+      "status": 200,
+      "authenticated": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/favorites/550",
+      "status": 200,
+      "authenticated": true
+    }
+  ]
+}

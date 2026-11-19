@@ -1,5 +1,15 @@
 # React + TypeScript + Vite
 
+## Week 08 인증·변경 요청과 캐시 갱신
+
+회원가입 useMutation 전환, 실제 로그인/내 정보 수정, 인증 그룹 Layout Route,
+서버 즐겨찾기 및 평점 API 연동을 구현했습니다. 토큰은 Zustand persist,
+서버 데이터는 TanStack Query로 관리합니다.
+
+**MySQL 실행 전에 BE/movie/database/week08_favorite.sql을 실행하세요.**
+실행 방법·캡처·제출 안내는 [8주차 제출 안내](docs/week08-submission.md)를 참고하세요.
+
+
 ## Week 07 회원가입과 인증 화면
 
 회원가입 검증·중복 확인·API 연동과 로그인·내 정보 조회/수정 화면을 구현했습니다.

@@ -120,44 +120,6 @@ test("회원가입 연결 실패 후 입력 유지와 수동 재시도", async (
   await expect.poll(() => calls).toBe(2);
 });
 
-test("로그인 화면 입력 반영 및 API 요청 없는 퍼블리싱", async ({ page }, info) => {
-  const writes: string[] = [];
-  page.on("request", (request) => { if (request.method() !== "GET") writes.push(request.url()); });
-  await page.goto("/login");
-  await page.getByLabel("이메일", { exact: true }).fill("moviefan@example.com");
-  await page.getByLabel("비밀번호", { exact: true }).fill("Umc!1234");
-  await screenshot(page, "login", info.project.name);
-  await page.getByRole("button", { name: "로그인", exact: true }).click();
-  await expect(page.getByRole("status").filter({ hasText: "로그인 기능은 준비 중이에요." })).toBeVisible();
-  expect(writes).toEqual([]);
-  await page.getByRole("link", { name: "회원가입", exact: true }).click();
-  await expect(page).toHaveURL(/\/signup$/);
-});
-
-test("내 정보 조회·수정 입력 반영과 취소, 새로고침 초기화", async ({ page }, info) => {
-  await page.goto("/mypage");
-  await expect(page.getByRole("heading", { name: "내 정보", exact: true })).toBeVisible();
-  await screenshot(page, "profile", info.project.name);
-  await page.getByRole("link", { name: "내 정보 수정", exact: true }).click();
-  await expect(page).toHaveURL(/\/mypage\/edit$/);
-  await expect(page.getByLabel("이메일", { exact: true })).toHaveAttribute("readonly", "");
-  await page.getByLabel("닉네임", { exact: true }).fill("x");
-  await expect(page.getByRole("button", { name: "변경 내용 저장" })).toBeDisabled();
-  await page.getByLabel("닉네임", { exact: true }).fill("시네마팬");
-  await screenshot(page, "profile-edit", info.project.name);
-  await page.getByRole("link", { name: "취소", exact: true }).click();
-  await expect(page.getByText("시네마팬", { exact: true })).toHaveCount(0);
-  await page.getByRole("link", { name: "내 정보 수정", exact: true }).click();
-  await page.getByLabel("닉네임", { exact: true }).fill("시네마팬");
-  await page.getByRole("button", { name: "변경 내용 저장" }).click();
-  await expect(page.getByRole("status").filter({ hasText: "미리보기 프로필을 수정했어요." })).toBeVisible();
-  await page.getByRole("link", { name: "변경된 내 정보 보기" }).click();
-  await expect(page.getByText("시네마팬", { exact: true }).first()).toBeVisible();
-  await screenshot(page, "profile-updated", info.project.name);
-  await page.reload();
-  await expect(page.getByText("moviefan", { exact: true }).first()).toBeVisible();
-});
-
 test("모든 신규 화면 직접 접속 및 수평 넘침·런타임 오류 확인", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
