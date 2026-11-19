@@ -2,6 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./tests/e2e",
+  globalSetup: "./tests/e2e/global-setup.ts",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: 0,
@@ -15,6 +16,6 @@ export default defineConfig({
     command: "npm run dev -- --host localhost --port 5173 --strictPort",
     url: "http://localhost:5173/signup",
     reuseExistingServer: !process.env.CI,
-    env: { VITE_API_BASE_URL: "http://localhost:8080" },
+    env: { VITE_API_BASE_URL: "http://localhost:8080", VITE_TMDB_ACCESS_TOKEN: "e2e-placeholder-not-a-real-token" },
   },
 });

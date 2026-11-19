@@ -1,0 +1,13 @@
+import { queryOptions } from "@tanstack/react-query";
+import { getMe } from "./members/me";
+import { getFavorite, getFavorites } from "./favorites";
+import { getOwnRatings } from "./ratings";
+import { useAuthStore } from "../stores/auth-store";
+export const meKey = ["members", "me"] as const;
+export const favoriteListKey = (session: number) => ["private", session, "favorites", "list"] as const;
+export const favoriteKey = (session: number, movieId: number) => ["private", session, "favorites", "status", movieId] as const;
+export const ratingsKey = (session: number, memberId: number) => ["private", session, "ratings", memberId] as const;
+export const meOptions = () => queryOptions({ queryKey: meKey, queryFn: ({ signal }) => getMe(signal), enabled: !!useAuthStore.getState().accessToken, staleTime: 300_000, retry: false });
+export const favoritesOptions = (session: number) => queryOptions({ queryKey: favoriteListKey(session), queryFn: ({ signal }) => getFavorites(signal), enabled: !!useAuthStore.getState().accessToken, retry: false });
+export const favoriteOptions = (session: number, movieId: number) => queryOptions({ queryKey: favoriteKey(session, movieId), queryFn: ({ signal }) => getFavorite(movieId, signal), enabled: !!useAuthStore.getState().accessToken, retry: false });
+export const ratingsOptions = (session: number, memberId: number) => queryOptions({ queryKey: ratingsKey(session, memberId), queryFn: ({ signal }) => getOwnRatings(memberId, signal), enabled: !!useAuthStore.getState().accessToken && memberId > 0, retry: false });
