@@ -1,10 +1,10 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { isHTTPError } from "ky";
 import { useState, type SubmitEvent } from "react";
 import { checkNicknameDuplicate } from "../../api/members/check-nickname-duplicate";
 import { getMyProfile, myProfileQueryKey, type MyProfile } from "../../api/members/get-my-profile";
-import { updateMyProfile } from "../../api/members/update-my-profile";
+import { useUpdateMeMutation } from "../../hooks/use-update-me-mutation";
 import { useAuthStore } from "../../stores/auth-store";
 import { cn } from "../../utils/cn";
 
@@ -23,36 +23,20 @@ function LoginRequired() {
 
 function EditProfileForm({ accessToken, profile }: { accessToken: string; profile: MyProfile }) {
   const [nickname, setNickname] = useState(profile.nickname);
-  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const nicknameCheck = useMutation({ mutationFn: checkNicknameDuplicate });
-  const saveProfile = useMutation({
-    mutationFn: (nextNickname: string) => updateMyProfile(accessToken, nextNickname),
-    onSuccess: async (updatedProfile) => {
-      if (useAuthStore.getState().accessToken !== accessToken) return;
-
-      await queryClient.cancelQueries({ queryKey: myProfileQueryKey, exact: true });
-      if (useAuthStore.getState().accessToken === accessToken) {
-        queryClient.setQueryData(myProfileQueryKey, updatedProfile);
-      }
-    },
-    onError: (error) => {
-      if (isHTTPError(error) && error.response.status === 409) {
-        nicknameCheck.reset();
-      }
-    },
-  });
+  const updateMeMutation = useUpdateMeMutation();
 
   const normalizedNickname = nickname.trim();
   const isNicknameChanged = normalizedNickname !== profile.nickname;
   const isNicknameValid = normalizedNickname.length >= 2 && normalizedNickname.length <= 12;
   const showNicknameError = isNicknameChanged && !isNicknameValid;
-  const isBusy = nicknameCheck.isPending || saveProfile.isPending;
+  const isBusy = nicknameCheck.isPending || updateMeMutation.isPending;
   const canCheck = isNicknameChanged && isNicknameValid && !isBusy;
   const isChecked = nicknameCheck.isSuccess && nicknameCheck.variables === normalizedNickname;
   const isAvailable = isChecked && nicknameCheck.data.available === true;
-  const canSave = canCheck && isAvailable;
-  const saveErrorStatus = isHTTPError(saveProfile.error) ? saveProfile.error.response.status : undefined;
+  const canSubmit = isNicknameValid;
+  const saveErrorStatus = isHTTPError(updateMeMutation.error) ? updateMeMutation.error.response.status : undefined;
 
   let nicknameMessage = "";
   if (showNicknameError) {
@@ -65,12 +49,17 @@ function EditProfileForm({ accessToken, profile }: { accessToken: string; profil
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!canSave) return;
+    if (!canSubmit || updateMeMutation.isPending) return;
 
-    saveProfile.mutate(normalizedNickname, {
+    updateMeMutation.mutate({ nickname: normalizedNickname }, {
       onSuccess: () => {
         if (useAuthStore.getState().accessToken === accessToken) {
           void navigate({ to: "/my-page" });
+        }
+      },
+      onError: (error) => {
+        if (isHTTPError(error) && error.response.status === 409) {
+          nicknameCheck.reset();
         }
       },
     });
@@ -84,8 +73,8 @@ function EditProfileForm({ accessToken, profile }: { accessToken: string; profil
             <h1 className={titleClassName}>내 정보 수정</h1>
             <p className="mt-1 text-xs text-[#667080]">닉네임을 변경할 수 있어요.</p>
           </div>
-          <button type="submit" className={actionClassName} disabled={!canSave}>
-            {saveProfile.isPending ? "저장 중" : "변경사항 저장"}
+          <button type="submit" className={actionClassName} disabled={!canSubmit || updateMeMutation.isPending}>
+            {updateMeMutation.isPending ? "저장 중" : "저장"}
           </button>
         </div>
 
@@ -117,7 +106,7 @@ function EditProfileForm({ accessToken, profile }: { accessToken: string; profil
                   onChange={(event) => {
                     setNickname(event.target.value);
                     nicknameCheck.reset();
-                    saveProfile.reset();
+                    updateMeMutation.reset();
                   }}
                 />
                 <button
@@ -141,7 +130,7 @@ function EditProfileForm({ accessToken, profile }: { accessToken: string; profil
               <input id="edit-email" type="email" className={inputClassName} value={profile.email} readOnly />
             </div>
 
-            {saveProfile.isError && (
+            {updateMeMutation.isError && (
               <div role="alert" className="text-xs text-red-700">
                 {saveErrorStatus === 401 ? (
                   <>다시 로그인해 주세요. <Link className="font-bold underline" to="/login">로그인</Link></>

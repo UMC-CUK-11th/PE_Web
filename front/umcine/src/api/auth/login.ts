@@ -1,5 +1,4 @@
 import { apiClient } from "../api-client";
-import { unwrapApiResult, type ApiResponse } from "../api-response";
 
 export interface LoginRequest {
   email: string;
@@ -7,11 +6,15 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  nickname: string;
-  accessToken: string;
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: {
+    nickname: string;
+    accessToken: string;
+  };
 }
 
-export async function login(body: LoginRequest) {
-  const response = await apiClient.post("auth/login", { json: body }).json<ApiResponse<LoginResponse>>();
-  return unwrapApiResult(response);
+export function login(body: LoginRequest) {
+  return apiClient.post("auth/login", { json: body }).json<LoginResponse>();
 }
