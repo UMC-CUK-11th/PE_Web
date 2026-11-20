@@ -8,6 +8,7 @@ import type { TmdbMovieListItem } from '../../api/movies/models';
 import type { Movie } from '../../types/movie';
 
 const FALLBACK_IMAGE = '/umcine-images/images/movies/placeholder.jpg';
+const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p';
 
 export function MovieListPage() {
   const { bookmarkedIds, toggleBookmark } = useBookmarks();
@@ -21,20 +22,37 @@ export function MovieListPage() {
   const rawMovies = moviesQuery.data?.results ?? [];
   const totalPages = moviesQuery.data?.total_pages ?? 1;
 
+  // const movies: Movie[] = rawMovies.map((movie: TmdbMovieListItem) => ({
+  //   id: movie.id,
+  //   title: movie.title,
+  //   originalTitle: movie.original_title,
+  //   releaseDate: movie.release_date,
+  //   posterPath: movie.poster_path ?? FALLBACK_IMAGE,
+  //   backdropPath: movie.backdrop_path ?? FALLBACK_IMAGE,
+  //   genres: [],
+  //   runtime: '',
+  //   tagline: '',
+  //   overview: movie.overview,
+  //   isBookmarked: bookmarkedIds.has(movie.id),
+  // }));
+
   const movies: Movie[] = rawMovies.map((movie: TmdbMovieListItem) => ({
     id: movie.id,
     title: movie.title,
     originalTitle: movie.original_title,
     releaseDate: movie.release_date,
-    posterPath: movie.poster_path ?? FALLBACK_IMAGE,
-    backdropPath: movie.backdrop_path ?? FALLBACK_IMAGE,
+    posterPath: movie.poster_path
+      ? `${TMDB_IMAGE_BASE_URL}/w500${movie.poster_path}`
+      : FALLBACK_IMAGE,
+    backdropPath: movie.backdrop_path
+      ? `${TMDB_IMAGE_BASE_URL}/w1280${movie.backdrop_path}`
+      : FALLBACK_IMAGE,
     genres: [],
     runtime: '',
     tagline: '',
     overview: movie.overview,
     isBookmarked: bookmarkedIds.has(movie.id),
   }));
-
   const handlePageChange = (nextPage: number) => {
     setCurrentPage(nextPage);
   };
