@@ -1,3 +1,5 @@
+import { useMeQuery } from "../../hooks/use-me-query";
+import { useAuthStore } from "../../stores/auth-store";
 import { Link } from "@tanstack/react-router";
 
 const navLinkClass =
@@ -7,6 +9,8 @@ const activeNavLinkClass =
   "relative text-sm leading-6 font-semibold text-[#111] no-underline after:absolute after:right-0 after:bottom-[-8px] after:left-0 after:h-0.5 after:bg-[#111] after:content-['']";
 
 export function Header() {
+  const token = useAuthStore((s) => s.accessToken);
+  const meQuery = useMeQuery();
   return (
     <header className="flex h-[57px] w-full items-center justify-between border-b border-[#e3e6eb] bg-white px-5 py-3 md:px-20 md:py-4">
       <div className="flex items-center gap-6 md:gap-12">
@@ -61,9 +65,9 @@ export function Header() {
 
         <Link
           className="inline-flex h-10 cursor-pointer items-center rounded-lg border-0 bg-[#3182f6] px-5 text-sm font-semibold text-white no-underline"
-          to="/login"
+          to={token ? "/profile" : "/login"}
         >
-          로그인
+          {token ? (meQuery.isLoading ? "조회 중" : "마이페이지") : "로그인"}
         </Link>
       </div>
     </header>

@@ -2,17 +2,20 @@ import { useState, type FormEvent } from "react";
 import { Link } from "@tanstack/react-router";
 import "./signup-page.css";
 import "./login-page.css";
+import { useLoginMutation } from "../../hooks/use-login-mutation";
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [notice, setNotice] = useState("");
-  const canSubmit = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && password.length > 0;
+  const loginMutation = useLoginMutation();
+  const canSubmit = EMAIL_REGEX.test(email.trim()) && password.length > 0;
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!canSubmit) return;
-    setNotice("입력값을 확인했어요. 퍼블리싱 화면으로, 아직 로그인 API는 연결하지 않았습니다.");
+    if (!canSubmit || loginMutation.isPending) return;
+    loginMutation.mutate({ email: email.trim(), password });
   }
 
   return (
@@ -25,7 +28,7 @@ export function LoginPage() {
             <div className="signup-input-row login-input-row">
               <img src="/movie-icons/mail.svg" alt="" />
               <input id="login-email" name="email" type="email" autoComplete="email" required
-                placeholder="name@example.com" value={email} onChange={(event) => { setEmail(event.target.value); setNotice(""); }} />
+                placeholder="name@example.com" value={email} onChange={(event) => { setEmail(event.target.value); }} />
             </div>
           </div>
           <div className="signup-field">
@@ -33,11 +36,12 @@ export function LoginPage() {
             <div className="signup-input-row login-input-row">
               <img src="/movie-icons/lock.svg" alt="" />
               <input id="login-password" name="password" type="password" autoComplete="current-password" required
-                placeholder="비밀번호" value={password} onChange={(event) => { setPassword(event.target.value); setNotice(""); }} />
+                placeholder="비밀번호" value={password} onChange={(event) => { setPassword(event.target.value); }} />
             </div>
           </div>
-          <button className="signup-submit" type="submit" disabled={!canSubmit}>로그인</button>
-          {notice && <p className="signup-notice" role="status">{notice}</p>}
+          <button className="signup-submit" type="submit" disabled={!canSubmit || loginMutation.isPending}>
+            {loginMutation.isPending ? "로그인 중" : "로그인"}
+          </button>
         </form>
         <p className="signup-login">처음이신가요? <Link to="/signup">회원가입</Link></p>
       </section>
