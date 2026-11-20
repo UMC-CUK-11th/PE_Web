@@ -7,6 +7,11 @@ public enum ErrorCode {
     MEMBER_EMAIL_DUPLICATE(HttpStatus.CONFLICT, "MEMBER4091", "이미 사용 중인 이메일입니다."),
     MEMBER_NICKNAME_DUPLICATE(HttpStatus.CONFLICT, "MEMBER4092", "이미 사용 중인 닉네임입니다."),
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBER4041", "존재하지 않는 유저입니다."),
+    FAVORITE_DUPLICATE(
+            HttpStatus.CONFLICT,
+            "FAVORITE409_1",
+            "이미 이 영화를 즐겨찾기하셨습니다."
+    ),
     RATING_DUPLICATE(HttpStatus.CONFLICT, "RATING4091", "이미 이 영화에 평점을 남기셨습니다."),
     RATING_NOT_FOUND(HttpStatus.NOT_FOUND, "RATING4041", "존재하지 않는 평점입니다."),
     RATING_FORBIDDEN(

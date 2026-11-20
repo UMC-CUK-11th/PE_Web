@@ -1,4 +1,6 @@
-import { Link, useLocation } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { useAuthStore } from "../stores/auth-store";
 import { cn } from "../utils/cn";
 
 const navClassName = (isActive: boolean) =>
@@ -9,7 +11,12 @@ const navClassName = (isActive: boolean) =>
   );
 
 export function Header() {
-  const { pathname } = useLocation();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const nickname = useAuthStore((state) => state.nickname);
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const clearSession = useAuthStore((state) => state.clearSession);
   const isMovieRoute = pathname === "/" || pathname.startsWith("/movies/");
   const isSearchRoute = pathname === "/search";
   const isProfileRoute = pathname.startsWith("/my");
@@ -30,7 +37,24 @@ export function Header() {
           <Link className="grid size-11 place-items-center rounded-lg border border-[#e1e5ea] bg-white" to="/search" aria-label="영화 검색">
             <img className="size-5" src="/icons/search.svg" alt="" />
           </Link>
-          <Link className="inline-flex h-11 items-center rounded-lg bg-[#2877eb] px-[18px] text-sm font-bold text-white no-underline" to="/login">로그인</Link>
+          {accessToken ? (
+            <button
+              className="h-11 cursor-pointer rounded-lg border-0 bg-[#18191b] px-[18px] text-sm font-bold text-white"
+              type="button"
+              title={`${nickname} 로그아웃`}
+              onClick={() => {
+                clearSession();
+                queryClient.removeQueries({ queryKey: ["member"] });
+                queryClient.removeQueries({ queryKey: ["favorites"] });
+                queryClient.removeQueries({ queryKey: ["ratings"] });
+                void navigate({ to: "/" });
+              }}
+            >
+              로그아웃
+            </button>
+          ) : (
+            <Link className="inline-flex h-11 items-center rounded-lg bg-[#2877eb] px-[18px] text-sm font-bold text-white no-underline" to="/login">로그인</Link>
+          )}
         </div>
       </div>
     </header>

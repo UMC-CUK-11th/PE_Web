@@ -1,15 +1,56 @@
-import { useBookmarkStore } from "../stores/bookmark-store";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
+import {
+  addFavoriteMutationOptions,
+  deleteFavoriteMutationOptions,
+  favoriteQueryKeys,
+  favoritesQueryOptions,
+  favoriteStatusQueryOptions,
+} from "../api/favorite-query-options";
+import { useAuthStore } from "../stores/auth-store";
 import { cn } from "../utils/cn";
 
 interface BookmarkButtonProps {
   movieId: number;
   movieTitle: string;
   className?: string;
+  useDetailStatus?: boolean;
 }
 
-export function BookmarkButton({ movieId, movieTitle, className }: BookmarkButtonProps) {
-  const isBookmarked = useBookmarkStore((state) => state.bookmarkedMovieIds.includes(movieId));
-  const toggleBookmark = useBookmarkStore((state) => state.toggleBookmark);
+export function BookmarkButton({ movieId, movieTitle, className, useDetailStatus = false }: BookmarkButtonProps) {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const isLoggedIn = useAuthStore((state) => Boolean(state.accessToken));
+  const favoritesQuery = useQuery(favoritesQueryOptions(isLoggedIn && !useDetailStatus));
+  const statusQuery = useQuery(favoriteStatusQueryOptions(movieId, isLoggedIn && useDetailStatus));
+  const isBookmarked = useDetailStatus
+    ? (statusQuery.data ?? false)
+    : (favoritesQuery.data?.some((favorite) => favorite.movieId === movieId) ?? false);
+
+  const syncFavoriteQueries = async (nextStatus: boolean) => {
+    queryClient.setQueryData(favoriteQueryKeys.status(movieId), nextStatus);
+    await queryClient.invalidateQueries({ queryKey: favoriteQueryKeys.list() });
+  };
+
+  const addMutation = useMutation({
+    ...addFavoriteMutationOptions(),
+    onSuccess: () => syncFavoriteQueries(true),
+  });
+  const deleteMutation = useMutation({
+    ...deleteFavoriteMutationOptions(),
+    onSuccess: () => syncFavoriteQueries(false),
+  });
+  const isPending = addMutation.isPending || deleteMutation.isPending;
+
+  const handleClick = () => {
+    if (!isLoggedIn) {
+      void navigate({ to: "/login" });
+      return;
+    }
+
+    if (isBookmarked) deleteMutation.mutate(movieId);
+    else addMutation.mutate(movieId);
+  };
 
   return (
     <button
@@ -24,7 +65,8 @@ export function BookmarkButton({ movieId, movieTitle, className }: BookmarkButto
       title={`${movieTitle} 북마크 ${isBookmarked ? "해제" : "추가"}`}
       aria-label={`${movieTitle} 북마크 ${isBookmarked ? "해제" : "추가"}`}
       aria-pressed={isBookmarked}
-      onClick={() => toggleBookmark(movieId)}
+      disabled={isPending}
+      onClick={handleClick}
     >
       <img
         className="size-5 brightness-0 invert"

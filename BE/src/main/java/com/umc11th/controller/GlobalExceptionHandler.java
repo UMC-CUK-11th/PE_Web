@@ -84,6 +84,9 @@ public class GlobalExceptionHandler {
         if (causeMessage.contains("uk_rating_member_movie")) {
             return ErrorCode.RATING_DUPLICATE;
         }
+        if (causeMessage.contains("uk_favorite_member_movie")) {
+            return ErrorCode.FAVORITE_DUPLICATE;
+        }
 
         return ErrorCode.DATA_CONFLICT;
     }
