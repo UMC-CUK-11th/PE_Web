@@ -1,14 +1,18 @@
 import { Link } from "@tanstack/react-router";
-import { movies } from "../../data/movies";
+import { useMeQuery } from "../../hooks/use-me-query";
 import { useProfilePreviewStore } from "../../stores/profile-preview-store";
 import "./profile-page.css";
+import { FavoritesList } from "../../components/movies/favorites-list";
 
-const previewFavorites = [movies[0], movies[1], movies[4]];
 
 export function ProfilePage() {
-  const nickname = useProfilePreviewStore((state) => state.nickname);
-  const email = useProfilePreviewStore((state) => state.email);
+  const meQuery = useMeQuery();
+  const nickname = meQuery.data?.nickname ?? "";
+  const email = meQuery.data?.email ?? "";
   const avatar = useProfilePreviewStore((state) => state.avatar);
+
+  if (meQuery.isLoading) return <main className="profile-page">내 정보를 불러오는 중이에요.</main>;
+  if (meQuery.isError) return <main className="profile-page">내 정보를 불러오지 못했어요.</main>;
 
   return (
     <main className="profile-page">
@@ -30,22 +34,8 @@ export function ProfilePage() {
       </section>
       <section className="profile-favorites" aria-labelledby="profile-favorites-title">
         <h2 id="profile-favorites-title">내 즐겨찾기</h2>
-        <div className="profile-movie-grid">
-          {previewFavorites.map((movie) => (
-            <article className="profile-movie-card" key={movie.id}>
-              <img src={movie.posterPath} alt={`${movie.title} 포스터`} />
-              <h3>{movie.title}</h3>
-              <p>{movie.releaseDate}</p>
-            </article>
-          ))}
-        </div>
-        <nav className="profile-pagination" aria-label="즐겨찾기 페이지">
-          <button type="button" aria-label="이전 페이지" disabled><img src="/movie-icons/chevron-left.svg" alt="" /></button>
-          <button type="button" className="profile-current-page" aria-current="page">1</button>
-          <button type="button" aria-label="다음 페이지" disabled><img src="/movie-icons/chevron-right.svg" alt="" /></button>
-        </nav>
+        <FavoritesList />
       </section>
-      <p className="profile-preview-note">퍼블리싱 예시 데이터입니다. 실제 회원·즐겨찾기 조회 API는 연결하지 않았습니다.</p>
     </main>
   );
 }

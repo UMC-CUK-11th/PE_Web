@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Link } from "@tanstack/react-router";
 import { checkEmailDuplicate } from "../../api/members/check-email-duplicate";
 import { checkNicknameDuplicate } from "../../api/members/check-nickname-duplicate";
-import { signup } from "../../api/members/signup";
+import { useSignupMutation } from "../../hooks/use-signup-mutation";
 import "./signup-page.css";
 type SignupField = "email" | "nickname" | "password" | "passwordConfirm";
 type DuplicateCheckKey = "email" | "nickname";
@@ -25,7 +25,7 @@ export function SignupPage() {
         email: DEFAULT_DUPLICATE_CHECK,
         nickname: DEFAULT_DUPLICATE_CHECK,
     });
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const signupMutation = useSignupMutation();
     const errors = {
         email: !values.email.trim()
             ? "이메일을 입력해주세요."
@@ -56,7 +56,7 @@ export function SignupPage() {
         duplicateCheck.email.isAvailable &&
         duplicateCheck.nickname.isAvailable;
     function changeField(field: SignupField, value: string) {
-        if (isSubmitting)
+        if (signupMutation.isPending)
             return;
         if (field === "email" || field === "nickname") {
             if (duplicateCheck[field].isChecking)
@@ -74,7 +74,7 @@ export function SignupPage() {
     }
     async function checkDuplicate(field: DuplicateCheckKey) {
         touchField(field);
-        if (errors[field] || duplicateCheck[field].isChecking || isSubmitting)
+        if (errors[field] || duplicateCheck[field].isChecking || signupMutation.isPending)
             return;
         const label = field === "email" ? "이메일" : "닉네임";
         setDuplicateCheck((previous) => ({
@@ -108,32 +108,13 @@ export function SignupPage() {
             }));
         }
     }
-    async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-        event.preventDefault();
-        setTouched({
-            email: true,
-            nickname: true,
-            password: true,
-            passwordConfirm: true,
-        });
-        if (!canSubmit || isSubmitting)
-            return;
-        setIsSubmitting(true);
-        try {
-            const response = await signup({
-                email: values.email.trim(),
-                nickname: values.nickname.trim(),
-                password: values.password,
-            });
-            alert(response.message);
-        }
-        catch {
-            alert("회원가입에 실패했어요. 다시 시도해 주세요.");
-        }
-        finally {
-            setIsSubmitting(false);
-        }
-    }
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setTouched({ email: true, nickname: true, password: true, passwordConfirm: true });
+    if (!canSubmit || signupMutation.isPending) return;
+    signupMutation.mutate({ email: values.email.trim(), nickname: values.nickname.trim(), password: values.password });
+  }
+
     return (<main className="signup-page">
       <section className="signup-panel" aria-labelledby="signup-title">
         <h1 id="signup-title">회원가입</h1>
@@ -143,12 +124,12 @@ export function SignupPage() {
           <div className="signup-field">
             <label htmlFor="signup-email">이메일</label>
             <div className="signup-input-row">
-              <input id="signup-email" name="email" type="email" autoComplete="email" disabled={duplicateCheck.email.isChecking || isSubmitting} placeholder="name@example.com" value={values.email} onChange={(event) => changeField("email", event.target.value)} onBlur={() => touchField("email")} aria-invalid={touched.email && Boolean(errors.email)} aria-describedby={touched.email && errors.email
+              <input id="signup-email" name="email" type="email" autoComplete="email" disabled={duplicateCheck.email.isChecking || signupMutation.isPending} placeholder="name@example.com" value={values.email} onChange={(event) => changeField("email", event.target.value)} onBlur={() => touchField("email")} aria-invalid={touched.email && Boolean(errors.email)} aria-describedby={touched.email && errors.email
             ? "signup-email-error"
             : undefined}/>
               <button type="button" aria-label="이메일 중복 확인" disabled={Boolean(errors.email) ||
             duplicateCheck.email.isChecking ||
-            isSubmitting} onClick={() => checkDuplicate("email")}>
+            signupMutation.isPending} onClick={() => checkDuplicate("email")}>
                 {duplicateCheck.email.isChecking ? "확인 중" : "중복 확인"}
               </button>
             </div>
@@ -160,12 +141,12 @@ export function SignupPage() {
           <div className="signup-field">
             <label htmlFor="signup-nickname">닉네임</label>
             <div className="signup-input-row">
-              <input id="signup-nickname" name="nickname" autoComplete="nickname" disabled={duplicateCheck.nickname.isChecking || isSubmitting} placeholder="2–12자" value={values.nickname} onChange={(event) => changeField("nickname", event.target.value)} onBlur={() => touchField("nickname")} aria-invalid={touched.nickname && Boolean(errors.nickname)} aria-describedby={touched.nickname && errors.nickname
+              <input id="signup-nickname" name="nickname" autoComplete="nickname" disabled={duplicateCheck.nickname.isChecking || signupMutation.isPending} placeholder="2–12자" value={values.nickname} onChange={(event) => changeField("nickname", event.target.value)} onBlur={() => touchField("nickname")} aria-invalid={touched.nickname && Boolean(errors.nickname)} aria-describedby={touched.nickname && errors.nickname
             ? "signup-nickname-error"
             : undefined}/>
               <button type="button" aria-label="닉네임 중복 확인" disabled={Boolean(errors.nickname) ||
             duplicateCheck.nickname.isChecking ||
-            isSubmitting} onClick={() => checkDuplicate("nickname")}>
+            signupMutation.isPending} onClick={() => checkDuplicate("nickname")}>
                 {duplicateCheck.nickname.isChecking ? "확인 중" : "중복 확인"}
               </button>
             </div>
@@ -176,7 +157,7 @@ export function SignupPage() {
           <div className="signup-field">
             <label htmlFor="signup-password">비밀번호</label>
             <div className="signup-input-row">
-              <input id="signup-password" name="password" type="password" autoComplete="new-password" disabled={isSubmitting} placeholder="8자 이상" value={values.password} onChange={(event) => changeField("password", event.target.value)} onBlur={() => touchField("password")} aria-invalid={touched.password && Boolean(errors.password)} aria-describedby="signup-password-help signup-password-error"/>
+              <input id="signup-password" name="password" type="password" autoComplete="new-password" disabled={signupMutation.isPending} placeholder="8자 이상" value={values.password} onChange={(event) => changeField("password", event.target.value)} onBlur={() => touchField("password")} aria-invalid={touched.password && Boolean(errors.password)} aria-describedby="signup-password-help signup-password-error"/>
             </div>
             <p className="signup-help" id="signup-password-help">
               영문 대·소문자, 숫자, 특수문자를 모두 포함해 8자 이상 입력해
@@ -189,7 +170,7 @@ export function SignupPage() {
           <div className="signup-field">
             <label htmlFor="signup-password-confirm">비밀번호 확인</label>
             <div className="signup-input-row">
-              <input id="signup-password-confirm" name="passwordConfirm" type="password" autoComplete="new-password" disabled={isSubmitting} placeholder="다시 입력" value={values.passwordConfirm} onChange={(event) => changeField("passwordConfirm", event.target.value)} onBlur={() => touchField("passwordConfirm")} aria-invalid={touched.passwordConfirm && Boolean(errors.passwordConfirm)} aria-describedby={touched.passwordConfirm && errors.passwordConfirm
+              <input id="signup-password-confirm" name="passwordConfirm" type="password" autoComplete="new-password" disabled={signupMutation.isPending} placeholder="다시 입력" value={values.passwordConfirm} onChange={(event) => changeField("passwordConfirm", event.target.value)} onBlur={() => touchField("passwordConfirm")} aria-invalid={touched.passwordConfirm && Boolean(errors.passwordConfirm)} aria-describedby={touched.passwordConfirm && errors.passwordConfirm
             ? "signup-password-confirm-error"
             : undefined}/>
             </div>
@@ -197,8 +178,8 @@ export function SignupPage() {
                 {errors.passwordConfirm}
               </p>)}
           </div>
-          <button className="signup-submit" type="submit" disabled={!canSubmit || isSubmitting}>
-            {isSubmitting ? "가입 중" : "가입하기"}
+          <button className="signup-submit" type="submit" disabled={!canSubmit || signupMutation.isPending}>
+            {signupMutation.isPending ? "가입 중" : "가입하기"}
           </button>{" "}
           
           {notice && (<p className="signup-notice" role="status">

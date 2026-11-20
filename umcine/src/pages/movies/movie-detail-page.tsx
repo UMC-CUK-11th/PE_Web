@@ -1,5 +1,5 @@
 import { Link, useParams } from "@tanstack/react-router";
-import { useState, type FormEvent } from "react";
+import { RatingEditor } from "../../components/movies/rating-editor";
 import { useQuery } from "@tanstack/react-query";
 import { BookmarkButton } from "../../components/movies/bookmark-button";
 import { getMovieDetail } from "../../api/movies/get-movie-detail";
@@ -17,8 +17,6 @@ export function MovieDetailPage() {
 function MovieDetailContent({ movieIdParam }: { movieIdParam: string }) {
   const movieId = Number(movieIdParam);
   const isValidMovieId = Number.isInteger(movieId) && movieId > 0;
-  const [rating, setRating] = useState(0);
-  const [savedRating, setSavedRating] = useState<number | null>(null);
   const movieDetailQuery = useQuery({
     queryKey: ["movies", "detail", movieId],
     queryFn: () => getMovieDetail(movieId),
@@ -68,10 +66,6 @@ function MovieDetailContent({ movieIdParam }: { movieIdParam: string }) {
       ? `${Math.floor(movie.runtime / 60)}시간 ${movie.runtime % 60}분`
       : "상영 시간 정보가 없어요.";
 
-  function handleRatingSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSavedRating(rating);
-  }
 
   return (
     <main className="mx-auto min-h-[910px] w-full max-w-[1440px] bg-[#f6f7f9] text-[#17191e]">
@@ -158,57 +152,7 @@ function MovieDetailContent({ movieIdParam }: { movieIdParam: string }) {
             별점을 선택하고 감상을 남겨보세요.
           </p>
 
-          <form className="mt-4" onSubmit={handleRatingSubmit}>
-            <div
-              className="flex gap-2"
-              role="radiogroup"
-              aria-label="영화 평점"
-            >
-              {[1, 2, 3, 4, 5].map((score) => (
-                <button
-                  className="flex h-9 w-9 items-center justify-center border-0 bg-transparent p-0 focus-visible:rounded focus-visible:outline-2 focus-visible:outline-[#3159c9]"
-                  key={score}
-                  type="button"
-                  role="radio"
-                  aria-label={`${score}점`}
-                  aria-checked={rating === score}
-                  onClick={() => setRating(score)}
-                >
-                  <img
-                    className="h-6 w-6 opacity-55"
-                    src={
-                      score <= rating
-                        ? "/movie-icons/star.svg"
-                        : "/movie-icons/star-outline.svg"
-                    }
-                    alt=""
-                  />
-                </button>
-              ))}
-            </div>
-
-            <textarea
-              key={movie.id}
-              className="mt-4 h-[100px] w-full resize-none rounded-lg border border-[#e3e6eb] bg-white p-3 text-sm leading-5 text-[#17191e] outline-none placeholder:text-[#969da8] focus:border-[#3159c9]"
-              name="review"
-              aria-label="한줄평"
-              placeholder="영화를 보고 느낀 점을 남겨보세요."
-            />
-
-            <button
-              className="mt-3 h-10 w-full rounded-lg border-0 bg-[#17191e] text-sm font-semibold text-white transition-colors hover:bg-[#2d3038] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#17191e]"
-              type="submit"
-            >
-              평점 저장
-            </button>
-
-            <p
-              className="mt-2 min-h-5 text-xs leading-5 text-[#3159c9]"
-              aria-live="polite"
-            >
-              {savedRating ? `${savedRating}점으로 저장했어요.` : ""}
-            </p>
-          </form>
+          <RatingEditor movieId={movieId} />
         </aside>
       </section>
     </main>
