@@ -2,7 +2,8 @@ import { useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { checkEmailDuplicate } from "../../api/members/check-email-duplicate";
 import { checkNicknameDuplicate } from "../../api/members/check-nickname-duplicate";
-import { signup } from "../../api/members/signup";
+import { useSignupMutation } from "../../hooks/use-signup-mutation";
+import { apiErrorMessage } from "../../utils/api-error-message";
 
 const INITIAL_FORM = { email: "", nickname: "", password: "", passwordConfirm: "" };
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -14,9 +15,8 @@ const UNCHECKED = { isChecking: false, isAvailable: false, message: "" };
 export function SignupPage() {
   const [form, setForm] = useState(INITIAL_FORM);
   const [checks, setChecks] = useState({ email: UNCHECKED, nickname: UNCHECKED });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [result, setResult] = useState("");
-  const submitting = useRef(false);
+  const signupMutation = useSignupMutation();
+  const isSubmitting = signupMutation.isPending;
   const checking = useRef({ email: false, nickname: false });
   const valid = {
     email: EMAIL_REGEX.test(form.email.trim()),
@@ -34,14 +34,14 @@ export function SignupPage() {
   };
 
   function change(key: Field, value: string) {
-    if (submitting.current || ((key === "email" || key === "nickname") && checking.current[key])) return;
+    if (isSubmitting || ((key === "email" || key === "nickname") && checking.current[key])) return;
     setForm(previous => ({ ...previous, [key]: value }));
-    setResult("");
+    signupMutation.reset();
     if (key === "email" || key === "nickname") setChecks(previous => ({ ...previous, [key]: UNCHECKED }));
   }
 
   async function check(key: DuplicateField) {
-    if (!valid[key] || checking.current[key] || submitting.current) return;
+    if (!valid[key] || checking.current[key] || isSubmitting) return;
     checking.current[key] = true;
     setChecks(previous => ({ ...previous, [key]: { ...UNCHECKED, isChecking: true } }));
     try {
@@ -57,21 +57,10 @@ export function SignupPage() {
     }
   }
 
-  async function submit(event: React.SubmitEvent<HTMLFormElement>) {
+  function submit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!canSubmit || submitting.current) return;
-    submitting.current = true;
-    setIsSubmitting(true);
-    setResult("");
-    try {
-      const response = await signup({ email: form.email.trim(), nickname: form.nickname.trim(), password: form.password });
-      setResult(response.message);
-    } catch {
-      setResult("회원가입에 실패했어요. 입력 내용을 확인하고 다시 시도해 주세요.");
-    } finally {
-      submitting.current = false;
-      setIsSubmitting(false);
-    }
+    if (!canSubmit || isSubmitting) return;
+    signupMutation.mutate({ email: form.email.trim(), nickname: form.nickname.trim(), password: form.password });
   }
 
   return (
@@ -103,7 +92,7 @@ export function SignupPage() {
         <button type="submit" disabled={!canSubmit || isSubmitting} className="w-full rounded-lg bg-red-600 py-3 font-bold disabled:opacity-40">
           {isSubmitting ? "가입 중" : "가입하기"}
         </button>
-        <p role="status">{result}</p>
+        <p role="status">{signupMutation.isSuccess ? signupMutation.data.message : signupMutation.isError ? apiErrorMessage(signupMutation.error) : ""}</p>
       </form>
       <p className="mt-6 text-center text-gray-400">이미 계정이 있나요? <Link to="/login" className="text-white underline">로그인</Link></p>
     </main>

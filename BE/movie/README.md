@@ -33,3 +33,7 @@ FE 개발 서버를 실행하고 `http://localhost:5173/members`를 엽니다. C
 회원가입은 `POST /members`, 로그인은 `POST /auth/login`입니다. 새로 가입한 계정으로 로그인한 뒤 응답의 `result.accessToken`을 사용합니다. 이전 시드의 더미 비밀번호로는 로그인할 수 없습니다.
 
 `GET/PATCH /members/me`, `POST /ratings`, `PATCH/DELETE /ratings/{ratingId}`에는 `Authorization: Bearer {accessToken}` 헤더가 필요합니다. 평점 작성자 ID는 요청 대신 토큰에서 가져옵니다.
+
+8주차에는 `POST/GET /favorites`, `GET/DELETE /favorites/{movieId}`, `POST /movie-records`를 추가했습니다. 모두 토큰에서 회원을 식별하며 요청에 `memberId`를 넣지 않습니다. 즐겨찾기 등록 바디는 `{ "movieId": 550 }`입니다.
+
+영화 기록 바디는 `{ "movieId": 155, "score": 5, "comment": "좋아요", "addToFavorites": true }`입니다. `MovieRecordService.create`의 트랜잭션 안에서 평점과 즐겨찾기를 함께 저장하며, `false`이면 평점만 저장합니다. 기존 데이터와 겹치지 않는 영화 ID로 확인합니다.
