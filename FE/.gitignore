@@ -25,3 +25,8 @@ dist-ssr
 
 .pnpm-store/
 .pnpm-store-v10/
+
+# Next.js
+.next/
+out/
+next-env.d.ts

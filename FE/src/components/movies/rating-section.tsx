@@ -1,5 +1,5 @@
 import { useState, type SubmitEvent } from "react";
-import { Link } from "@tanstack/react-router";
+import Link from "next/link";
 import type { Rating, RatingForm } from "../../api/ratings";
 import {
   useCreateRatingMutation,
@@ -7,21 +7,25 @@ import {
   useMyRatingQuery,
   useUpdateRatingMutation,
 } from "../../hooks/use-my-rating";
+import { useAuthHydrated } from "../../hooks/use-auth-hydrated";
 import { useAuthStore } from "../../stores/auth-store";
 import { buttonClass, inputClass, linkClass } from "../member-form";
 
 // 영화 상세의 "내 평점" 영역
 export function RatingSection({ movieId }: { movieId: number }) {
   const accessToken = useAuthStore((state) => state.accessToken);
+  const hydrated = useAuthHydrated();
 
   return (
     <section className="mt-10 max-w-3xl rounded-xl border border-gray-200 bg-white p-6">
       <h2 className="mb-4 text-xl font-bold">내 평점</h2>
-      {accessToken ? (
+      {!hydrated ? (
+        <p className="text-sm text-gray-500">로그인 정보를 확인하는 중이에요.</p>
+      ) : accessToken ? (
         <MyRating movieId={movieId} />
       ) : (
         <p className="text-sm text-gray-600">
-          <Link to="/login" className={linkClass}>로그인</Link>하면 평점을 남길 수 있어요.
+          <Link href="/login" className={linkClass}>로그인</Link>하면 평점을 남길 수 있어요.
         </p>
       )}
     </section>

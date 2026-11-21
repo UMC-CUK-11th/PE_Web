@@ -1,5 +1,5 @@
 import { MovieImage } from "./movie-image";
-import { Link } from "@tanstack/react-router";
+import Link from "next/link";
 import type { Movie } from "../../types/movie";
 import { BookmarkButton } from "../bookmark-button";
 
@@ -14,8 +14,7 @@ export default function MovieCard({
     <article className="relative">
       <div className="relative">
         <Link
-          to="/movies/$movieId"
-          params={{ movieId: String(movie.id) }}
+          href={`/movies/${movie.id}`}
         >
           <MovieImage
             className="block w-full rounded-[8px]"
@@ -28,8 +27,7 @@ export default function MovieCard({
       </div>
 
       <Link
-        to="/movies/$movieId"
-        params={{ movieId: String(movie.id) }}
+        href={`/movies/${movie.id}`}
         className="text-inherit no-underline"
       >
         <h2 className="mb-1 mt-[10px] text-[16px] text-[#111]">
