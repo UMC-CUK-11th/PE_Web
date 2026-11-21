@@ -4,7 +4,8 @@ import { toMovie } from "../../api/movies/models";
 import { useQuery } from "@tanstack/react-query";
 import { getMovieDetailErrorMessage } from "../../utils/movies/get-movie-detail-error-message";
 import { MovieImage } from "../../components/movies/movie-image";
-import { BookmarkButton } from "../../components/bookmark-button";
+import { FavoriteButton } from "../../components/movies/favorite-button";
+import { RatingSection } from "../../components/movies/rating-section";
 
 export function MovieDetailPage() {
   const { movieId: movieIdParam } = useParams({ from: "/movies/$movieId" });
@@ -53,7 +54,7 @@ export function MovieDetailPage() {
             alt={`${movie.title} 포스터`}
             className="w-[220px] rounded-xl object-cover"
           />
-          <BookmarkButton movieId={movie.id} />
+          <FavoriteButton movieId={movie.id} />
         </div>
 
         <div className="flex-1">
@@ -71,6 +72,8 @@ export function MovieDetailPage() {
           <p className="max-w-3xl leading-7 text-gray-700">
             {movie.overview}
           </p>
+
+          <RatingSection movieId={movie.id} />
         </div>
       </div>
     </section>

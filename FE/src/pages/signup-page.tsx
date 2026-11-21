@@ -1,7 +1,8 @@
 import { useState, type SubmitEvent } from "react";
 import { Link } from "@tanstack/react-router";
-import { checkAvailability, memberRequestError, signUp } from "../api/member-client";
+import { checkAvailability, memberRequestError } from "../api/member-client";
 import { buttonClass, inputClass, linkClass, MemberForm } from "../components/member-form";
+import { useSignupMutation } from "../hooks/use-signup-mutation";
 import { emailError, nicknameError, passwordError } from "../utils/member-validation";
 
 type Check = "idle" | "available" | "duplicate" | "error";
@@ -11,9 +12,11 @@ export function SignupPage() {
   const [values, setValues] = useState({ email: "", nickname: "", password: "", confirmation: "" });
   const [touched, setTouched] = useState<Partial<Record<Field, boolean>>>({});
   const [checks, setChecks] = useState<Record<"email" | "nickname", Check>>({ email: "idle", nickname: "idle" });
-  const [pending, setPending] = useState<"email" | "nickname" | "signup" | null>(null);
+  // 중복 확인 요청 상태만 직접 관리하고, 회원가입 요청 상태는 useMutation이 관리
+  const [pending, setPending] = useState<"email" | "nickname" | null>(null);
   const [message, setMessage] = useState("");
-  const [success, setSuccess] = useState(false);
+  const signupMutation = useSignupMutation();
+  const busy = pending !== null || signupMutation.isPending;
   const errors = {
     email: emailError(values.email), nickname: nicknameError(values.nickname), password: passwordError(values.password),
     confirmation: !values.confirmation ? "비밀번호 확인을 입력해 주세요." : values.password !== values.confirmation ? "비밀번호가 일치하지 않아요." : "",
@@ -25,11 +28,10 @@ export function SignupPage() {
     setTouched(previous => ({ ...previous, [field]: true }));
     if (field === "email" || field === "nickname") setChecks(previous => ({ ...previous, [field]: "idle" }));
     setMessage("");
-    setSuccess(false);
   }
 
   async function check(field: "email" | "nickname") {
-    if (pending || errors[field]) return;
+    if (busy || errors[field]) return;
     setPending(field);
     setMessage("");
     try {
@@ -41,26 +43,16 @@ export function SignupPage() {
     } finally { setPending(null); }
   }
 
-  async function submit(event: SubmitEvent<HTMLFormElement>) {
+  function submit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (pending || !canSubmit) return;
-    setPending("signup");
+    if (!canSubmit || busy) return;
     setMessage("");
-    try {
-      await signUp({ email: values.email.trim(), nickname: values.nickname.trim(), password: values.password });
-      setSuccess(true);
-      setMessage("회원가입이 완료되었어요. 로그인 화면으로 이동할 수 있습니다.");
-      setValues(previous => ({ ...previous, password: "", confirmation: "" }));
-      setTouched({});
-    } catch (error) {
-      setMessage(memberRequestError(error));
-      setChecks({ email: "idle", nickname: "idle" });
-    } finally { setPending(null); }
+    signupMutation.mutate({ email: values.email.trim(), nickname: values.nickname.trim(), password: values.password });
   }
 
   return <MemberForm title="회원가입">
-    <form noValidate onSubmit={submit} aria-busy={pending !== null}>
-      <fieldset disabled={pending !== null} className="space-y-5">
+    <form noValidate onSubmit={submit} aria-busy={busy}>
+      <fieldset disabled={busy} className="space-y-5">
         {(["email", "nickname", "password", "confirmation"] as const).map(field => {
           const label = { email: "이메일", nickname: "닉네임", password: "비밀번호", confirmation: "비밀번호 확인" }[field];
           const checkField = field === "email" || field === "nickname" ? field : null;
@@ -74,7 +66,7 @@ export function SignupPage() {
                 aria-invalid={Boolean(error)} aria-describedby={`signup-${field}-help`}
                 onBlur={() => setTouched(previous => ({ ...previous, [field]: true }))}
                 onChange={event => change(field, event.target.value)} />
-              {checkField && <button type="button" className={`${buttonClass} shrink-0`} disabled={Boolean(errors[checkField]) || pending !== null}
+              {checkField && <button type="button" className={`${buttonClass} shrink-0`} disabled={Boolean(errors[checkField]) || busy}
                 onClick={() => void check(checkField)} aria-label={`${label} 중복 확인`}>
                 {pending === checkField ? "확인 중..." : "중복 확인"}
               </button>}
@@ -88,12 +80,12 @@ export function SignupPage() {
             </div>
           </div>;
         })}
-        <button className={`${buttonClass} w-full`} disabled={!canSubmit || pending !== null}>
-          {pending === "signup" ? "가입 요청 중..." : "회원가입"}
+        <button className={`${buttonClass} w-full`} disabled={!canSubmit || busy}>
+          {signupMutation.isPending ? "가입 요청 중..." : "회원가입"}
         </button>
       </fieldset>
     </form>
-    {message && <p role={success ? "status" : "alert"} className={`mt-4 text-sm ${success ? "text-green-700" : "text-red-600"}`}>{message}</p>}
+    {message && <p role="alert" className="mt-4 text-sm text-red-600">{message}</p>}
     <p className="mt-6 text-sm text-gray-600">이미 계정이 있나요? <Link to="/login" className={linkClass}>로그인</Link></p>
   </MemberForm>;
 }
