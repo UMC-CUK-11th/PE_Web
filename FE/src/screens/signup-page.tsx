@@ -1,5 +1,7 @@
+"use client";
+
 import { useState, type SubmitEvent } from "react";
-import { Link } from "@tanstack/react-router";
+import Link from "next/link";
 import { checkAvailability, memberRequestError } from "../api/member-client";
 import { buttonClass, inputClass, linkClass, MemberForm } from "../components/member-form";
 import { useSignupMutation } from "../hooks/use-signup-mutation";
@@ -86,6 +88,6 @@ export function SignupPage() {
       </fieldset>
     </form>
     {message && <p role="alert" className="mt-4 text-sm text-red-600">{message}</p>}
-    <p className="mt-6 text-sm text-gray-600">이미 계정이 있나요? <Link to="/login" className={linkClass}>로그인</Link></p>
+    <p className="mt-6 text-sm text-gray-600">이미 계정이 있나요? <Link href="/login" className={linkClass}>로그인</Link></p>
   </MemberForm>;
 }

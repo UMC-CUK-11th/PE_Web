@@ -12,8 +12,6 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     "previous/**",
     ".pnpm-store*/**",
-    // TODO(9주차 직접 해보기): signup 마이그레이션 전까지 잠깐 제외. 옮긴 뒤 이 줄과 tsconfig.json exclude의 signup 줄을 지우기
-    "src/screens/signup-page.tsx",
   ]),
 ]);
 

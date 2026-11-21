@@ -41,7 +41,6 @@
   ],
   "exclude": [
     "node_modules",
-    "previous",
-    "src/screens/signup-page.tsx"
+    "previous"
   ]
 }
