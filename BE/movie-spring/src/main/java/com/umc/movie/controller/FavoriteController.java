@@ -65,41 +65,13 @@ public class FavoriteController {
                             )
                     )
             ),
-
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "401",
-                    description = "토큰이 없거나 유효하지 않음",
-                    content = @Content(
-                            mediaType = "application/json",
-                            examples = @ExampleObject(
-                                    value = """
-                                            {
-                                              "isSuccess": false,
-                                              "code": "AUTH401_2",
-                                              "message": "로그인이 필요한 요청입니다.",
-                                              "result": null
-                                            }
-                                            """
-                            )
-                    )
+                    description = "AUTH401_2 - 로그인이 필요한 요청"
             ),
-
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "409",
-                    description = "이미 즐겨찾기한 영화",
-                    content = @Content(
-                            mediaType = "application/json",
-                            examples = @ExampleObject(
-                                    value = """
-                                            {
-                                              "isSuccess": false,
-                                              "code": "FAVORITE409_1",
-                                              "message": "이미 이 영화를 즐겨찾기하셨습니다.",
-                                              "result": null
-                                            }
-                                            """
-                            )
-                    )
+                    description = "FAVORITE409_1 - 이미 즐겨찾기한 영화"
             )
     })
     @PostMapping("/favorites")
@@ -126,6 +98,20 @@ public class FavoriteController {
                 );
     }
 
+    @Operation(
+            summary = "내 즐겨찾기 조회",
+            description = "로그인한 회원이 등록한 즐겨찾기 영화 목록을 조회합니다."
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "즐겨찾기 목록 조회 성공"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "AUTH401_2 - 로그인이 필요한 요청"
+            )
+    })
     @GetMapping("/favorites")
     public ResponseEntity<ApiResponse<List<FavoriteResponse>>> getMyFavorites(
             @RequestAttribute(AuthInterceptor.MEMBER_ID)
@@ -144,6 +130,20 @@ public class FavoriteController {
         );
     }
 
+    @Operation(
+            summary = "즐겨찾기 여부 조회",
+            description = "로그인한 회원이 특정 영화를 즐겨찾기했는지 조회합니다."
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "즐겨찾기 여부 조회 성공"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "AUTH401_2 - 로그인이 필요한 요청"
+            )
+    })
     @GetMapping("/favorites/{movieId}")
     public ResponseEntity<ApiResponse<FavoriteStatusResponse>> getStatus(
             @RequestAttribute(AuthInterceptor.MEMBER_ID)
@@ -166,6 +166,24 @@ public class FavoriteController {
         );
     }
 
+    @Operation(
+            summary = "즐겨찾기 해제",
+            description = "로그인한 회원이 특정 영화의 즐겨찾기를 해제합니다."
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "즐겨찾기 해제 성공"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "AUTH401_2 - 로그인이 필요한 요청"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "404",
+                    description = "FAVORITE404_1 - 즐겨찾기한 영화를 찾을 수 없음"
+            )
+    })
     @DeleteMapping("/favorites/{movieId}")
     public ResponseEntity<ApiResponse<Void>> delete(
             @RequestAttribute(AuthInterceptor.MEMBER_ID)
