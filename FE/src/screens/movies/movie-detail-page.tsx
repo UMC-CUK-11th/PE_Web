@@ -1,4 +1,7 @@
-import { Link, useParams } from "@tanstack/react-router";
+"use client";
+
+import Link from "next/link";
+import { useParams } from "next/navigation";
 import { getMovieDetail } from "../../api/movies/get-movie-detail";
 import { toMovie } from "../../api/movies/models";
 import { useQuery } from "@tanstack/react-query";
@@ -8,7 +11,8 @@ import { FavoriteButton } from "../../components/movies/favorite-button";
 import { RatingSection } from "../../components/movies/rating-section";
 
 export function MovieDetailPage() {
-  const { movieId: movieIdParam } = useParams({ from: "/movies/$movieId" });
+  // app/movies/[movieId] 폴더 이름의 movieId 값을 주소에서 꺼냄
+  const { movieId: movieIdParam } = useParams<{ movieId: string }>();
   const movieId = Number(movieIdParam);
   const isValidMovieId = /^[1-9]\d*$/.test(movieIdParam) && Number.isSafeInteger(movieId);
   const movieDetailQuery = useQuery({
@@ -18,9 +22,9 @@ export function MovieDetailPage() {
     staleTime: 30 * 1000,
   });
   const { data, isPending: loading } = movieDetailQuery;
-  if (!isValidMovieId) return <main className="mx-auto max-w-6xl px-6 py-10"><p role="alert">올바르지 않은 영화 번호예요. 0보다 큰 정수 ID를 입력해 주세요.</p><Link to="/">영화 목록으로</Link></main>;
+  if (!isValidMovieId) return <main className="mx-auto max-w-6xl px-6 py-10"><p role="alert">올바르지 않은 영화 번호예요. 0보다 큰 정수 ID를 입력해 주세요.</p><Link href="/">영화 목록으로</Link></main>;
   if (loading) return <main className="mx-auto max-w-6xl px-6 py-10" role="status">영화 정보를 불러오는 중이에요.</main>;
-  if (movieDetailQuery.isError) return <main className="mx-auto max-w-6xl px-6 py-10"><p role="alert">{getMovieDetailErrorMessage(movieDetailQuery.error)}</p><Link to="/">영화 목록으로</Link></main>;
+  if (movieDetailQuery.isError) return <main className="mx-auto max-w-6xl px-6 py-10"><p role="alert">{getMovieDetailErrorMessage(movieDetailQuery.error)}</p><Link href="/">영화 목록으로</Link></main>;
   const movie = data ? toMovie(data) : undefined;
 
   if (!movie) {
@@ -41,7 +45,7 @@ export function MovieDetailPage() {
 
     <section className="mx-auto max-w-6xl px-6 py-10">
       <Link
-        to="/"
+        href="/"
         className="mb-6 inline-block text-sm font-semibold text-blue-600"
       >
         ← 영화 목록

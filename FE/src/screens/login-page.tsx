@@ -1,5 +1,7 @@
+"use client";
+
 import { useState, type SubmitEvent } from "react";
-import { Link } from "@tanstack/react-router";
+import Link from "next/link";
 import { buttonClass, inputClass, linkClass, MemberForm } from "../components/member-form";
 import { useLoginMutation } from "../hooks/use-login-mutation";
 import { emailError } from "../utils/member-validation";
@@ -35,6 +37,6 @@ export function LoginPage() {
         {loginMutation.isPending ? "로그인 중" : "로그인"}
       </button>
     </form>
-    <p className="mt-6 text-sm text-gray-600">계정이 없나요? <Link to="/signup" className={linkClass}>회원가입</Link></p>
+    <p className="mt-6 text-sm text-gray-600">계정이 없나요? <Link href="/signup" className={linkClass}>회원가입</Link></p>
   </MemberForm>;
 }

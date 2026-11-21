@@ -1,5 +1,7 @@
+"use client";
+
 import { useState, type SubmitEvent } from "react";
-import { Link } from "@tanstack/react-router";
+import Link from "next/link";
 import { buttonClass, inputClass, linkClass, MemberForm } from "../components/member-form";
 import { FavoriteList } from "../components/movies/favorite-list";
 import { useMeQuery } from "../hooks/use-me-query";
@@ -22,7 +24,7 @@ export function ProfilePage() {
         <div><dt className="text-sm text-gray-500">닉네임</dt><dd className="mt-1 break-all font-semibold">{me.nickname}</dd></div>
         <div><dt className="text-sm text-gray-500">이메일</dt><dd className="mt-1 break-all font-semibold">{me.email}</dd></div>
       </dl>
-      <Link to="/my/edit" className={`${buttonClass} mt-6 inline-block no-underline`}>내 정보 수정</Link>
+      <Link href="/my/edit" className={`${buttonClass} mt-6 inline-block no-underline`}>내 정보 수정</Link>
       <h2 className="mb-4 mt-10 text-xl font-bold">내 찜 목록</h2>
       <FavoriteList />
     </>)}
@@ -61,7 +63,7 @@ function ProfileEditForm({ initialNickname, email }: { initialNickname: string; 
       <button type="submit" className={buttonClass} disabled={!canSubmit}>
         {updateMeMutation.isPending ? "저장 중" : "저장"}
       </button>
-      <Link to="/my" className={linkClass}>취소</Link>
+      <Link href="/my" className={linkClass}>취소</Link>
     </div>
   </form>;
 }

@@ -1,20 +1,24 @@
-import { useNavigate } from "@tanstack/react-router";
+import { useRouter } from "next/navigation";
 import { useFavoriteStatusQuery, useToggleFavoriteMutation } from "../../hooks/use-favorite";
+import { useAuthHydrated } from "../../hooks/use-auth-hydrated";
 import { useAuthStore } from "../../stores/auth-store";
 import { cn } from "../../utils/cn";
 
 // 영화 상세의 찜 버튼: 기존 북마크 버튼과 같은 모양으로, 서버의 즐겨찾기 API를 사용함
 export function FavoriteButton({ movieId }: { movieId: number }) {
   const accessToken = useAuthStore((state) => state.accessToken);
-  const navigate = useNavigate();
+  const hydrated = useAuthHydrated();
+  const router = useRouter();
   const statusQuery = useFavoriteStatusQuery(movieId);
   const toggleMutation = useToggleFavoriteMutation(movieId);
   const isFavorite = statusQuery.data === true;
 
   function handleClick() {
+    // localStorage를 읽기 전에는 로그인 여부를 모르니 아무것도 하지 않음
+    if (!hydrated) return;
     if (!accessToken) {
       alert("로그인 후 찜할 수 있어요.");
-      navigate({ to: "/login" });
+      router.push("/login");
       return;
     }
     if (statusQuery.isPending || toggleMutation.isPending) return;

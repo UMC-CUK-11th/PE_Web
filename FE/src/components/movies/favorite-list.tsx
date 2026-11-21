@@ -1,5 +1,5 @@
 import { useQueries } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import Link from "next/link";
 import { getMovieDetail } from "../../api/movies/get-movie-detail";
 import { useFavoritesQuery } from "../../hooks/use-favorite";
 import { tmdbImage } from "../../utils/movies/tmdb-image";
@@ -28,7 +28,7 @@ export function FavoriteList() {
         const poster = tmdbImage(movie?.poster_path ?? null);
         return (
           <li key={favorite.favoriteId}>
-            <Link to="/movies/$movieId" params={{ movieId: String(favorite.movieId) }} className="block text-sm text-black no-underline">
+            <Link href={`/movies/${favorite.movieId}`} className="block text-sm text-black no-underline">
               {poster
                 ? <img src={poster} alt="" className="aspect-[2/3] w-full rounded-md object-cover" />
                 : <div className="aspect-[2/3] w-full animate-pulse rounded-md bg-gray-200" />}

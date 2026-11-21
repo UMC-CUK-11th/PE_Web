@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, type SubmitEvent } from "react";
 
 const API_BASE_URL = "http://localhost:8080";

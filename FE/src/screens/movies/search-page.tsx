@@ -1,4 +1,7 @@
-import { Link, useNavigate, useSearch } from "@tanstack/react-router";
+"use client";
+
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState, type SubmitEvent } from "react";
 import { searchMovies } from "../../api/movies/search-movies";
 import { toMovie } from "../../api/movies/models";
@@ -8,8 +11,10 @@ import { MovieImage } from "../../components/movies/movie-image";
 import { BookmarkButton } from "../../components/bookmark-button";
 
 export function SearchPage() {
-  const { query } = useSearch({ from: "/search" });
-  const navigate = useNavigate({ from: "/search" });
+  // 주소의 ?query= 값을 읽음 (app/search/page.tsx에서 Suspense로 감싸 둠)
+  const searchParams = useSearchParams();
+  const query = searchParams.get("query") ?? undefined;
+  const router = useRouter();
   const [searchText, setSearchText] = useState(query ?? "");
   const [previousQuery, setPreviousQuery] = useState(query);
 
@@ -30,9 +35,7 @@ export function SearchPage() {
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const nextQuery = searchText.trim();
-    navigate({
-      search: nextQuery ? { query: nextQuery } : {},
-    });
+    router.push(nextQuery ? `/search?query=${encodeURIComponent(nextQuery)}` : "/search");
   }
 
   return (
@@ -98,8 +101,7 @@ export function SearchPage() {
                   </p>
 
                   <Link
-                    to="/movies/$movieId"
-                    params={{ movieId: String(movie.id) }}
+                    href={`/movies/${movie.id}`}
                     className="mt-3 inline-block text-sm font-semibold text-blue-600"
                   >
                     상세 보기

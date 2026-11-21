@@ -1,15 +1,15 @@
 import { useMutation } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
+import { useRouter } from "next/navigation";
 import { memberRequestError, signUp } from "../api/member-client";
 
 export function useSignupMutation() {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   return useMutation({
     mutationFn: signUp,
     onSuccess: (response) => {
       alert(response.message);
-      navigate({ to: "/login" });
+      router.push("/login");
     },
     onError: (error) => {
       alert(memberRequestError(error));

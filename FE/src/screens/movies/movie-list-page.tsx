@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import MovieGrid from "../../components/movies/movie-grid";
 import Pagination from "../../components/movies/pagination";
