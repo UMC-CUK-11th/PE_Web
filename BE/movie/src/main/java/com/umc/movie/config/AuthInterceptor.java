@@ -16,9 +16,12 @@ public class AuthInterceptor implements HandlerInterceptor {
     String method = request.getMethod();
     String path = request.getRequestURI().substring(request.getContextPath().length());
     if (method.equals("OPTIONS")
-        || (method.equals("POST") && (path.equals("/auth/login") || path.equals("/members")))
-        || (method.equals("GET") && (path.matches("/members/(email|nickname)/[^/]+")
-            || path.matches("/members/[0-9]+/ratings")))) return true;
+            || (method.equals("POST") && (path.equals("/auth/login") || path.equals("/members")))
+            || (method.equals("GET") && (path.matches("/members/(email|nickname)/[^/]+")
+            || path.matches("/members/[0-9]+/ratings")
+            || path.equals("/swagger-ui.html")
+            || path.startsWith("/swagger-ui/")
+            || path.startsWith("/v3/api-docs")))) return true;
     String header = request.getHeader("Authorization");
     if (header == null || header.isBlank())
       throw new ApiException(401, "AUTH401_2", "인증 토큰이 필요합니다.");
