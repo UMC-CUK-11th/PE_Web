@@ -1,5 +1,9 @@
 package com.umc.movie.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 
-public record LoginRequest(@NotBlank String email, @NotBlank String password) {}
+@Schema(description = "로그인 요청")
+public record LoginRequest(
+    @Schema(description = "가입한 이메일", example = "umc@example.com") @NotBlank String email,
+    @Schema(description = "비밀번호", example = "Umc!1234") @NotBlank String password) {}
