@@ -23,12 +23,18 @@ export class FavoriteService {
       throw new ApiException(HttpStatus.NOT_FOUND, 'MEMBER404_1', '해당 회원을 찾을 수 없습니다.');
     }
 
+   
     const existing = await this.favoriteRepository.findOne({
       where: { member: { memberId }, movieId: dto.movieId },
     });
     if (existing) {
-      throw new ApiException(HttpStatus.CONFLICT, 'FAVORITE409_1', '이미 이 영화를 즐겨찾기하셨습니다.');
+      throw new ApiException(
+        HttpStatus.CONFLICT,
+        'FAVORITE409_1',
+        '이미 이 영화를 즐겨찾기하셨습니다.',
+      );
     }
+    
 
     const saved = await this.favoriteRepository.save(
       this.favoriteRepository.create({ member, movieId: dto.movieId }),
@@ -56,7 +62,11 @@ export class FavoriteService {
       where: { member: { memberId }, movieId },
     });
     if (!favorite) {
-      throw new ApiException(HttpStatus.NOT_FOUND, 'FAVORITE404_1', '즐겨찾기한 영화를 찾을 수 없습니다.');
+      throw new ApiException(
+        HttpStatus.NOT_FOUND,
+        'FAVORITE404_1',
+        '즐겨찾기한 영화를 찾을 수 없습니다.',
+      );
     }
     await this.favoriteRepository.remove(favorite);
   }
