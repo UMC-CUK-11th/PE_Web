@@ -18,7 +18,8 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                 .allowedOrigins(
                         "http://localhost:5173",
-                        "http://localhost:5174"
+                        "http://localhost:5174",
+                        "http://localhost:3000"
                 )
                 .allowedMethods("GET", "POST", "PATCH", "DELETE", "OPTIONS")
                 .allowedHeaders("*");
@@ -34,6 +35,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/members/email/*",
                         "/members/nickname/*",
                         "/members/*/ratings",
+                        "/swagger-ui.html",
                         "/swagger-ui/**",
                         "/v3/api-docs/**",
                         "/error"

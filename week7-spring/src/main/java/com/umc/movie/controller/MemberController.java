@@ -1,6 +1,8 @@
 package com.umc.movie.controller;
 
 import com.umc.movie.dto.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import com.umc.movie.dto.EmailCheckResponse;
 import com.umc.movie.dto.MemberInfoResponse;
 import com.umc.movie.dto.MemberResponse;
@@ -52,6 +54,8 @@ public class MemberController {
     }
 
     // 로그인한 회원 정보 조회
+    @Operation(summary = "내 정보 조회", description = "로그인한 회원의 정보를 조회합니다. JWT 토큰 필요")
+@SecurityRequirement(name = "bearerAuth")
     @GetMapping("/me")
     public ResponseEntity<MemberInfoResponse> getMyInfo(
             HttpServletRequest request
@@ -64,6 +68,8 @@ public class MemberController {
     }
 
     // 로그인한 회원 정보 수정
+    @Operation(summary = "내 정보 수정", description = "로그인한 회원의 정보를 수정합니다. JWT 토큰 필요")
+@SecurityRequirement(name = "bearerAuth")
     @PatchMapping("/me")
     public ResponseEntity<MemberInfoResponse> updateMyInfo(
             HttpServletRequest request,
