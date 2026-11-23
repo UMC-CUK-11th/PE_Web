@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "@tanstack/react-router";
 import { getMovieDetail } from "../../api/movies/get-movie-detail";
 import { BookmarkButton } from "../../components/movies/bookmark-button";
+import { RatingPanel } from "../../components/movies/rating-panel";
 import { getMovieDetailErrorMessage } from "../../utils/movies/get-movie-detail-error-message";
 import { getTmdbBackdropUrl, getTmdbPosterUrl } from "../../utils/movies/tmdb-image";
 
@@ -62,12 +63,13 @@ export function MovieDetailPage() {
             <h1 className="mt-4 text-3xl font-bold md:text-5xl">{movie.title}</h1>
             <p className="mt-2 text-lg text-gray-300">{movie.original_title}</p>
             <p className="mt-5 text-gray-300">{movie.release_date || "개봉일 정보 없음"} · {movie.genres.map((genre) => genre.name).join(", ") || "장르 정보 없음"} · {runtime}</p>
-            <BookmarkButton movieId={movie.id} movieTitle={movie.title} className="mt-5" />
+            <BookmarkButton movieId={movie.id} movieTitle={movie.title} className="mt-5" checkStatus />
             {movie.tagline && <h2 className="mt-8 text-xl font-bold">{movie.tagline}</h2>}
             <p className="mt-3 leading-7 text-gray-200">{movie.overview || "줄거리 정보가 없어요."}</p>
           </div>
         </div>
       </section>
+      <RatingPanel movieId={movie.id} />
     </main>
   );
 }

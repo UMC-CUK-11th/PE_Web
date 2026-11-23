@@ -2,10 +2,12 @@
 // 헤더·배경색을 한 번만 정의하고, Outlet 자리에 현재 페이지를 끼워 넣는다.
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { Header } from "../components/layout/header";
+import { AuthSession } from "../components/auth/auth-session";
 
 export const Route = createRootRoute({
   component: () => (
     <div className="min-h-screen bg-[#141517] font-sans text-white">
+      <AuthSession />
       <Header />
       {/* 현재 URL에 맞는 하위 페이지가 이 위치에 표시된다. */}
       <Outlet />

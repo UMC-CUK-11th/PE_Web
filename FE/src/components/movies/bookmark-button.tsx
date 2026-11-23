@@ -1,48 +1,43 @@
-// 이 파일은 목록·검색·상세 화면에서 함께 쓰는 북마크 버튼이다.
-// 버튼마다 저장 로직을 작성하지 않도록 Zustand 상태 조회와 클릭 동작을 모았다.
-import { useBookmarkStore } from "../../stores/bookmark-store";
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
+import { createFavorite, deleteFavorite, getFavoriteStatus } from "../../api/favorites";
+import { useFavoritesQuery, useMemberId } from "../../hooks/use-member-queries";
+import { useAuthStore } from "../../stores/auth-store";
+import { apiErrorMessage } from "../../utils/api-error-message";
 import { cn } from "../../utils/cn";
 
-interface BookmarkButtonProps {
-  movieId: number;
-  movieTitle: string;
-  className?: string;
-}
-
-export function BookmarkButton({
-  movieId,
-  movieTitle,
-  className = "",
-}: BookmarkButtonProps) {
-  // 전달받은 movieId에 해당하는 상태만 읽어 현재 버튼 문구를 정한다.
-  const isBookmarked = useBookmarkStore((state) => state.isBookmarked(movieId));
-  const toggleBookmark = useBookmarkStore((state) => state.toggleBookmark);
-
-  // 아이콘은 모양만 담당하고, aria-label과 aria-pressed가 영화와 선택 상태를 알려준다.
-  return (
-    <button
-      type="button"
-      aria-label={`${movieTitle} 북마크 ${isBookmarked ? "해제" : "추가"}`}
-      aria-pressed={isBookmarked}
-      onClick={() => toggleBookmark(movieId)}
-      className={cn(
-        "flex h-9 w-9 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
-        isBookmarked
-          ? "bg-white hover:bg-gray-200"
-          : "bg-black/70 hover:bg-black/90",
-        className,
-      )}
-    >
-      <img
-        src={
-          isBookmarked
-            ? "/icons/bookmark.svg"
-            : "/icons/bookmark-outline.svg"
-        }
-        alt=""
-        aria-hidden="true"
-        className={cn("h-5 w-5", !isBookmarked && "invert")}
-      />
+interface BookmarkButtonProps { movieId: number; movieTitle: string; className?: string; checkStatus?: boolean }
+export function BookmarkButton({ movieId, movieTitle, className = "", checkStatus = false }: BookmarkButtonProps) {
+  const token = useAuthStore(state => state.accessToken);
+  const memberId = useMemberId();
+  const favorites = useFavoritesQuery();
+  const status = useQuery({ queryKey: ["favorites", memberId, "status", movieId],
+    queryFn: ({ signal }) => getFavoriteStatus(movieId, signal), enabled: Boolean(token) && checkStatus, retry: false });
+  const isBookmarked = checkStatus ? status.data?.isFavorite ?? false : favorites.data?.some(item => item.movieId === movieId) ?? false;
+  const query = checkStatus ? status : favorites;
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const [message, setMessage] = useState("");
+  const mutation = useMutation({
+    mutationFn: async () => {
+      if (isBookmarked) await deleteFavorite(movieId);
+      else await createFavorite(movieId);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["favorites", memberId] }),
+    onError: error => {
+      setMessage(apiErrorMessage(error));
+      void queryClient.invalidateQueries({ queryKey: ["favorites", memberId] });
+    },
+  });
+  return <span className={cn("inline-flex flex-col items-start", className)}>
+    <button type="button" aria-label={`${movieTitle} 북마크 ${isBookmarked ? "해제" : "추가"}`} aria-pressed={isBookmarked}
+      disabled={mutation.isPending || (Boolean(token) && (query.isLoading || query.isError))}
+      onClick={() => { setMessage(""); if (!token) { void navigate({ to: "/login" }); return; } mutation.mutate(); }}
+      className={cn("flex h-9 w-9 items-center justify-center rounded-full disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-white",
+        isBookmarked ? "bg-white hover:bg-gray-200" : "bg-black/70 hover:bg-black/90")}>
+      <img src={isBookmarked ? "/icons/bookmark.svg" : "/icons/bookmark-outline.svg"} alt="" aria-hidden="true" className={cn("h-5 w-5", !isBookmarked && "invert")} />
     </button>
-  );
+    {(message || query.isError) && <span role="alert" className="max-w-48 rounded bg-black/90 p-1 text-xs text-red-300">{message || "즐겨찾기를 불러오지 못했어요."}</span>}
+  </span>;
 }

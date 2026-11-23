@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS rating (
     CONSTRAINT fk_rating_member FOREIGN KEY (member_id) REFERENCES member(member_id),
     CONSTRAINT uk_rating_member_movie UNIQUE (member_id, movie_id)
 );
--- 워크북 체크리스트의 테이블만 준비한다. 즐겨찾기 API는 이번 미션에서 구현하지 않는다.
+-- 회원별 영화 즐겨찾기: 동일 회원과 영화 조합의 중복을 막는다.
 CREATE TABLE IF NOT EXISTS favorite (
     favorite_id BIGINT AUTO_INCREMENT PRIMARY KEY,
     member_id BIGINT NOT NULL,

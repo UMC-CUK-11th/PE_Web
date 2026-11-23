@@ -1,8 +1,12 @@
 // 이 파일은 모든 페이지 위에 공통으로 보이는 사이트 머리글을 담당한다.
 // 메뉴를 페이지마다 복사하지 않고 하나의 컴포넌트로 재사용하기 위해 분리했다.
 import { Link } from "@tanstack/react-router";
+import { useMeQuery } from "../../hooks/use-member-queries";
+import { useAuthStore } from "../../stores/auth-store";
 
 export function Header() {
+  const token = useAuthStore(state => state.accessToken);
+  const me = useMeQuery();
   return (
     <header className="flex items-center gap-6 border-b border-[#2e303d] bg-[#1a1c24] px-8 py-4">
       <Link to="/" className="text-2xl font-bold text-[#e50914]">
@@ -33,9 +37,11 @@ export function Header() {
         <Link to="/members" activeProps={{ "aria-current": "page", className: "font-bold text-[#e50914]" }}>
           회원 · 평점
         </Link>
-        <Link to="/signup">회원가입</Link>
-        <Link to="/login">로그인</Link>
-        <Link to="/me">내 정보</Link>
+        {!token ? <><Link to="/signup">회원가입</Link><Link to="/login">로그인</Link></>
+          : <>
+            <Link to="/my">{me.isLoading ? "회원 정보 확인 중" : `${me.data?.nickname ?? "회원"} · 마이페이지`}</Link>
+            <button type="button" onClick={() => useAuthStore.getState().setAccessToken(null)}>로그아웃</button>
+          </>}
       </nav>
     </header>
   );
