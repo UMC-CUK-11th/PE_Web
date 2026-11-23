@@ -1,12 +1,28 @@
+import { useMutation } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { type FormEvent, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { loginMutationOptions } from "../../api/auth-mutation-options";
+import { useAuthStore } from "../../stores/auth-store";
+import { getApiErrorMessage } from "../../utils/api-error";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function LoginPage() {
   const navigate = useNavigate();
+  const setSession = useAuthStore((state) => state.setSession);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const loginMutation = useMutation({
+    ...loginMutationOptions(),
+    onSuccess: (session) => {
+      setSession(session);
+      void navigate({ to: "/my" });
+    },
+    onError: async (error) => {
+      setErrorMessage(await getApiErrorMessage(error, "로그인에 실패했어요. 입력 정보를 확인해 주세요."));
+    },
+  });
 
   const isEmailValid = EMAIL_REGEX.test(email.trim());
   const isPasswordValid = password.length >= 8;
@@ -15,7 +31,8 @@ export function LoginPage() {
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!canSubmit) return;
-    navigate("/my");
+    setErrorMessage("");
+    loginMutation.mutate({ email: email.trim(), password });
   };
 
   return (
@@ -61,16 +78,18 @@ export function LoginPage() {
           </div>
           {password.length > 0 && !isPasswordValid && <p className="mt-2 text-xs text-[#e5484d]">비밀번호를 8자 이상 입력해 주세요.</p>}
 
+          {errorMessage && <p className="mt-5 rounded-lg bg-[#fff0f0] px-4 py-3 text-xs text-[#d33f49]" role="alert">{errorMessage}</p>}
+
           <button
             className="mt-7 h-12 w-full cursor-pointer rounded-lg border-0 bg-[#2877eb] text-sm font-bold text-white transition-colors hover:bg-[#1768d7] disabled:cursor-not-allowed disabled:bg-[#c9d2df]"
             type="submit"
-            disabled={!canSubmit}
+            disabled={!canSubmit || loginMutation.isPending}
           >
-            로그인
+            {loginMutation.isPending ? "로그인 중" : "로그인"}
           </button>
         </form>
 
-        <p className="mt-7 text-center text-xs text-[#9299a2]">로그인 API는 다음 미션에서 연결해요.</p>
+        <p className="mt-7 text-center text-xs text-[#9299a2]">회원 계정으로 로그인하면 즐겨찾기와 평점을 관리할 수 있어요.</p>
       </section>
     </main>
   );

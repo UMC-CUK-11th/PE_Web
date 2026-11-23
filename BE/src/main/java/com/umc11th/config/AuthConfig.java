@@ -29,6 +29,9 @@ public class AuthConfig implements WebMvcConfigurer {
                         "/members/*/ratings",
                         "/books/**",
                         "/rentals/**",
+                        "/swagger-ui.html",
+                        "/swagger-ui/**",
+                        "/v3/api-docs/**",
                         "/error"
                 );
     }

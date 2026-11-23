@@ -1,11 +1,20 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { HTTPError } from "ky";
-import { Link, useParams } from "react-router-dom";
 import { adaptTmdbMovieDetails } from "../api/tmdb-adapter";
 import { movieDetailsQueryOptions } from "../api/movie-query-options";
+import {
+  createRatingMutationOptions,
+  deleteRatingMutationOptions,
+  memberRatingsQueryOptions,
+  ratingQueryKeys,
+  updateRatingMutationOptions,
+} from "../api/rating-query-options";
 import { BookmarkButton } from "../components/bookmark-button";
 import { ErrorState, LoadingState } from "../components/request-state";
+import { useAuthStore } from "../stores/auth-store";
+import { getApiErrorMessage } from "../utils/api-error";
 import { cn } from "../utils/cn";
 
 function MovieNotFound() {
@@ -21,13 +30,77 @@ function MovieNotFound() {
   );
 }
 
-export function MovieDetailPage() {
-  const { movieId } = useParams();
+interface MovieDetailPageProps {
+  movieId: string;
+}
+
+export function MovieDetailPage({ movieId }: MovieDetailPageProps) {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const parsedMovieId = Number(movieId);
   const isValidMovieId = Number.isInteger(parsedMovieId) && parsedMovieId > 0;
-  const [rating, setRating] = useState(0);
-  const [review, setReview] = useState("");
+  const memberId = useAuthStore((state) => state.memberId);
+  const isLoggedIn = useAuthStore((state) => Boolean(state.accessToken));
+  const [ratingDraft, setRatingDraft] = useState<{ score: number; comment: string } | null>(null);
+  const [ratingMessage, setRatingMessage] = useState("");
   const movieQuery = useQuery(movieDetailsQueryOptions(parsedMovieId, isValidMovieId));
+  const ratingsQuery = useQuery(memberRatingsQueryOptions(memberId ?? 0, isLoggedIn && memberId !== null));
+  const existingRating = ratingsQuery.data?.find((item) => item.movieId === parsedMovieId);
+  const rating = ratingDraft?.score ?? existingRating?.score ?? 0;
+  const review = ratingDraft?.comment ?? existingRating?.comment ?? "";
+
+  const refreshRatings = async () => {
+    if (memberId !== null) {
+      await queryClient.invalidateQueries({ queryKey: ratingQueryKeys.member(memberId) });
+    }
+  };
+
+  const createMutation = useMutation({
+    ...createRatingMutationOptions(),
+    onSuccess: async () => {
+      setRatingDraft(null);
+      setRatingMessage("평점을 등록했어요.");
+      await refreshRatings();
+    },
+    onError: async (error) => setRatingMessage(await getApiErrorMessage(error, "평점 등록에 실패했어요.")),
+  });
+  const updateMutation = useMutation({
+    ...updateRatingMutationOptions(),
+    onSuccess: async () => {
+      setRatingDraft(null);
+      setRatingMessage("평점을 수정했어요.");
+      await refreshRatings();
+    },
+    onError: async (error) => setRatingMessage(await getApiErrorMessage(error, "평점 수정에 실패했어요.")),
+  });
+  const deleteMutation = useMutation({
+    ...deleteRatingMutationOptions(),
+    onSuccess: async () => {
+      setRatingDraft({ score: 0, comment: "" });
+      setRatingMessage("평점을 삭제했어요.");
+      await refreshRatings();
+    },
+    onError: async (error) => setRatingMessage(await getApiErrorMessage(error, "평점 삭제에 실패했어요.")),
+  });
+  const isRatingPending = createMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
+
+  const handleSaveRating = () => {
+    if (!isLoggedIn) {
+      void navigate({ to: "/login" });
+      return;
+    }
+    if (rating === 0) {
+      setRatingMessage("별점을 먼저 선택해 주세요.");
+      return;
+    }
+
+    setRatingMessage("");
+    if (existingRating) {
+      updateMutation.mutate({ ratingId: existingRating.ratingId, score: rating, comment: review.trim() });
+    } else {
+      createMutation.mutate({ movieId: parsedMovieId, score: rating, comment: review.trim() });
+    }
+  };
 
   if (!isValidMovieId) return <MovieNotFound />;
   if (movieQuery.isPending) {
@@ -69,12 +142,12 @@ export function MovieDetailPage() {
         <div className="pt-1">
           <h2 className="text-xl font-extrabold">{movie.tagline}</h2>
           <p className="mt-4 text-sm leading-7 text-[#676f79]">{movie.overview}</p>
-          <BookmarkButton className="mt-6" movieId={movie.id} movieTitle={movie.title} />
+          <BookmarkButton className="mt-6" movieId={movie.id} movieTitle={movie.title} useDetailStatus />
         </div>
 
         <aside className="border-l border-[#dfe3e8] pl-8 max-[900px]:col-span-2 max-[900px]:border-l-0 max-[900px]:border-t max-[900px]:pt-6 max-[900px]:pl-0 max-sm:col-span-1">
           <h2 className="text-xl font-extrabold">내 평점</h2>
-          <p className="mt-2 text-xs text-[#8c939c]">별점을 클릭하고, 후기를 선택하세요.</p>
+          <p className="mt-2 text-xs text-[#8c939c]">별점을 클릭하고, 후기를 작성하세요.</p>
           <div className="mt-3 flex gap-2" aria-label="평점 선택">
             {[1, 2, 3, 4, 5].map((score) => (
               <button
@@ -88,7 +161,11 @@ export function MovieDetailPage() {
                 key={score}
                 aria-label={`${score}점`}
                 aria-pressed={score === rating}
-                onClick={() => setRating(score)}
+                disabled={isRatingPending}
+                onClick={() => {
+                  setRatingDraft({ score, comment: review });
+                  setRatingMessage("");
+                }}
               >
                 ★
               </button>
@@ -100,9 +177,30 @@ export function MovieDetailPage() {
             id="movie-review"
             value={review}
             placeholder="영화를 보고 느낀 점을 남겨보세요."
-            onChange={(event) => setReview(event.target.value)}
+            onChange={(event) => setRatingDraft({ score: rating, comment: event.target.value })}
+            disabled={isRatingPending}
           />
-          <button className="mt-2 h-10 w-full cursor-pointer rounded-md border-0 bg-[#18191b] text-sm font-bold text-white" type="button">평점 저장</button>
+          {ratingMessage && <p className="mt-2 text-xs text-[#2877eb]" role="status">{ratingMessage}</p>}
+          <div className="mt-3 flex gap-2">
+            {existingRating && (
+              <button
+                className="h-10 flex-1 cursor-pointer rounded-md border border-[#dfe3e8] bg-white text-sm font-bold text-[#5c646e] disabled:cursor-not-allowed disabled:opacity-60"
+                type="button"
+                disabled={isRatingPending}
+                onClick={() => deleteMutation.mutate(existingRating.ratingId)}
+              >
+                삭제
+              </button>
+            )}
+            <button
+              className="h-10 flex-1 cursor-pointer rounded-md border-0 bg-[#18191b] text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
+              type="button"
+              disabled={isRatingPending}
+              onClick={handleSaveRating}
+            >
+              {isRatingPending ? "저장 중" : existingRating ? "평점 수정" : "평점 저장"}
+            </button>
+          </div>
         </aside>
       </section>
     </main>

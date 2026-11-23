@@ -1,33 +1,27 @@
 import { useQuery } from "@tanstack/react-query";
 import { type FormEvent, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link } from "@tanstack/react-router";
 import { adaptTmdbMovie } from "../api/tmdb-adapter";
 import { searchMoviesQueryOptions } from "../api/movie-query-options";
 import { BookmarkButton } from "../components/bookmark-button";
 import { Pagination } from "../components/pagination";
 import { EmptyState, ErrorState, LoadingState } from "../components/request-state";
 
-function parsePage(value: string | null) {
-  const page = Number(value);
-  return Number.isInteger(page) && page > 0 ? page : 1;
+interface SearchPageProps {
+  query: string;
+  currentPage: number;
+  onSearch: (query: string) => void;
+  onPageChange: (page: number) => void;
 }
 
-export function SearchPage() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const query = searchParams.get("query")?.trim() ?? "";
-  const currentPage = parsePage(searchParams.get("page"));
+export function SearchPage({ query, currentPage, onSearch, onPageChange }: SearchPageProps) {
   const [searchInput, setSearchInput] = useState(query);
   const searchQuery = useQuery(searchMoviesQueryOptions(query, currentPage));
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const nextQuery = searchInput.trim();
-    setSearchParams(nextQuery ? { query: nextQuery } : {});
-  };
-
-  const handlePageChange = (page: number) => {
-    setSearchParams({ query, ...(page > 1 ? { page: String(page) } : {}) });
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    onSearch(nextQuery);
   };
 
   if (!query) {
@@ -88,13 +82,13 @@ export function SearchPage() {
             <div className="grid grid-cols-2 max-[760px]:grid-cols-1">
               {results.map((movie) => (
                 <article className="flex min-h-[210px] gap-4 border-b border-[#dfe3e8] py-5 even:pl-8 odd:pr-8 max-[760px]:px-0" key={movie.id}>
-                  <Link className="shrink-0" to={`/movies/${movie.id}`}>
+                  <Link className="shrink-0" to="/movies/$movieId" params={{ movieId: String(movie.id) }}>
                     <img className="h-[168px] w-[112px] rounded-md object-cover" src={movie.posterPath} alt={`${movie.title} 포스터`} />
                   </Link>
                   <div className="min-w-0 flex-1 pt-1">
                     <div className="mb-2 flex items-start justify-between gap-3">
                       <h3 className="text-base font-bold">
-                        <Link className="text-inherit no-underline" to={`/movies/${movie.id}`}>{movie.title}</Link>
+                        <Link className="text-inherit no-underline" to="/movies/$movieId" params={{ movieId: String(movie.id) }}>{movie.title}</Link>
                       </h3>
                       <BookmarkButton movieId={movie.id} movieTitle={movie.title} />
                     </div>
@@ -104,7 +98,7 @@ export function SearchPage() {
                     </p>
                     <p className="mb-3 text-xs text-[#777f89]">{movie.genres.join(" · ")}</p>
                     <p className="line-clamp-2 text-xs leading-5 text-[#555d67]">{movie.overview}</p>
-                    <Link className="mt-5 inline-block text-xs font-bold text-[#2877eb] no-underline" to={`/movies/${movie.id}`}>상세 보기 →</Link>
+                    <Link className="mt-5 inline-block text-xs font-bold text-[#2877eb] no-underline" to="/movies/$movieId" params={{ movieId: String(movie.id) }}>상세 보기 →</Link>
                   </div>
                 </article>
               ))}
@@ -112,7 +106,7 @@ export function SearchPage() {
             <Pagination
               currentPage={currentPage}
               totalPages={Math.min(searchQuery.data.total_pages, 500)}
-              onPageChange={handlePageChange}
+              onPageChange={onPageChange}
             />
           </section>
         )}

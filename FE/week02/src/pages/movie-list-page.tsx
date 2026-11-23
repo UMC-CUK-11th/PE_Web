@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { useSearchParams } from "react-router-dom";
 import { adaptTmdbMovie } from "../api/tmdb-adapter";
 import { popularMoviesQueryOptions } from "../api/movie-query-options";
 import { MovieGrid } from "../components/movie-grid";
@@ -8,22 +7,15 @@ import { EmptyState, ErrorState, LoadingState } from "../components/request-stat
 import { useViewPreferenceStore } from "../stores/view-preference-store";
 import { cn } from "../utils/cn";
 
-function parsePage(value: string | null) {
-  const page = Number(value);
-  return Number.isInteger(page) && page > 0 ? page : 1;
+interface MovieListPageProps {
+  currentPage: number;
+  onPageChange: (page: number) => void;
 }
 
-export function MovieListPage() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const currentPage = parsePage(searchParams.get("page"));
+export function MovieListPage({ currentPage, onPageChange }: MovieListPageProps) {
   const movieCardSize = useViewPreferenceStore((state) => state.movieCardSize);
   const setMovieCardSize = useViewPreferenceStore((state) => state.setMovieCardSize);
   const movieQuery = useQuery(popularMoviesQueryOptions(currentPage));
-
-  const handlePageChange = (page: number) => {
-    setSearchParams(page === 1 ? {} : { page: String(page) });
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
 
   return (
     <main className="flex-1">
@@ -67,7 +59,7 @@ export function MovieListPage() {
             <Pagination
               currentPage={currentPage}
               totalPages={Math.min(movieQuery.data.total_pages, 500)}
-              onPageChange={handlePageChange}
+              onPageChange={onPageChange}
             />
           </>
         )}
