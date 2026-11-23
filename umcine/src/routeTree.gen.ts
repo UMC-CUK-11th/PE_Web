@@ -8,95 +8,149 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root';
-import { Route as IndexRouteImport } from './routes/index';
-import { Route as SearchRouteImport } from './routes/search';
-import { Route as MoviesMovieIdRouteImport } from './routes/movies.$movieId';
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as MyRouteImport } from './routes/my'
+import { Route as SearchRouteImport } from './routes/search'
+import { Route as SignupRouteImport } from './routes/signup'
+import { Route as MoviesMovieIdRouteImport } from './routes/movies.$movieId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MyRoute = MyRouteImport.update({
+  id: '/my',
+  path: '/my',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MoviesMovieIdRoute = MoviesMovieIdRouteImport.update({
   id: '/movies/$movieId',
   path: '/movies/$movieId',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute;
-  '/search': typeof SearchRoute;
-  '/movies/$movieId': typeof MoviesMovieIdRoute;
+  '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/my': typeof MyRoute
+  '/search': typeof SearchRoute
+  '/signup': typeof SignupRoute
+  '/movies/$movieId': typeof MoviesMovieIdRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute;
-  '/search': typeof SearchRoute;
-  '/movies/$movieId': typeof MoviesMovieIdRoute;
+  '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/my': typeof MyRoute
+  '/search': typeof SearchRoute
+  '/signup': typeof SignupRoute
+  '/movies/$movieId': typeof MoviesMovieIdRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport;
-  '/': typeof IndexRoute;
-  '/search': typeof SearchRoute;
-  '/movies/$movieId': typeof MoviesMovieIdRoute;
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/my': typeof MyRoute
+  '/search': typeof SearchRoute
+  '/signup': typeof SignupRoute
+  '/movies/$movieId': typeof MoviesMovieIdRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
-  fullPaths: '/' | '/search' | '/movies/$movieId';
-  fileRoutesByTo: FileRoutesByTo;
-  to: '/' | '/search' | '/movies/$movieId';
-  id: '__root__' | '/' | '/search' | '/movies/$movieId';
-  fileRoutesById: FileRoutesById;
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths: '/' | '/login' | '/my' | '/search' | '/signup' | '/movies/$movieId'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/' | '/login' | '/my' | '/search' | '/signup' | '/movies/$movieId'
+  id:
+    | '__root__'
+    | '/'
+    | '/login'
+    | '/my'
+    | '/search'
+    | '/signup'
+    | '/movies/$movieId'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
-  SearchRoute: typeof SearchRoute;
-  MoviesMovieIdRoute: typeof MoviesMovieIdRoute;
+  IndexRoute: typeof IndexRoute
+  LoginRoute: typeof LoginRoute
+  MyRoute: typeof MyRoute
+  SearchRoute: typeof SearchRoute
+  SignupRoute: typeof SignupRoute
+  MoviesMovieIdRoute: typeof MoviesMovieIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/': {
-      id: '/';
-      path: '/';
-      fullPath: '/';
-      preLoaderRoute: typeof IndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/my': {
+      id: '/my'
+      path: '/my'
+      fullPath: '/my'
+      preLoaderRoute: typeof MyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/search': {
-      id: '/search';
-      path: '/search';
-      fullPath: '/search';
-      preLoaderRoute: typeof SearchRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
-      id: '/signup';
-      path: '/signup';
-      fullPath: '/signup';
-      preLoaderRoute: typeof SignupRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/movies/$movieId': {
-      id: '/movies/$movieId';
-      path: '/movies/$movieId';
-      fullPath: '/movies/$movieId';
-      preLoaderRoute: typeof MoviesMovieIdRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/movies/$movieId'
+      path: '/movies/$movieId'
+      fullPath: '/movies/$movieId'
+      preLoaderRoute: typeof MoviesMovieIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LoginRoute: LoginRoute,
+  MyRoute: MyRoute,
   SearchRoute: SearchRoute,
+  SignupRoute: SignupRoute,
   MoviesMovieIdRoute: MoviesMovieIdRoute,
-};
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()

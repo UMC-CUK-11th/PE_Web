@@ -1,7 +1,19 @@
 import { Link, useNavigate } from '@tanstack/react-router';
+import { useQuery } from '@tanstack/react-query';
+import { getMe } from '../../api/members/me';
+import { useAuthStore } from '../../stores/auth-store';
 
 export function Header() {
   const navigate = useNavigate();
+
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const meQuery = useQuery({
+    queryKey: ['members', 'me'],
+    queryFn: getMe,
+    enabled: Boolean(accessToken),
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
 
   return (
     <header className='border-b border-gray-200 bg-white'>
@@ -62,12 +74,23 @@ export function Header() {
             />
           </button>
 
-          <button
-            type='button'
-            className='rounded-md bg-blue-600 px-2.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-700 sm:px-4 sm:text-sm'
-          >
-            로그인
-          </button>
+          {!accessToken ? (
+            <Link
+              to='/login'
+              className='rounded-md bg-blue-600 px-2.5 py-2 text-xs font-semibold text-white no-underline transition-colors hover:bg-blue-700 sm:px-4 sm:text-sm'
+            >
+              로그인
+            </Link>
+          ) : meQuery.isLoading ? (
+            <span className='inline-block h-9 w-24 animate-pulse rounded-md bg-gray-200 sm:h-10' />
+          ) : (
+            <Link
+              to='/my'
+              className='rounded-md bg-blue-600 px-2.5 py-2 text-xs font-semibold text-white no-underline transition-colors hover:bg-blue-700 sm:px-4 sm:text-sm'
+            >
+              마이페이지
+            </Link>
+          )}
         </div>
       </div>
     </header>
