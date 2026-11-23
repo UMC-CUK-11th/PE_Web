@@ -1,0 +1,11 @@
+import { mutationOptions } from "@tanstack/react-query";
+import { signup } from "./members/signup";
+import { login } from "./auth/login";
+import { updateMe } from "./members/me";
+import { changeFavorite } from "./favorites";
+import { writeRating } from "./ratings";
+export const signupOptions = () => mutationOptions({ mutationKey: ["signup"], mutationFn: signup, retry: false });
+export const loginOptions = () => mutationOptions({ mutationKey: ["login"], mutationFn: login, retry: false });
+export const updateMeOptions = () => mutationOptions({ mutationKey: ["update-me"], mutationFn: updateMe, retry: false });
+export const changeFavoriteOptions = () => mutationOptions({ mutationKey: ["change-favorite"], mutationFn: changeFavorite, retry: false });
+export const writeRatingOptions = () => mutationOptions({ mutationKey: ["write-rating"], mutationFn: writeRating, retry: false });

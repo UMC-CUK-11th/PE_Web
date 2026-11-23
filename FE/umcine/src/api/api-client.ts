@@ -12,7 +12,7 @@ export class ApiError extends Error {
   }
 }
 
-export async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
+export async function apiRequest<T>(path: string, options: RequestInit = {}, onResponse?: (response: Response) => void): Promise<T> {
   let response: Response;
   try {
     // 쓰기 요청은 자동 재시도하지 않습니다. 중복 가입은 서버에서도 다시 검사합니다.
@@ -24,6 +24,8 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
     throw new ApiError(0, "NETWORK_ERROR", "서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.");
   }
 
+  onResponse?.(response);
+  if (response.status === 204) return undefined as T;
   let body: unknown;
   try {
     body = await response.json();

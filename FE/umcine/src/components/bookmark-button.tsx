@@ -1,46 +1,47 @@
-import { useBookmarkStore } from "../stores/bookmark-store";
+import { useRef } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAuthStore } from "../stores/auth-store";
+import { favoriteKey, favoriteListKey, favoriteOptions, favoritesOptions } from "../api/private-query-options";
+import { changeFavoriteOptions } from "../api/mutation-options";
+import { memberErrorMessage } from "../api/api-client";
 import { cn } from "../utils/cn";
 
-interface BookmarkButtonProps {
-  movieId: number;
-  movieTitle: string;
-  variant?: "card" | "detail" | "search";
-}
-
-const iconPath = "/icons/movie-icons/movie-icons";
-
+interface BookmarkButtonProps { movieId: number; movieTitle: string; variant?: "card" | "detail" | "search" }
 export function BookmarkButton({ movieId, movieTitle, variant = "card" }: BookmarkButtonProps) {
-  const isBookmarked = useBookmarkStore((state) =>
-    state.bookmarkedMovieIds.includes(movieId),
-  );
-  const toggleBookmark = useBookmarkStore((state) => state.toggleBookmark);
+  const { accessToken, sessionVersion } = useAuthStore();
+  const navigate = useNavigate();
+  const client = useQueryClient();
+  const lock = useRef(false);
+  const list = useQuery({ ...favoritesOptions(sessionVersion), enabled: !!accessToken && variant !== "detail" });
+  const status = useQuery({ ...favoriteOptions(sessionVersion, movieId), enabled: !!accessToken && variant === "detail" });
+  const query = variant === "detail" ? status : list;
+  const isFavorite = variant === "detail" ? status.data?.isFavorite === true : list.data?.some((item) => item.movieId === movieId) === true;
+  const mutation = useMutation({ ...changeFavoriteOptions(), onSuccess: async (_response, variables) => {
+    client.setQueryData(favoriteKey(sessionVersion, movieId), { movieId, isFavorite: !variables.remove });
+    await client.invalidateQueries({ queryKey: favoriteListKey(sessionVersion) });
+  }, onError: () => {
+    void client.invalidateQueries({ queryKey: favoriteKey(sessionVersion, movieId) });
+    void client.invalidateQueries({ queryKey: favoriteListKey(sessionVersion) });
+  }, onSettled: () => { lock.current = false; } });
 
-  return (
-    <button
-      className={cn(
-        "cursor-pointer transition",
-        variant === "card" &&
-          "absolute right-2 top-2 grid size-7 place-items-center rounded-[3px] border border-white/50 bg-black/75 hover:bg-black",
-        variant === "card" && isBookmarked &&
-          "border-[#2563eb] bg-[#2563eb] hover:bg-[#1d4ed8]",
-        variant === "detail" &&
-          "mt-5 inline-flex h-8 items-center rounded bg-[#2563eb] px-4 text-[10px] font-bold text-white hover:bg-[#1d4ed8]",
-        variant === "detail" && isBookmarked && "bg-[#17181c] hover:bg-black",
-        variant === "search" &&
-          "mt-3 inline-flex h-7 items-center rounded border border-[#cfd1d7] bg-white px-2.5 text-[10px] font-bold text-[#4f5259] hover:border-[#2563eb] hover:text-[#2563eb]",
-        variant === "search" && isBookmarked && "border-[#2563eb] text-[#2563eb]",
-      )}
-      type="button"
-      aria-label={`${movieTitle} ${isBookmarked ? "북마크 해제" : "북마크 추가"}`}
-      aria-pressed={isBookmarked}
-      onClick={() => toggleBookmark(movieId)}
-    >
-      <img
-        className={cn("size-4", variant !== "search" && "invert", variant !== "card" && "mr-1.5")}
-        src={`${iconPath}/${isBookmarked ? "bookmark.svg" : "bookmark-outline.svg"}`}
-        alt=""
-      />
-      {variant !== "card" && (isBookmarked ? "북마크 해제" : "북마크 추가")}
+  function toggle() {
+    if (!accessToken) { void navigate({ to: "/login" }); return; }
+    if (lock.current || mutation.isPending || query.isLoading) return;
+    if (query.isError) { void query.refetch(); return; }
+    lock.current = true;
+    mutation.mutate({ movieId, remove: isFavorite });
+  }
+
+  return <>
+    <button type="button" aria-label={`${movieTitle} ${isFavorite ? "북마크 해제" : "북마크 추가"}`} aria-pressed={isFavorite}
+      disabled={mutation.isPending || (!!accessToken && query.isLoading)} onClick={toggle}
+      className={cn("inline-flex items-center justify-center gap-1.5 rounded text-xs font-bold transition disabled:cursor-wait disabled:opacity-50",
+        variant === "card" ? "absolute right-2 top-2 size-8 border border-white/50 bg-black/75 text-white" : "mt-4 border border-blue-200 bg-white px-4 py-2 text-blue-700",
+        isFavorite && "!bg-blue-600 !text-white")}>
+      <img className={cn("size-4", (variant === "card" || isFavorite) && "invert")} src={`/icons/movie-icons/movie-icons/${isFavorite ? "bookmark.svg" : "bookmark-outline.svg"}`} alt="" />
+      {variant !== "card" && (mutation.isPending ? "처리 중…" : isFavorite ? "북마크 해제" : "북마크 추가")}
     </button>
-  );
+    {(mutation.isError || query.isError) && <p role="alert" className={cn("mt-2 text-xs text-red-600", variant === "card" && "absolute inset-x-1 bottom-1 rounded bg-white p-2")}>{memberErrorMessage(mutation.error ?? query.error)}{query.isError && " 버튼을 눌러 다시 확인해 주세요."}</p>}
+  </>;
 }
