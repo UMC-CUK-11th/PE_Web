@@ -1,10 +1,9 @@
-import { useQueryClient } from "@tanstack/react-query";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { isHTTPError } from "ky";
 import { useState, type SubmitEvent } from "react";
-import { login } from "../../api/auth/login";
-import { myProfileQueryKey } from "../../api/members/get-my-profile";
-import { useAuthStore } from "../../stores/auth-store";
+import { useLoginMutation } from "../../hooks/use-login-mutation";
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const labelClassName = "mb-1.5 block text-sm font-semibold";
 const inputClassName =
@@ -13,41 +12,21 @@ const inputIconClassName =
   "pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 opacity-55";
 
 export function LoginPage() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const setAccessToken = useAuthStore((state) => state.setAccessToken);
-  const queryClient = useQueryClient();
-  const navigate = useNavigate({ from: "/login" });
+  const [form, setForm] = useState({ email: "", password: "" });
+  const loginMutation = useLoginMutation();
+  const canSubmit = EMAIL_REGEX.test(form.email.trim()) && form.password.length > 0;
+  const errorMessage = isHTTPError(loginMutation.error) && loginMutation.error.response.status === 401
+    ? "이메일 또는 비밀번호가 올바르지 않습니다."
+    : "로그인 요청에 실패했어요. 다시 시도해 주세요.";
 
-  async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
+  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (isSubmitting) return;
+    if (!canSubmit || loginMutation.isPending) return;
 
-    const formData = new FormData(event.currentTarget);
-    const email = formData.get("email")?.toString().trim();
-    const password = formData.get("password")?.toString();
-    if (!email || !password) return;
-
-    setIsSubmitting(true);
-    setErrorMessage(null);
-    try {
-      const { accessToken } = await login({ email, password });
-      if (typeof accessToken !== "string" || !accessToken.trim()) {
-        throw new Error("로그인 응답에 토큰이 없어요.");
-      }
-
-      queryClient.removeQueries({ queryKey: myProfileQueryKey, exact: true });
-      setAccessToken(accessToken);
-      await navigate({ to: "/my-page" });
-    } catch (error) {
-      setErrorMessage(
-        isHTTPError(error) && error.response.status === 401
-          ? "이메일 또는 비밀번호가 올바르지 않습니다."
-          : "로그인 요청에 실패했어요. 다시 시도해 주세요.",
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
+    loginMutation.mutate({
+      email: form.email.trim(),
+      password: form.password,
+    });
   }
 
   return (
@@ -69,6 +48,8 @@ export function LoginPage() {
                 autoComplete="username"
                 className={inputClassName}
                 placeholder="name@example.com"
+                value={form.email}
+                onChange={(event) => setForm((prev) => ({ ...prev, email: event.target.value }))}
                 required
               />
             </div>
@@ -85,6 +66,8 @@ export function LoginPage() {
                 autoComplete="current-password"
                 className={inputClassName}
                 placeholder="비밀번호"
+                value={form.password}
+                onChange={(event) => setForm((prev) => ({ ...prev, password: event.target.value }))}
                 required
               />
             </div>
@@ -93,11 +76,11 @@ export function LoginPage() {
           <button
             type="submit"
             className="h-[46px] w-full cursor-pointer rounded-md bg-[#2563eb] text-sm font-bold text-white enabled:hover:bg-[#1d4ed8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563eb] disabled:cursor-not-allowed disabled:opacity-60"
-            disabled={isSubmitting}
+            disabled={!canSubmit || loginMutation.isPending}
           >
-            {isSubmitting ? "로그인 중" : "로그인"}
+            {loginMutation.isPending ? "로그인 중" : "로그인"}
           </button>
-          {errorMessage && <p role="alert" className="text-sm text-red-700">{errorMessage}</p>}
+          {loginMutation.isError && <p role="alert" className="text-sm text-red-700">{errorMessage}</p>}
         </form>
 
         <p className="mt-5 text-center text-xs text-[#667080]">

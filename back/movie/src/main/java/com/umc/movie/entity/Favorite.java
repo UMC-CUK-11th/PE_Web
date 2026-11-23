@@ -11,19 +11,16 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "favorite", uniqueConstraints = @UniqueConstraint(
         name = "uk_favorite_member_movie", columnNames = {"member_id", "movie_id"}))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Favorite {
+public class Favorite extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,14 +34,7 @@ public class Favorite {
     @Column(name = "movie_id", nullable = false)
     private Long movieId;
 
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
-
+    @Builder
     public Favorite(Member member, Long movieId) {
         this.member = member;
         this.movieId = movieId;

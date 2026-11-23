@@ -3,15 +3,15 @@ import { useQuery } from "@tanstack/react-query";
 import { getMovieDetail } from "../../api/movies/get-movie-detail";
 import type { TmdbMovieDetail } from "../../api/movies/models";
 import { TmdbFooter } from "../../components/layout/tmdb-footer";
-import { useBookmarkStore } from "../../stores/bookmark-store";
+import { MovieRating } from "../../components/movies/movie-rating";
+import { useFavorite } from "../../hooks/use-favorite";
+import { getApiErrorMessage } from "../../utils/get-api-error-message";
 import { getMovieDetailErrorMessage } from "../../utils/movies/get-movie-detail-error-message";
 import { getTmdbBackdropUrl, getTmdbPosterUrl } from "../../utils/tmdb-image";
 
 function DetailSummary({ movie }: { movie: TmdbMovieDetail }) {
-  const isBookmarked = useBookmarkStore((state) =>
-    state.bookmarkedMovieIds.includes(movie.id),
-  );
-  const toggleBookmark = useBookmarkStore((state) => state.toggleBookmark);
+  const favorite = useFavorite(movie.id, true);
+  const isBookmarked = favorite.isFavorite;
 
   return (
     <div className="pt-[3px]">
@@ -19,18 +19,25 @@ function DetailSummary({ movie }: { movie: TmdbMovieDetail }) {
       {movie.tagline && <p className="mb-2 text-[11px] leading-[1.5] font-bold text-[#373d48]">{movie.tagline}</p>}
       <p className="text-[11px] leading-[1.55] text-[#626975]">{movie.overview || "줄거리 정보가 없어요."}</p>
       <button
-        className="mt-3 inline-flex h-[26px] items-center gap-1 rounded bg-[#2f65dd] px-2 text-[10px] font-bold text-white"
+        className="mt-3 inline-flex h-[26px] items-center gap-1 rounded bg-[#2f65dd] px-2 text-[10px] font-bold text-white disabled:opacity-50"
         type="button"
         aria-pressed={isBookmarked}
-        onClick={() => toggleBookmark(movie.id)}
+        disabled={favorite.isLoading || favorite.isPending}
+        onClick={favorite.toggle}
       >
         <img
           className="h-3 w-3 invert"
           src={isBookmarked ? "/icons/bookmark.svg" : "/icons/bookmark-outline.svg"}
           alt=""
         />
-        {isBookmarked ? "즐겨찾기 해제" : "즐겨찾기"}
+        {favorite.isLoading ? "확인 중" : favorite.isPending ? "처리 중" : isBookmarked ? "즐겨찾기 해제" : "즐겨찾기"}
       </button>
+      {favorite.error && (
+        <div className="mt-2 text-[11px] text-red-700">
+          <p role="alert">{getApiErrorMessage(favorite.error, "즐겨찾기를 처리하지 못했어요.")}</p>
+          <button type="button" className="mt-1 text-[#2865e7]" onClick={favorite.retry}>다시 시도</button>
+        </div>
+      )}
     </div>
   );
 }
@@ -75,17 +82,7 @@ function MovieDetailContent({ movie }: { movie: TmdbMovieDetail }) {
             <div className="grid h-[175px] w-[125px] place-items-center rounded-[5px] bg-[#dfe2e8] text-xs text-[#687080]">포스터 없음</div>
           )}
           <DetailSummary movie={movie} />
-          <aside className="pt-2 md:pt-[2px] md:pl-2" aria-label="내 평점">
-            <h2 className="mb-2 text-[15px] font-extrabold tracking-[-0.6px] text-[#252a34]">내 평점</h2>
-            <p className="text-[10px] text-[#7e8590]">이 영화는 어떠셨나요?</p>
-            <div className="my-2 flex gap-[5px]" aria-label="별점 5점">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <img className="h-[18px] w-[18px] opacity-80" key={star} src="/icons/star-outline.svg" alt="" />
-              ))}
-            </div>
-            <textarea className="min-h-[60px] w-full resize-y rounded-[3px] border border-[#e0e3e8] bg-white p-[9px] text-[10px] text-[#3d4350] outline-[#2865e7]" aria-label="한줄평" placeholder="영화에 대한 한줄평을 남겨보세요." />
-            <button className="mt-2.5 h-[30px] w-full cursor-pointer rounded-[3px] border-0 bg-[#20242b] text-[10px] font-bold text-white" type="button">확인 저장</button>
-          </aside>
+          <MovieRating movieId={movie.id} />
         </section>
       </main>
       <TmdbFooter />

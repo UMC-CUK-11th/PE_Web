@@ -8,19 +8,20 @@ import { TmdbFooter } from "../../components/layout/tmdb-footer";
 import { MovieGrid } from "../../components/movies/movie-grid";
 import { Pagination } from "../../components/movies/pagination";
 import { useAuthStore } from "../../stores/auth-store";
-import { useBookmarkStore } from "../../stores/bookmark-store";
+import { useFavorites } from "../../hooks/use-favorite";
 
 const PAGE_SIZE = 10;
 const actionClassName = "inline-flex h-8 items-center rounded-md bg-[#2563eb] px-3 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-60";
 
 function FavoriteMovies() {
-  const bookmarkedMovieIds = useBookmarkStore((state) => state.bookmarkedMovieIds);
+  const favorites = useFavorites();
+  const favoriteMovies = favorites.data ?? [];
   const [page, setPage] = useState(1);
-  const pageCount = Math.ceil(bookmarkedMovieIds.length / PAGE_SIZE);
+  const pageCount = Math.ceil(favoriteMovies.length / PAGE_SIZE);
   const currentPage = Math.min(page, Math.max(1, pageCount));
   const offset = (currentPage - 1) * PAGE_SIZE;
   const movieQueries = useQueries({
-    queries: bookmarkedMovieIds.slice(offset, offset + PAGE_SIZE).map((movieId) => ({
+    queries: favoriteMovies.slice(offset, offset + PAGE_SIZE).map(({ movieId }) => ({
       queryKey: ["movies", "detail", movieId],
       queryFn: () => getMovieDetail(movieId),
       retry: false,
@@ -31,17 +32,18 @@ function FavoriteMovies() {
   return (
     <section className="pt-5" aria-labelledby="favorites-title">
       <h2 id="favorites-title" className="mb-3 text-sm font-extrabold">내 즐겨찾기</h2>
-      {bookmarkedMovieIds.length === 0 && (
+      {favorites.isSuccess && favoriteMovies.length === 0 && (
         <p className="py-10 text-center text-sm text-[#667080]">아직 즐겨찾기한 영화가 없어요.</p>
       )}
       {movies.length > 0 && <MovieGrid movies={movies} showBookmarkButton={false} />}
-      {movieQueries.some((query) => query.isPending) && (
+      {(favorites.isPending || movieQueries.some((query) => query.isPending)) && (
         <p role="status" className="py-5 text-center text-sm text-[#667080]">즐겨찾기 영화를 불러오는 중이에요.</p>
       )}
-      {movieQueries.some((query) => query.isError) && (
+      {(favorites.isError || movieQueries.some((query) => query.isError)) && (
         <p role="alert" className="py-5 text-center text-sm text-[#667080]">즐겨찾기 영화 정보를 불러오지 못했어요.</p>
       )}
-      <Pagination currentPage={currentPage} pageCount={pageCount} onPageChange={setPage} showSinglePage />
+      {favorites.isError && <button className="text-xs text-[#2865e7]" type="button" onClick={() => void favorites.refetch()}>다시 시도</button>}
+      {favorites.isSuccess && <Pagination currentPage={currentPage} pageCount={pageCount} onPageChange={setPage} showSinglePage />}
     </section>
   );
 }
