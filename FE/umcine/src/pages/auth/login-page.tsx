@@ -1,41 +1,20 @@
 import { useState, type SubmitEvent } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { login, type LoginRequest } from "../../api/members/login";
-import { getMyInfo } from "../../api/members/get-my-info";
-import { useAuthStore } from "../../stores/auth-store";
-import { useMemberPreviewStore } from "../../stores/member-preview-store";
+import { Link } from "@tanstack/react-router";
+import { useLoginMutation } from "../../hooks/use-login-mutation";
 import { getApiErrorMessage } from "../../utils/get-api-error-message";
 import "./auth-pages.css";
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const setSession = useAuthStore((state) => state.setSession);
-  const updateProfile = useMemberPreviewStore((state) => state.updateProfile);
-  const loginMutation = useMutation({
-    mutationFn: async (body: LoginRequest) => {
-      const { result } = await login(body);
-      const { result: member } = await getMyInfo(result.accessToken);
-      if (!Number.isInteger(member.memberId) || member.memberId <= 0) {
-        throw new Error("회원 번호를 확인하지 못했어요.");
-      }
-      return { accessToken: result.accessToken, ...member };
-    },
-    onSuccess: (session) => {
-      queryClient.removeQueries({ queryKey: ["ratings"] });
-      updateProfile({ email: session.email, nickname: session.nickname });
-      setSession(session);
-      navigate({ to: "/mypage" });
-    },
-  });
+  const [form, setForm] = useState({ email: "", password: "" });
+  const loginMutation = useLoginMutation();
+  const canSubmit = EMAIL_REGEX.test(form.email.trim()) && form.password.length > 0;
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (loginMutation.isPending) return;
-    loginMutation.mutate({ email: email.trim(), password });
+    if (!canSubmit || loginMutation.isPending) return;
+    loginMutation.mutate({ email: form.email.trim(), password: form.password });
   }
 
   return (
@@ -52,9 +31,9 @@ export function LoginPage() {
                 name="email"
                 type="email"
                 autoComplete="off"
-                value={email}
+                value={form.email}
                 disabled={loginMutation.isPending}
-                onChange={(event) => setEmail(event.target.value)}
+                onChange={(event) => setForm((previous) => ({ ...previous, email: event.target.value }))}
                 placeholder="name@example.com"
                 className="auth-input auth-input-with-icon"
                 required
@@ -70,9 +49,9 @@ export function LoginPage() {
                 name="password"
                 type="password"
                 autoComplete="new-password"
-                value={password}
+                value={form.password}
                 disabled={loginMutation.isPending}
-                onChange={(event) => setPassword(event.target.value)}
+                onChange={(event) => setForm((previous) => ({ ...previous, password: event.target.value }))}
                 placeholder="비밀번호"
                 className="auth-input auth-input-with-icon"
                 required
@@ -80,7 +59,7 @@ export function LoginPage() {
             </div>
           </div>
           {loginMutation.isError && <p className="auth-error" role="alert">{getApiErrorMessage(loginMutation.error, "로그인하지 못했어요. 서버 연결과 입력 내용을 확인해 주세요.")}</p>}
-          <button className="auth-submit" type="submit" disabled={loginMutation.isPending}>{loginMutation.isPending ? "로그인 중" : "로그인"}</button>
+          <button className="auth-submit" type="submit" disabled={!canSubmit || loginMutation.isPending}>{loginMutation.isPending ? "로그인 중" : "로그인"}</button>
         </form>
         <p className="auth-switch">처음이신가요? <Link to="/signup">회원가입</Link></p>
       </section>

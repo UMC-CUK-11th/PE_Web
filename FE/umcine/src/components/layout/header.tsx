@@ -1,11 +1,17 @@
 import { Link } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "../../stores/auth-store";
+import { getMe } from "../../api/members/me";
 
 export function Header() {
-  const isLoggedIn = useAuthStore((state) => !!state.session);
-  const clearSession = useAuthStore((state) => state.clearSession);
-  const queryClient = useQueryClient();
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const meQuery = useQuery({
+    queryKey: ["members", "me"],
+    queryFn: getMe,
+    enabled: Boolean(accessToken),
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
   return (
     <header className="flex items-center justify-between bg-white px-20 py-[21.5px] max-h-[91px] max-md:max-h-[151px] max-md:flex-col max-md:gap-10 max-md:px-4">
       <nav
@@ -45,7 +51,9 @@ export function Header() {
           <li>
             <Link
               to="/mypage"
-              activeProps={{ style: { color: "#17191e", textDecoration: "underline" } }}
+              activeProps={{
+                style: { color: "#17191e", textDecoration: "underline" },
+              }}
               id="nav-myinfo"
               className="text-[14px] font-bold text-[rgba(96,103,116,1)] transition duration-300 hover:text-[rgba(23,25,30,1)] hover:underline"
             >
@@ -67,16 +75,27 @@ export function Header() {
           />
         </Link>
 
-        <Link
-          to={isLoggedIn ? "/mypage" : "/login"}
-          className="flex h-[42px] w-[95px] items-center justify-center rounded-lg bg-[#2563eb] text-[14px] font-bold text-white no-underline hover:bg-[#1d4ed8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563eb]"
-        >
-          {isLoggedIn ? "마이페이지" : "로그인"}
-        </Link>
-        {isLoggedIn && <button type="button" className="text-xs text-[#69707d] cursor-pointer" onClick={() => {
-          clearSession();
-          queryClient.removeQueries({ queryKey: ["ratings"] });
-        }}>로그아웃</button>}
+        {!accessToken ? (
+          <Link
+            to="/login"
+            className="flex h-[42px] w-[95px] items-center justify-center rounded-lg bg-[#2563eb] text-[14px] font-bold text-white no-underline hover:bg-[#1d4ed8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563eb]"
+          >
+            로그인
+          </Link>
+        ) : meQuery.isLoading ? (
+          <span
+            role="status"
+            aria-label="내 정보 불러오는 중"
+            className="h-[42px] w-[95px] animate-pulse rounded-lg bg-gray-200"
+          />
+        ) : (
+          <Link
+            to="/mypage"
+            className="flex h-[42px] w-[95px] items-center justify-center rounded-lg bg-[#2563eb] text-[14px] font-bold text-white no-underline hover:bg-[#1d4ed8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563eb]"
+          >
+            마이페이지
+          </Link>
+        )}
       </div>
     </header>
   );

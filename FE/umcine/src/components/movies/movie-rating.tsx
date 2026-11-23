@@ -5,21 +5,30 @@ import { createRating } from "../../api/ratings/create-rating";
 import { updateRating } from "../../api/ratings/update-rating";
 import { deleteRating } from "../../api/ratings/delete-rating";
 import { getMemberRatings } from "../../api/ratings/get-member-ratings";
+import { getMe } from "../../api/members/me";
 import type { Rating } from "../../api/ratings/models";
 import { useAuthStore } from "../../stores/auth-store";
 import { getApiErrorMessage } from "../../utils/get-api-error-message";
 import "./movie-rating.css";
 
 export function MovieRating({ movieId }: { movieId: number }) {
-  const session = useAuthStore((state) => state.session);
-  const sessionMessage = useAuthStore((state) => state.sessionMessage);
+  const accessToken = useAuthStore((state) => state.accessToken);
   const queryClient = useQueryClient();
   const [notice, setNotice] = useState("");
-  const queryKey = ["ratings", "member", session?.memberId] as const;
+  const meQuery = useQuery({
+    queryKey: ["members", "me"],
+    queryFn: getMe,
+    enabled: Boolean(accessToken),
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
+  const memberId = meQuery.data?.memberId;
+  const hasMemberId = Number.isInteger(memberId) && memberId! > 0;
+  const queryKey = ["ratings", "member", memberId] as const;
   const ratingsQuery = useQuery({
     queryKey,
-    queryFn: () => getMemberRatings(session!.memberId),
-    enabled: !!session,
+    queryFn: () => getMemberRatings(memberId!),
+    enabled: Boolean(accessToken) && hasMemberId,
     retry: false,
     staleTime: 0,
   });
@@ -41,11 +50,20 @@ export function MovieRating({ movieId }: { movieId: number }) {
   return (
     <div className="movie-rating">
       <h2>내 평점</h2>
-      {!session ? (
+      {!accessToken ? (
         <>
-          <p>{sessionMessage ?? "로그인 후 평점을 남길 수 있어요."}</p>
+          <p>로그인 후 평점을 남길 수 있어요.</p>
           <Link to="/login" className="rating-login-link">로그인하기</Link>
         </>
+      ) : meQuery.isLoading ? (
+        <p role="status">내 정보를 불러오는 중이에요.</p>
+      ) : meQuery.isError ? (
+        <>
+          <p role="alert" className="rating-error">{getApiErrorMessage(meQuery.error, "내 정보를 불러오지 못했어요.")}</p>
+          <button type="button" onClick={() => meQuery.refetch()}>다시 불러오기</button>
+        </>
+      ) : !hasMemberId ? (
+        <p role="alert" className="rating-error">회원 번호를 확인하지 못해 내 평점을 불러올 수 없어요.</p>
       ) : ratingsQuery.isPending ? (
         <p role="status">내 평점을 불러오는 중이에요.</p>
       ) : ratingsQuery.isError ? (
@@ -57,7 +75,7 @@ export function MovieRating({ movieId }: { movieId: number }) {
         <>
           {notice && <p role="status" className="rating-notice">{notice}</p>}
           <RatingForm
-            key={`${session.memberId}:${movieId}:${rating?.ratingId ?? "new"}:${rating?.updatedAt ?? ""}`}
+            key={`${memberId}:${movieId}:${rating?.ratingId ?? "new"}:${rating?.updatedAt ?? ""}`}
             movieId={movieId} rating={rating}
             onSaved={handleSaved} onDeleted={handleDeleted}
           />
@@ -75,13 +93,19 @@ interface RatingFormProps {
 }
 
 function RatingForm({ movieId, rating, onSaved, onDeleted }: RatingFormProps) {
+  const [isEditing, setIsEditing] = useState(!rating);
   const [score, setScore] = useState(rating?.score ?? 0);
   const [comment, setComment] = useState(rating?.comment ?? "");
   const saveMutation = useMutation({
     mutationFn: () => rating
       ? updateRating(rating.ratingId, { score, comment: comment.trim() })
       : createRating({ movieId, score, comment: comment.trim() }),
-    onSuccess: (response) => onSaved(response.result),
+    onSuccess: (response) => {
+      setScore(response.result.score);
+      setComment(response.result.comment ?? "");
+      setIsEditing(false);
+      onSaved(response.result);
+    },
   });
   const deleteMutation = useMutation({
     mutationFn: () => deleteRating(rating!.ratingId),
@@ -93,7 +117,7 @@ function RatingForm({ movieId, rating, onSaved, onDeleted }: RatingFormProps) {
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (isPending || !canSubmit) return;
+    if (!isEditing || isPending || !canSubmit) return;
     deleteMutation.reset();
     saveMutation.mutate();
   }
@@ -105,19 +129,35 @@ function RatingForm({ movieId, rating, onSaved, onDeleted }: RatingFormProps) {
       <div id="star-list" role="group" aria-label="별점" className="rating-stars">
         {[1, 2, 3, 4, 5].map((value) => (
           <button key={value} type="button" aria-label={`${value}점`} aria-pressed={score === value}
-            className={value <= score ? "is-selected" : ""} disabled={isPending}
+            className={value <= score ? "is-selected" : ""} disabled={isPending || !isEditing}
             onClick={() => setScore(value)}>★</button>
         ))}
       </div>
       <p className="rating-score" aria-live="polite">{score ? `${score}점 선택` : "별점을 선택해 주세요."}</p>
-      <label htmlFor="rating-comment" className="rating-comment-label">후기</label>
-      <textarea id="rating-comment" value={comment} onChange={(event) => setComment(event.target.value)}
-        placeholder="영화를 보고 느낀 점을 남겨보세요." maxLength={500} disabled={isPending}
-        aria-describedby="rating-comment-count" />
-      <p id="rating-comment-count" className="rating-count">{comment.length}/500자</p>
+      {isEditing ? (
+        <>
+          <label htmlFor="rating-comment" className="rating-comment-label">후기</label>
+          <textarea id="rating-comment" value={comment} onChange={(event) => setComment(event.target.value)}
+            placeholder="영화를 보고 느낀 점을 남겨보세요." maxLength={500} disabled={isPending}
+            aria-describedby="rating-comment-count" />
+          <p id="rating-comment-count" className="rating-count">{comment.length}/500자</p>
+        </>
+      ) : (
+        <>
+          <p className="rating-comment-label">내 후기</p>
+          <p className="whitespace-pre-wrap break-words text-[18px]">{rating?.comment || "작성한 후기가 없어요."}</p>
+        </>
+      )}
       {error && <p role="alert" className="rating-error">{getApiErrorMessage(error, "평점을 저장하지 못했어요. 서버 연결을 확인하고 다시 시도해 주세요.")}</p>}
-      <button id="rating-save-button" className="rating-save" type="submit" disabled={!canSubmit || isPending}>
-        {saveMutation.isPending ? "저장 중" : rating ? "평점 수정" : "평점 저장"}
+      <button id="rating-save-button" className="rating-save" type={isEditing ? "submit" : "button"}
+        disabled={isPending || (isEditing && !canSubmit)}
+        onClick={(event) => {
+          if (!isEditing) {
+            event.preventDefault();
+            setIsEditing(true);
+          }
+        }}>
+        {saveMutation.isPending ? "저장 중" : !isEditing ? "평점 수정" : rating ? "수정 저장" : "평점 저장"}
       </button>
       {rating && <button className="rating-delete" type="button" disabled={isPending} onClick={() => {
         if (isPending) return;
