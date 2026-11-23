@@ -1,9 +1,23 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
+
+import { useMemberInfo } from "../../hooks/use-member-info";
+import { useAuthStore } from "../../stores/auth-store";
+
+const memberLinkClass =
+  "rounded hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-4";
 
 export default function Header() {
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const member = useMemberInfo();
+  const navigate = useNavigate();
+
+  async function logout() {
+    useAuthStore.getState().setAccessToken(null);
+    await navigate({ to: "/", replace: true });
+  }
   return (
     <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/90 backdrop-blur-xl">
-      <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-5 sm:px-8 lg:px-10">
+      <div className="mx-auto flex min-h-[72px] max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-3 sm:px-8 lg:px-10">
         {/* Logo */}
         <Link
           to="/"
@@ -60,12 +74,47 @@ export default function Header() {
             검색
           </Link>
 
-          <button
-            type="button"
+          <Link
+            to={accessToken ? "/my" : "/login"}
+            hash={accessToken ? "favorites" : undefined}
             className="rounded-xl px-5 py-2.5 text-sm font-medium text-zinc-500 transition hover:bg-white/70 hover:text-zinc-900"
           >
             북마크
-          </button>
+          </Link>
+        </nav>
+        <nav
+          aria-label="회원 메뉴"
+          className="flex w-full justify-end gap-4 text-xs text-zinc-600 sm:w-auto"
+        >
+          {accessToken ? (
+            <>
+              {member.isLoading ? (
+                <span role="status" className="animate-pulse">
+                  회원 정보 불러오는 중
+                </span>
+              ) : (
+                <Link to="/my" className={memberLinkClass}>
+                  {member.data ? member.data.nickname + "님" : "내 정보"}
+                </Link>
+              )}
+              <button
+                type="button"
+                className={memberLinkClass}
+                onClick={() => void logout()}
+              >
+                로그아웃
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className={memberLinkClass}>
+                로그인
+              </Link>
+              <Link to="/signup" className={memberLinkClass}>
+                회원가입
+              </Link>
+            </>
+          )}
         </nav>
       </div>
     </header>
