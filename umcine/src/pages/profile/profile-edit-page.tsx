@@ -1,11 +1,22 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import { useMeQuery } from "../../hooks/use-me-query";
+import { useUpdateMeMutation } from "../../hooks/use-update-me-mutation";
+import { checkNicknameDuplicate } from "../../api/members/check-nickname-duplicate";
 import { useProfilePreviewStore } from "../../stores/profile-preview-store";
 import "./profile-page.css";
 
 export function ProfileEditPage() {
+  const me = useMeQuery();
+  if (me.isLoading) return <main className="profile-page">내 정보를 불러오는 중이에요.</main>;
+  if (!me.data) return <main className="profile-page">내 정보를 불러오지 못했어요.</main>;
+  return <ProfileEditForm member={me.data} />;
+}
+
+function ProfileEditForm({ member }: { member: import("../../api/members/me").MemberInfo }) {
+  const updateMutation = useUpdateMeMutation();
   const profile = useProfilePreviewStore();
-  const [nickname, setNickname] = useState(profile.nickname);
+  const [nickname, setNickname] = useState(member.nickname);
   const [avatar, setAvatar] = useState(profile.avatar);
   const [notice, setNotice] = useState("");
   const navigate = useNavigate();
@@ -38,8 +49,13 @@ export function ProfileEditPage() {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!isNicknameValid) return;
-    profile.updateProfile(nickname.trim(), avatar);
-    navigate({ to: "/profile" });
+    if (updateMutation.isPending) return;
+    updateMutation.mutate({ nickname: nickname.trim() }, {
+      onSuccess: () => {
+        profile.updateProfile(nickname.trim(), avatar);
+        navigate({ to: "/profile" });
+      },
+    });
   }
 
   return (
@@ -48,12 +64,12 @@ export function ProfileEditPage() {
         <div className="profile-heading">
           <div>
             <h1>내 정보 수정</h1>
-            <p>닉네임과 프로필 이미지만 변경할 수 있어요.</p>
+            <p>닉네임을 수정할 수 있어요. 프로필 이미지는 이 브라우저에서만 미리보기로 반영돼요.</p>
           </div>
           <button
             className="profile-primary"
             type="submit"
-            disabled={!isNicknameValid}
+            disabled={!isNicknameValid || updateMutation.isPending}
           >
             변경사항 저장
           </button>
@@ -104,12 +120,14 @@ export function ProfileEditPage() {
                 />
                 <button
                   type="button"
-                  disabled={!isNicknameValid}
-                  onClick={() =>
-                    setNotice(
-                      "퍼블리싱 단계로, 닉네임 중복 확인 API는 아직 연결하지 않았습니다.",
-                    )
-                  }
+                  disabled={!isNicknameValid || updateMutation.isPending}
+                  onClick={async () => {
+                    if (nickname.trim() === member.nickname) { setNotice("현재 사용 중인 닉네임이에요."); return; }
+                    try {
+                      const result = await checkNicknameDuplicate(nickname.trim());
+                      setNotice(result.available ? "사용할 수 있는 닉네임이에요." : "이미 사용 중인 닉네임이에요.");
+                    } catch { setNotice("중복 확인에 실패했어요."); }
+                  }}
                 >
                   중복 확인
                 </button>
@@ -126,7 +144,7 @@ export function ProfileEditPage() {
                 <input
                   id="profile-email"
                   type="email"
-                  value={profile.email}
+                  value={member.email}
                   readOnly
                 />
               </div>
@@ -137,8 +155,7 @@ export function ProfileEditPage() {
               </p>
             )}
             <p className="profile-preview-note">
-              변경사항은 이 브라우저의 메모리에만 반영됩니다. 새로고침하면 예시
-              값으로 돌아옵니다.
+              닉네임은 서버에 저장됩니다. 프로필 이미지 업로드 API는 지원하지 않습니다.
             </p>
           </div>
         </div>
