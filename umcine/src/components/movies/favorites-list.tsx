@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "@tanstack/react-router";
+import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { useFavorites } from "../../hooks/use-favorites";
 import { getMovieDetail } from "../../api/movies/get-movie-detail";
@@ -32,13 +32,13 @@ function FavoriteCard({ movieId }: { movieId: number }) {
   const poster = movie.data ? getTmdbPosterUrl(movie.data.poster_path) : null;
   return <article className="profile-movie-card">
     <div className="relative">
-      <Link to="/movies/$movieId" params={{ movieId: String(movieId) }}>
+      <Link href={`/movies/${movieId}`}>
         {poster ? <img src={poster} alt={`${movie.data?.title} 포스터`} />
           : <div className="flex min-h-48 items-center justify-center bg-gray-100">{movie.isLoading ? "불러오는 중" : "이미지 없음"}</div>}
       </Link>
       <BookmarkButton movieId={movieId} />
     </div>
-    <Link to="/movies/$movieId" params={{ movieId: String(movieId) }}>
+    <Link href={`/movies/${movieId}`}>
       <h3>{movie.data?.title ?? `영화 ${movieId}`}</h3>
     </Link>
     <p>{movie.data?.release_date ?? (movie.isError ? "영화 정보를 불러오지 못했어요." : "")}</p>

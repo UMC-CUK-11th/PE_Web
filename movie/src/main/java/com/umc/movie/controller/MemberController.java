@@ -1,6 +1,12 @@
 // src/main/java/com/umc/movie/controller/MemberController.java
 package com.umc.movie.controller;
 
+import com.umc.movie.config.SwaggerConfig;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import com.umc.movie.dto.member.EmailCheckResponse;
 import com.umc.movie.dto.common.ApiResponse;
 import com.umc.movie.dto.member.NicknameCheckResponse;
@@ -19,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/members")
+@Tag(name = "회원", description = "회원가입과 내 정보 API") // [Swagger 1]
 public class MemberController {
 
     private final MemberService memberService;
@@ -35,6 +42,10 @@ public class MemberController {
                 memberService.checkEmail(email));
     }
 
+    @Operation(
+            summary = "회원가입",
+            description = "이메일, 비밀번호, 닉네임으로 회원을 등록합니다. 토큰이 없어도 호출할 수 있는 공개 API입니다."
+    )
     @PostMapping
     public ResponseEntity<ApiResponse<MemberResponse>> signUp(
             @Valid @RequestBody SignUpRequest request
@@ -43,6 +54,12 @@ public class MemberController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.created("회원가입에 성공했습니다.", response));
     }
+    @Operation(summary = "내 정보 조회", description = "Bearer 토큰이 필요합니다.")
+    @SecurityRequirement(name = SwaggerConfig.BEARER_AUTH)
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401",
+            description = "토큰 누락 AUTH401_2, 유효하지 않은 토큰 AUTH401_3, 만료 AUTH401_4", content = @Content)
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404",
+            description = "회원을 찾을 수 없음 MEMBER404_1", content = @Content)
     @GetMapping("/me") // [1]
     public ResponseEntity<ApiResponse<MemberInfoResponse>> getMyInfo(
             @RequestAttribute(AuthInterceptor.MEMBER_ID) Long memberId // [2]
@@ -51,6 +68,16 @@ public class MemberController {
         return ResponseEntity.ok(ApiResponse.ok("회원 정보를 조회했습니다.", response));
     }
 
+    @Operation(summary = "내 정보 수정", description = "Bearer 토큰이 필요합니다.")
+    @SecurityRequirement(name = SwaggerConfig.BEARER_AUTH)
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401",
+            description = "토큰 누락 AUTH401_2, 유효하지 않은 토큰 AUTH401_3, 만료 AUTH401_4", content = @Content)
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400",
+            description = "입력 검증 실패 COMMON4001", content = @Content)
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404",
+            description = "회원을 찾을 수 없음 MEMBER404_1", content = @Content)
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409",
+            description = "이미 사용 중인 닉네임 MEMBER409_1", content = @Content)
     @PatchMapping("/me") // [4]
     public ResponseEntity<ApiResponse<MemberInfoResponse>> updateMyInfo(
             @RequestAttribute(AuthInterceptor.MEMBER_ID) Long memberId,
@@ -85,3 +112,5 @@ public class MemberController {
  * @Valid가 닉네임 빈 값·길이를 검사하고, 서비스가 회원 존재·자신을 제외한 중복을 검사한다.
  * 수정 결과 DTO를 공통 본문의 result에 담아 HTTP 200으로 반환한다.
  */
+
+// [Swagger 1] @Tag는 Swagger UI에서 컨트롤러의 API를 묶고, @Operation은 각 요청의 목적을 설명한다.

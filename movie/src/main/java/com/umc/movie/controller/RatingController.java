@@ -1,6 +1,10 @@
 // src/main/java/com/umc/movie/controller/RatingController.java
 package com.umc.movie.controller;
 
+import com.umc.movie.config.SwaggerConfig;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
 import com.umc.movie.dto.rating.RatingResponse;
 import com.umc.movie.dto.common.ApiResponse;
 import com.umc.movie.dto.rating.CreateRatingRequest;
@@ -27,12 +31,27 @@ public class RatingController {
 
     private final RatingService ratingService;
 
+    @Operation(summary = "유저별 평점 조회", description = "토큰 없이 조회할 수 있습니다.")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404",
+            description = "회원을 찾을 수 없음 MEMBER404_1", content = @Content)
     @GetMapping("/members/{memberId}/ratings") // [4]
     public ApiResponse<List<RatingResponse>> getMemberRatings(@PathVariable Long memberId) {
         return ApiResponse.ok("평점 목록 조회에 성공했습니다.",
                 ratingService.getRatingsByMember(memberId));
     }
 
+    @Operation(summary = "평점 등록", description = "Bearer 토큰이 필요합니다.")
+    @SecurityRequirement(name = SwaggerConfig.BEARER_AUTH)
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401",
+            description = "토큰 누락 AUTH401_2, 유효하지 않은 토큰 AUTH401_3, 만료 AUTH401_4", content = @Content)
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400",
+            description = "입력 검증 실패 COMMON4001", content = @Content)
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404",
+            description = "회원을 찾을 수 없음 MEMBER404_1", content = @Content)
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409",
+            description = "이미 등록한 평점 RATING409_1", content = @Content)
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201",
+            description = "평점 등록 성공 COMMON201", useReturnTypeSchema = true)
     @PostMapping("/ratings") // [1]
     public ResponseEntity<ApiResponse<RatingResponse>> create(
             @RequestAttribute(AuthInterceptor.MEMBER_ID) Long memberId,
@@ -42,6 +61,16 @@ public class RatingController {
         return ResponseEntity.status(201).body(ApiResponse.created("평점을 등록했습니다.", response));
     }
 
+    @Operation(summary = "평점 수정", description = "Bearer 토큰이 필요합니다.")
+    @SecurityRequirement(name = SwaggerConfig.BEARER_AUTH)
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401",
+            description = "토큰 누락 AUTH401_2, 유효하지 않은 토큰 AUTH401_3, 만료 AUTH401_4", content = @Content)
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400",
+            description = "입력 검증 실패 COMMON4001", content = @Content)
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403",
+            description = "다른 회원의 평점 RATING403_1", content = @Content)
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404",
+            description = "평점을 찾을 수 없음 RATING404_1", content = @Content)
     @PatchMapping("/ratings/{ratingId}") // [2]
     public ResponseEntity<ApiResponse<RatingResponse>> update(
             @RequestAttribute(AuthInterceptor.MEMBER_ID) Long memberId,
@@ -52,6 +81,14 @@ public class RatingController {
         return ResponseEntity.ok(ApiResponse.ok("평점을 수정했습니다.", response));
     }
 
+    @Operation(summary = "평점 삭제", description = "Bearer 토큰이 필요합니다.")
+    @SecurityRequirement(name = SwaggerConfig.BEARER_AUTH)
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401",
+            description = "토큰 누락 AUTH401_2, 유효하지 않은 토큰 AUTH401_3, 만료 AUTH401_4", content = @Content)
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403",
+            description = "다른 회원의 평점 RATING403_1", content = @Content)
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404",
+            description = "평점을 찾을 수 없음 RATING404_1", content = @Content)
     @DeleteMapping("/ratings/{ratingId}") // [3]
     public ResponseEntity<ApiResponse<Void>> delete(
             @RequestAttribute(AuthInterceptor.MEMBER_ID) Long memberId,

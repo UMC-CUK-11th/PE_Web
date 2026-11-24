@@ -1,4 +1,4 @@
-import { useNavigate } from "@tanstack/react-router";
+import { useRouter } from "next/navigation";
 import { useFavorite } from "../../hooks/use-favorites";
 import { cn } from "../../utils/cn";
 
@@ -7,12 +7,12 @@ interface BookmarkButtonProps {
 }
 
 export function BookmarkButton({ movieId }: BookmarkButtonProps) {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { token, status, mutation } = useFavorite(movieId);
   const isBookmarked = Boolean(token && status.data?.isFavorite);
   const busy = Boolean(token) && (status.isLoading || mutation.isPending);
   function toggleBookmark() {
-    if (!token) { navigate({ to: "/login" }); return; }
+    if (!token) { router.push("/login"); return; }
     if (busy) return;
     if (status.isError) { status.refetch(); return; }
     if (!status.data) return;

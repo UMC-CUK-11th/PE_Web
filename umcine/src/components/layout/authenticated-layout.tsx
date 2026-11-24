@@ -1,7 +1,31 @@
-import { Link, Outlet } from "@tanstack/react-router";
+"use client";
+
+import { useEffect, useSyncExternalStore, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { useAuthStore } from "../../stores/auth-store";
 
-export function AuthenticatedLayout() {
+function subscribe(callback: () => void) {
+  return useAuthStore.persist?.onFinishHydration(callback) ?? (() => {});
+}
+
+function isHydrated() {
+  return useAuthStore.persist?.hasHydrated() ?? true;
+}
+
+export function AuthenticatedLayout({ children, guestOnly = false }: {
+  children: ReactNode;
+  guestOnly?: boolean;
+}) {
+  const hydrated = useSyncExternalStore(subscribe, isHydrated, () => false);
   const token = useAuthStore((state) => state.accessToken);
-  return token ? <Outlet /> : <main className="profile-page"><Link to="/login">로그인이 필요해요.</Link></main>;
+  const router = useRouter();
+  const canEnter = guestOnly ? !token : Boolean(token);
+
+  useEffect(() => {
+    if (hydrated && !canEnter) {
+      router.replace(guestOnly ? "/" : "/login");
+    }
+  }, [hydrated, canEnter, guestOnly, router]);
+
+  return hydrated && canEnter ? children : null;
 }

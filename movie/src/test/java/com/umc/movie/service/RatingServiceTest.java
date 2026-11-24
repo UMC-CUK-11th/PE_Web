@@ -8,6 +8,7 @@ import com.umc.movie.repository.MemberRepository;
 import com.umc.movie.repository.RatingRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -69,12 +70,15 @@ class RatingServiceTest {
     }
 
     @Test
+    @DisplayName("같은 회원이 같은 영화에 평점을 다시 등록하면 409 RATING409_1을 반환한다")
     void createRejectsDuplicateBeforeSaving() {
         given(memberRepository.findById(1L)).willReturn(Optional.of(owner));
         given(ratingRepository.existsByMember_MemberIdAndMovieId(1L, 550L)).willReturn(true);
         assertThatThrownBy(() -> service.create(1L, new CreateRatingRequest(550L, 5, null)))
-                .isInstanceOf(ApiException.class)
-                .hasMessage("이미 이 영화에 평점을 남기셨습니다.");
+                .isInstanceOfSatisfying(ApiException.class, exception -> {
+                    assertThat(exception.getStatus()).isEqualTo(HttpStatus.CONFLICT);
+                    assertThat(exception.getCode()).isEqualTo("RATING409_1");
+                });
         verify(ratingRepository, never()).save(any());
     }
 
@@ -97,15 +101,22 @@ class RatingServiceTest {
     }
 
     @Test
+    @DisplayName("다른 회원의 평점 수정과 삭제는 403 RATING403_1로 거부한다")
     void nonOwnerCannotUpdateOrDelete() {
         Rating rating = existingRating();
         given(ratingRepository.findById(10L)).willReturn(Optional.of(rating));
         assertThatThrownBy(() -> service.update(2L, 10L, new UpdateRatingRequest(3, null)))
                 .isInstanceOfSatisfying(ApiException.class,
-                        exception -> assertThat(exception.getStatus()).isEqualTo(HttpStatus.FORBIDDEN));
+                        exception -> {
+                            assertThat(exception.getStatus()).isEqualTo(HttpStatus.FORBIDDEN);
+                            assertThat(exception.getCode()).isEqualTo("RATING403_1");
+                        });
         assertThatThrownBy(() -> service.delete(2L, 10L))
                 .isInstanceOfSatisfying(ApiException.class,
-                        exception -> assertThat(exception.getStatus()).isEqualTo(HttpStatus.FORBIDDEN));
+                        exception -> {
+                            assertThat(exception.getStatus()).isEqualTo(HttpStatus.FORBIDDEN);
+                            assertThat(exception.getCode()).isEqualTo("RATING403_1");
+                        });
         assertThat(rating.getScore()).isEqualTo(5);
         verify(ratingRepository, never()).save(any());
         verify(ratingRepository, never()).delete(any(Rating.class));

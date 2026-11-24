@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Link } from "@tanstack/react-router";
+import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "../../stores/auth-store";
 import { getTokenMemberId } from "../../utils/auth-member-id";
@@ -13,7 +13,7 @@ export function RatingEditor({ movieId }: { movieId: number }) {
     queryFn: () => getMemberRatings(memberId!),
     enabled: Boolean(token && memberId), retry: false,
   });
-  if (!token) return <p><Link to="/login">로그인 후 평점을 남길 수 있어요.</Link></p>;
+  if (!token) return <p><Link href="/login">로그인 후 평점을 남길 수 있어요.</Link></p>;
   if (!memberId) return <p>로그인 정보를 확인할 수 없어요. 다시 로그인해 주세요.</p>;
   if (ratings.isLoading) return <p>평점을 불러오는 중이에요.</p>;
   if (ratings.isError || !ratings.data) return <p role="alert">평점을 불러오지 못했어요.</p>;

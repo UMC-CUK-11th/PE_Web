@@ -19,7 +19,8 @@ export const useBookmarkStore = create<BookmarkStore>()(
     }),
     {
       name: "umcine-bookmark-store",
-      storage: createJSONStorage(() => localStorage),
+      storage: typeof window === "undefined" ? undefined : createJSONStorage(() => window.localStorage),
+      skipHydration: true,
       partialize: (state) => ({
         bookmarkedMovieIds: state.bookmarkedMovieIds,
       }),
