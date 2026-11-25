@@ -17,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -27,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest        // 진짜 서버를 띄우듯 모든 Bean을 올립니다
 @AutoConfigureMockMvc  // HTTP 요청을 흉내 내는 MockMvc를 준비합니다
 @Transactional         // 테스트가 끝나면 저장한 데이터를 되돌립니다
+@ActiveProfiles("test")
 class FavoriteApiTest {
 
     @Autowired

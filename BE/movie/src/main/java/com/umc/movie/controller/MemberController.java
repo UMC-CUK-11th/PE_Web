@@ -1,10 +1,12 @@
 // src/main/java/com/umc/movie/controller/MemberController.java
 package com.umc.movie.controller;
 
+import com.umc.movie.config.SwaggerConfig;
 import com.umc.movie.dto.*;
 import com.umc.movie.interceptor.AuthInterceptor;
 import com.umc.movie.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +45,7 @@ public class MemberController {
     }
     // src/main/java/com/umc/movie/controller/MemberController.java 에 아래 메서드를 추가합니다
     @GetMapping("/me")
+    @SecurityRequirement(name = SwaggerConfig.BEARER_AUTH)
     public ResponseEntity<ApiResponse<MemberInfoResponse>> getMyInfo(
             // 인터셉터가 request.setAttribute("memberId", ...)로 담아둔 값을 꺼냅니다
             @RequestAttribute(AuthInterceptor.MEMBER_ID) Long memberId
@@ -52,6 +55,7 @@ public class MemberController {
     }
 
     @PatchMapping("/me")
+    @SecurityRequirement(name = SwaggerConfig.BEARER_AUTH)
     public ResponseEntity<ApiResponse<MemberInfoResponse>> updateMyInfo(
             @RequestAttribute(AuthInterceptor.MEMBER_ID) Long memberId,
             @RequestBody @Valid MemberUpdateRequest request
