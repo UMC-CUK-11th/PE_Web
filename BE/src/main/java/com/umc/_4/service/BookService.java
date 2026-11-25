@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +33,8 @@ public class BookService {
     @Transactional
     public BookResponse createBook(CreateBookRequest request) {
 
-        Category category = categoryRepository.findById(request.categoryId())
+        Long categoryId = Objects.requireNonNull(request.categoryId(), "categoryId는 필수입니다.");
+        Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() ->
                         new IllegalArgumentException("존재하지 않는 카테고리입니다."));
 
