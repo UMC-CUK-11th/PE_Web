@@ -2,6 +2,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import type { ReactNode } from "react";
+import { Analytics } from "@vercel/analytics/next";
+
 import Header from "../components/layout/header";
 import { Providers } from "./providers";
 import "../index.css";
@@ -60,6 +62,8 @@ export default function RootLayout({
             </p>
           </footer>
         </Providers>
+
+        <Analytics />
       </body>
     </html>
   );
