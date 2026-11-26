@@ -1,0 +1,21 @@
+# 테스트에서는 개발용 MySQL 대신 메모리 DB를 쓴다. 이 파일이 main의 application.yml을 가린다
+spring:
+  datasource:
+    url: jdbc:h2:mem:umc_movie;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  sql:
+    init:
+      # 운영 DB와 같은 DDL(기본값, UNIQUE 포함)로 테이블을 만든다
+      mode: always
+      schema-locations: classpath:test-schema.sql
+  jpa:
+    hibernate:
+      # 만든 테이블이 엔티티 매핑과 맞는지 확인한다
+      ddl-auto: validate
+    open-in-view: false
+
+jwt:
+  secret: test-secret-key-for-umc-movie-at-least-32-chars
+  access-expiration: 3600
