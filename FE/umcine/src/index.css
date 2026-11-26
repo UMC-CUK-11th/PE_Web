@@ -1,4 +1,17 @@
+
 @import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+  --app-background: #0b1120;
+  --app-surface: #162238;
+  --app-surface-hover: #1e293b;
+  --app-border: #2b3b55;
+  --app-primary: #2563eb;
+  --app-primary-hover: #1d4ed8;
+  --app-text: #f8fafc;
+  --app-muted: #94a3b8;
+}
 
 * {
   box-sizing: border-box;
@@ -12,8 +25,8 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: #fafafa;
-  color: #18181b;
+  background: var(--app-background);
+  color: var(--app-text);
   font-family:
     Inter,
     Pretendard,
@@ -24,42 +37,163 @@ body {
 }
 
 button,
-input {
+input,
+textarea,
+select {
   font: inherit;
+}
+
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
 }
 
 a {
   color: inherit;
   text-decoration: none;
 }
-/* Existing pagination styles, shared by list and search. */
+
+::selection {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 3px;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0b1120;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* 기존 페이지의 밝은 배경을 남색 테마로 전환 */
+
+.cinema-theme .bg-zinc-50 {
+  background-color: var(--app-background);
+}
+
+.cinema-theme .bg-white:not(button[aria-pressed="true"]) {
+  background-color: var(--app-surface);
+}
+
+.cinema-theme .bg-zinc-100,
+.cinema-theme .bg-zinc-200,
+.cinema-theme .bg-zinc-200\/70 {
+  background-color: #24334c;
+}
+
+.cinema-theme .bg-zinc-950 {
+  background-color: #172554;
+}
+
+.cinema-theme button.bg-zinc-950,
+.cinema-theme a.bg-zinc-950 {
+  background-color: var(--app-primary);
+}
+
+.cinema-theme button.bg-zinc-950:hover:not(:disabled),
+.cinema-theme a.bg-zinc-950:hover {
+  background-color: var(--app-primary-hover);
+}
+
+.cinema-theme .border-zinc-200,
+.cinema-theme .border-zinc-300,
+.cinema-theme .border-zinc-200\/80 {
+  border-color: var(--app-border);
+}
+
+.cinema-theme .text-zinc-950,
+.cinema-theme .text-zinc-900,
+.cinema-theme .text-zinc-800,
+.cinema-theme .text-zinc-700 {
+  color: var(--app-text);
+}
+
+.cinema-theme .text-zinc-600,
+.cinema-theme .text-zinc-500,
+.cinema-theme .text-zinc-400 {
+  color: var(--app-muted);
+}
+
+/* 활성 북마크의 기존 대비 유지 */
+.cinema-theme button[aria-pressed="true"].bg-white {
+  background: #ffffff;
+  color: #18181b;
+}
+
+.cinema-theme .hover\:bg-zinc-100:hover,
+.cinema-theme .hover\:bg-white\/70:hover {
+  background-color: var(--app-surface-hover);
+}
+
+.cinema-theme .hover\:text-zinc-950:hover,
+.cinema-theme .hover\:text-zinc-900:hover {
+  color: #ffffff;
+}
+
+.cinema-theme .text-red-600,
+.cinema-theme .text-red-700 {
+  color: #fca5a5;
+}
+
+.cinema-theme .text-emerald-700 {
+  color: #6ee7b7;
+}
+
+.cinema-theme .bg-red-50 {
+  background: #450a0a;
+}
+
+.cinema-theme input:not([type="checkbox"]):not([type="radio"]),
+.cinema-theme textarea {
+  color: var(--app-text);
+}
+
+.cinema-theme input::placeholder,
+.cinema-theme textarea::placeholder {
+  color: #94a3b8;
+}
+
+/* Pagination */
+
 .pagination {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-
   gap: 8px;
-
   margin-top: 62px;
+  padding-inline: 16px;
 }
 
 .page-button,
 .page-arrow {
   width: 40px;
   height: 40px;
-
-  border: 1px solid #e0e0e5;
-
+  border: 1px solid var(--app-border);
   border-radius: 10px;
-
-  background: rgba(255, 255, 255, 0.8);
-
-  color: #555555;
-
+  background: var(--app-surface);
+  color: #cbd5e1;
   font-size: 14px;
-
   cursor: pointer;
-
   transition:
     transform 0.2s ease,
     background 0.2s ease,
@@ -70,30 +204,86 @@ a {
 .page-button:hover,
 .page-arrow:hover:not(:disabled) {
   transform: translateY(-2px);
-
-  border-color: #cfcfd8;
-
-  background: #ffffff;
-
-  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.08);
+  border-color: #60a5fa;
+  background: #24334c;
 }
 
 .page-button.active {
-  border-color: #111111;
-
-  background: #111111;
-
+  border-color: #3b82f6;
+  background: #2563eb;
   color: #ffffff;
-
   font-weight: 700;
-
-  transform: translateY(-2px);
-
-  box-shadow: 0 7px 18px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 16px rgb(37 99 235 / 25%);
 }
 
 .page-arrow:disabled {
   opacity: 0.3;
+  cursor: not-allowed;
+}
 
-  cursor: default;
+/* Loading spinner */
+
+.cinema-spinner {
+  display: inline-block;
+  flex-shrink: 0;
+  border: 3px solid rgb(148 163 184 / 25%);
+  border-top-color: #60a5fa;
+  border-radius: 50%;
+  animation: cinema-spin 0.8s linear infinite;
+}
+
+@keyframes cinema-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Skeleton */
+
+.cinema-skeleton {
+  background: linear-gradient(
+    100deg,
+    #162238 20%,
+    #263650 50%,
+    #162238 80%
+  );
+  background-size: 200% 100%;
+  animation: cinema-shimmer 1.6s ease-in-out infinite;
+}
+
+@keyframes cinema-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* 기존 폼의 비동기 처리 상태에 스피너 표시 */
+
+.cinema-theme form[aria-busy="true"] button[type="submit"]:disabled::before,
+.cinema-theme form[aria-busy="true"] button:not([type]):disabled::before {
+  content: "";
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 8px;
+  vertical-align: -2px;
+  border: 2px solid rgb(255 255 255 / 30%);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: cinema-spin 0.8s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .cinema-spinner,
+  .cinema-skeleton,
+  .cinema-theme form[aria-busy="true"] button::before {
+    animation: none;
+  }
 }
