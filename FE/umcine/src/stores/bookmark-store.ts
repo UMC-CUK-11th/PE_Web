@@ -25,6 +25,7 @@ export const useBookmarkStore = create<BookmarkStore>()(
     {
       name: "umcine-bookmark-store",
       // Web Storage가 실패하면 안전한 어댑터가 메모리 저장소로 대신 동작합니다.
+      skipHydration: true,
       storage: createJSONStorage(() => safeLocalStorage),
       partialize: (state) => ({
         bookmarkedMovieIds: state.bookmarkedMovieIds,

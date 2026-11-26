@@ -1,6 +1,8 @@
+"use client";
+
 import { useRef, useState } from "react";
 import type { FormEvent } from "react";
-import { Link } from "@tanstack/react-router";
+import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "../../stores/auth-store";
 import { meOptions, ratingsKey, ratingsOptions } from "../../api/private-query-options";
@@ -14,7 +16,7 @@ export function RatingPanel({ movieId }: { movieId: number }) {
   const me = useQuery(meOptions());
   const ratings = useQuery(ratingsOptions(sessionVersion, me.data?.memberId ?? 0));
   const [message, setMessage] = useState("");
-  if (!accessToken) return <aside className="pt-8"><h2 className="font-bold">내 별점</h2><Link to="/login" className="mt-4 inline-block text-sm text-blue-700">로그인하고 평점을 남겨 보세요.</Link></aside>;
+  if (!accessToken) return <aside className="pt-8"><h2 className="font-bold">내 별점</h2><Link href="/login" className="mt-4 inline-block text-sm text-blue-700">로그인하고 평점을 남겨 보세요.</Link></aside>;
   if (me.isLoading || ratings.isLoading) return <aside className="pt-8" role="status">내 평점을 불러오는 중이에요.</aside>;
   if (me.isError || ratings.isError || !me.data) return <aside className="pt-8"><p role="alert">{memberErrorMessage(me.error ?? ratings.error)}</p><button className="mt-3 text-blue-700" onClick={() => { void me.refetch(); void ratings.refetch(); }}>다시 시도</button></aside>;
   const existing = ratings.data?.find((item) => item.movieId === movieId);

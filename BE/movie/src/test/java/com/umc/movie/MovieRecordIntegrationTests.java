@@ -68,11 +68,13 @@ class MovieRecordIntegrationTests {
     }
 
     @Test
+    @DisplayName("즐겨찾기 중복으로 영화 기록 저장이 실패하면 평점 수와 기존 즐겨찾기를 유지한다")
     void favoriteConflictRollsBackRatingAndPreservesExistingFavorite() throws Exception {
         var existing = favorites.saveAndFlush(new Favorite(member, 238L));
+        long previousRatingCount = ratings.count();
         mvc.perform(record(238, true))
                 .andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("FAVORITE409_1"));
-        assertEquals(0, ratings.count());
+        assertEquals(previousRatingCount, ratings.count());
         assertTrue(favorites.existsById(existing.getFavoriteId()));
     }
 

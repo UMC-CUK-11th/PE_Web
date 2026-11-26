@@ -1,4 +1,29 @@
-# React + TypeScript + Vite
+# UMCine · Next.js App Router
+
+9주차 마이그레이션은 `FE/umcine`에서 진행했습니다. 별도 본문 예제는 `FE/nextjs-example`에 있습니다.
+
+```powershell
+npm.cmd ci
+npm.cmd run dev
+```
+
+기본 주소는 http://localhost:5173 입니다. `.env.example`을 참고해 `.env.local`에 기존 Vite의 값을 `NEXT_PUBLIC_TMDB_API_BASE_URL`, `NEXT_PUBLIC_TMDB_ACCESS_TOKEN`, `NEXT_PUBLIC_API_BASE_URL`로 옮깁니다. 영화 조회에는 TMDB 토큰이 필요하고, 회원 기능은 기존 Spring Boot API를 사용합니다.
+
+프로덕션 검증은 `npm.cmd run lint`, `npm.cmd run build`, `npm.cmd run start`로 진행합니다. 환경변수를 변경한 후 프로덕션에서 확인할 때는 다시 빌드하세요.
+
+Chromium 회귀 테스트는 5173 포트를 비운 상태에서 실행합니다. 설정에 있는 모의 TMDB 응답을 사용하려면 먼저 테스트용 자리표시자로 빌드합니다.
+
+```powershell
+npx.cmd playwright install chromium
+$env:NEXT_PUBLIC_TMDB_ACCESS_TOKEN = 'e2e-placeholder-not-a-real-token'
+npm.cmd run build
+npm.cmd run test:e2e -- --workers=2
+Remove-Item Env:NEXT_PUBLIC_TMDB_ACCESS_TOKEN
+```
+
+실제 API 테스트까지 수행하려면 즐겨찾기 API가 포함된 백엔드를 8080에서 실행한 뒤 테스트 셸에 `E2E_LIVE_API=1`을 설정합니다. 테스트는 회원을 생성하므로 테스트 DB에 연결한 서버를 사용하세요.
+
+핵심 코드와 제출 기록은 [9주차 미션 기록](docs/week09-mission-record.md)에 있습니다. 아래는 이전 주차 구현 이력입니다.
 
 ## Week 08 인증·변경 요청과 캐시 갱신
 

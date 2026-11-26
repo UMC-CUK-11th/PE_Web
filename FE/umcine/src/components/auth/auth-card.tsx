@@ -1,5 +1,7 @@
+"use client";
+
 import type { ReactNode } from "react";
-import { Link } from "@tanstack/react-router";
+import Link from "next/link";
 
 export function AuthCard({ title, description, children }: {
   title: string; description: string; children: ReactNode;
@@ -8,7 +10,7 @@ export function AuthCard({ title, description, children }: {
     <main className="mx-auto flex min-h-[calc(100vh-112px)] max-w-5xl items-center px-4 py-10 md:px-8 md:py-14">
       <div className="grid w-full overflow-hidden rounded-3xl border border-[#e7e8ec] bg-white shadow-sm lg:grid-cols-[0.8fr_1fr]">
         <aside className="hidden flex-col justify-between bg-[#eef3ff] p-10 lg:flex">
-          <Link to="/" className="text-sm font-extrabold tracking-wide text-blue-700">UMCine</Link>
+          <Link href="/" className="text-sm font-extrabold tracking-wide text-blue-700">UMCine</Link>
           <div className="py-16">
             <span className="mb-7 grid size-16 place-items-center rounded-2xl bg-white shadow-sm" aria-hidden="true">
               <img className="size-8" src="/icons/movie-icons/movie-icons/movie.svg" alt="" />

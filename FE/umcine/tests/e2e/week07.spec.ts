@@ -98,7 +98,7 @@ test("서버 중복 응답 표시, 입력 유지, 해당 중복 확인 무효화
   await fillForm(page);
   await checkBoth(page);
   await page.getByRole("button", { name: "가입하기", exact: true }).click();
-  await expect(page.getByRole("alert")).toHaveText("이미 사용 중인 이메일입니다.");
+  await expect(page.getByRole("main").getByRole("alert")).toHaveText("이미 사용 중인 이메일입니다.");
   await expect(page.getByLabel("이메일", { exact: true })).toHaveValue("new@example.com");
   await expect(page.getByLabel("비밀번호", { exact: true })).toHaveValue("Umc!1234");
   await expect(page.getByRole("button", { name: "가입하기", exact: true })).toBeDisabled();
@@ -112,7 +112,7 @@ test("회원가입 연결 실패 후 입력 유지와 수동 재시도", async (
   await checkBoth(page);
   const submit = page.getByRole("button", { name: "가입하기", exact: true });
   await submit.click();
-  await expect(page.getByRole("alert")).toContainText("서버에 연결하지 못했어요.");
+  await expect(page.getByRole("main").getByRole("alert")).toContainText("서버에 연결하지 못했어요.");
   await expect(submit).toBeEnabled();
   await expect(page.getByLabel("닉네임", { exact: true })).toHaveValue("moviefan");
   expect(calls).toBe(1);
@@ -169,7 +169,7 @@ test("성공 상태라도 계약과 다른 응답이면 입력 유지 및 오류
   await fillForm(page);
   await checkBoth(page);
   await page.getByRole("button", { name: "가입하기", exact: true }).click();
-  await expect(page.getByRole("alert")).toContainText("서버 응답을 확인하지 못했어요.");
+  await expect(page.getByRole("main").getByRole("alert")).toContainText("서버 응답을 확인하지 못했어요.");
   await expect(page.getByLabel("이메일", { exact: true })).toHaveValue("new@example.com");
   await expect(page.getByRole("button", { name: "가입하기", exact: true })).toBeEnabled();
 });

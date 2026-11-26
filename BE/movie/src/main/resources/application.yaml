@@ -21,6 +21,7 @@ jwt:
   access-expiration: ${JWT_ACCESS_EXPIRATION}
 
 springdoc:
+  default-produces-media-type: application/json
+  override-with-generic-response: false
   swagger-ui:
-    url: /openapi/week08.json
     disable-swagger-default-url: true
