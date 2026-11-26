@@ -1,12 +1,14 @@
+"use client";
+
 import { useMutation } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
+import { useRouter } from "next/navigation";
 import { signup } from "../api/members";
 
 export function useSignupMutation() {
-  const navigate = useNavigate();
+  const router = useRouter();
   return useMutation({
     mutationFn: signup,
     gcTime: 0,
-    onSuccess: () => navigate({ to: "/login", search: { registered: true } }),
+    onSuccess: () => router.push("/login?registered=true"),
   });
 }

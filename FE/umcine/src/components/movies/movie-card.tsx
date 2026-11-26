@@ -1,6 +1,6 @@
 import MovieImage from "./movie-image";
 import { getTmdbPosterUrl } from "../../utils/movies/tmdb-image";
-import { Link } from "@tanstack/react-router";
+import Link from "next/link";
 
 import type { TmdbMovieListItem } from "../../api/movies/models";
 import BookmarkButton from "./bookmark-button";
@@ -28,13 +28,7 @@ export default function MovieCard({ movie }: MovieCardProps) {
     >
       {/* Poster */}
       <div className="relative overflow-hidden">
-        <Link
-          to="/movies/$movieId"
-          params={{
-            movieId: String(movie.id),
-          }}
-          className="block"
-        >
+        <Link href={`/movies/${movie.id}`} className="block">
           <MovieImage
             src={getTmdbPosterUrl(movie.poster_path)}
             alt={`${movie.title} 포스터`}
@@ -79,10 +73,7 @@ export default function MovieCard({ movie }: MovieCardProps) {
         </p>
 
         <Link
-          to="/movies/$movieId"
-          params={{
-            movieId: String(movie.id),
-          }}
+          href={`/movies/${movie.id}`}
           className="transition hover:text-zinc-600"
         >
           <h2

@@ -1,4 +1,7 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+"use client";
+
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 
 import { useMemberInfo } from "../../hooks/use-member-info";
 import { useAuthStore } from "../../stores/auth-store";
@@ -9,18 +12,19 @@ const memberLinkClass =
 export default function Header() {
   const accessToken = useAuthStore((state) => state.accessToken);
   const member = useMemberInfo();
-  const navigate = useNavigate();
+  const pathname = usePathname();
+  const router = useRouter();
 
   async function logout() {
     useAuthStore.getState().setAccessToken(null);
-    await navigate({ to: "/", replace: true });
+    router.replace("/");
   }
   return (
     <header className="sticky top-0 z-50 border-b border-zinc-200/80 bg-white/90 backdrop-blur-xl">
       <div className="mx-auto flex min-h-[72px] max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-3 sm:px-8 lg:px-10">
         {/* Logo */}
         <Link
-          to="/"
+          href="/"
           className="group flex items-center gap-2"
           aria-label="UMCine 홈"
         >
@@ -39,44 +43,38 @@ export default function Header() {
         </Link>
 
         {/* Navigation */}
-        {import.meta.env.DEV && (
-          <Link to="/api-test" className="text-xs font-medium text-zinc-500">
+        {process.env.NODE_ENV === "development" && (
+          <Link href="/api-test" className="text-xs font-medium text-zinc-500">
             API 확인
           </Link>
         )}
         <nav className="flex items-center gap-2 rounded-2xl bg-zinc-100 p-1.5">
           <Link
-            to="/"
-            activeOptions={{ exact: true }}
-            activeProps={{
-              className:
-                "rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-zinc-950 shadow-sm",
-            }}
-            inactiveProps={{
-              className:
-                "rounded-xl px-5 py-2.5 text-sm font-medium text-zinc-500 transition hover:bg-white/70 hover:text-zinc-900",
-            }}
+            href="/"
+            className={
+              pathname === "/"
+                ? "rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-zinc-950 shadow-sm"
+                : "rounded-xl px-5 py-2.5 text-sm font-medium text-zinc-500 transition hover:bg-white/70 hover:text-zinc-900"
+            }
+            aria-current={pathname === "/" ? "page" : undefined}
           >
             영화
           </Link>
 
           <Link
-            to="/search"
-            activeProps={{
-              className:
-                "rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-zinc-950 shadow-sm",
-            }}
-            inactiveProps={{
-              className:
-                "rounded-xl px-5 py-2.5 text-sm font-medium text-zinc-500 transition hover:bg-white/70 hover:text-zinc-900",
-            }}
+            href="/search"
+            className={
+              pathname === "/search"
+                ? "rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-zinc-950 shadow-sm"
+                : "rounded-xl px-5 py-2.5 text-sm font-medium text-zinc-500 transition hover:bg-white/70 hover:text-zinc-900"
+            }
+            aria-current={pathname === "/search" ? "page" : undefined}
           >
             검색
           </Link>
 
           <Link
-            to={accessToken ? "/my" : "/login"}
-            hash={accessToken ? "favorites" : undefined}
+            href={accessToken ? "/my#favorites" : "/login"}
             className="rounded-xl px-5 py-2.5 text-sm font-medium text-zinc-500 transition hover:bg-white/70 hover:text-zinc-900"
           >
             북마크
@@ -93,7 +91,7 @@ export default function Header() {
                   회원 정보 불러오는 중
                 </span>
               ) : (
-                <Link to="/my" className={memberLinkClass}>
+                <Link href="/my" className={memberLinkClass}>
                   {member.data ? member.data.nickname + "님" : "내 정보"}
                 </Link>
               )}
@@ -107,10 +105,10 @@ export default function Header() {
             </>
           ) : (
             <>
-              <Link to="/login" className={memberLinkClass}>
+              <Link href="/login" className={memberLinkClass}>
                 로그인
               </Link>
-              <Link to="/signup" className={memberLinkClass}>
+              <Link href="/signup" className={memberLinkClass}>
                 회원가입
               </Link>
             </>

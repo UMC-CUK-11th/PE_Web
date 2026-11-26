@@ -1,3 +1,6 @@
+"use client";
+
+import Image from "next/image";
 import { useState } from "react";
 
 export default function MovieImage({
@@ -21,10 +24,18 @@ export default function MovieImage({
       </div>
     );
   }
+  const backdrop = src.includes("/w1280/");
   return (
-    <img
+    <Image
       src={src}
       alt={alt}
+      width={backdrop ? 1280 : 500}
+      height={backdrop ? 720 : 750}
+      sizes={
+        backdrop
+          ? "100vw"
+          : "(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 240px"
+      }
       className={className}
       onError={() => setFailedSrc(src)}
     />

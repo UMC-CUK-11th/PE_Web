@@ -1,5 +1,7 @@
+"use client";
+
 import { useState, type FormEvent } from "react";
-import { Link } from "@tanstack/react-router";
+import Link from "next/link";
 import type { RatingResponse } from "../../api/members";
 import {
   useMemberRatings,
@@ -24,7 +26,7 @@ export function RatingPanel({ movieId }: { movieId: number }) {
             <p className="text-sm text-zinc-600">
               로그인하면 평점을 등록할 수 있어요.
             </p>
-            <Link to="/login" className={`${buttonClassName} inline-flex`}>
+            <Link href="/login" className={`${buttonClassName} inline-flex`}>
               로그인
             </Link>
           </>

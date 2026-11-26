@@ -1,3 +1,5 @@
+"use client";
+
 import type { TmdbMovieListItem } from "../../api/movies/models";
 import { useUiPreferenceStore } from "../../stores/ui-preference-store";
 import { cn } from "../../utils/cn";
