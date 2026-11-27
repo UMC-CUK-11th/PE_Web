@@ -1,5 +1,7 @@
+"use client";
+
 import { useQueries, useQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import Link from "next/link";
 import { favoritesQueryOptions } from "../../api/favorite-query-options";
 import { myInfoQueryOptions } from "../../api/member-query-options";
 import { adaptTmdbMovieDetails } from "../../api/tmdb-adapter";
@@ -49,7 +51,7 @@ export function MemberProfilePage() {
             <p className="text-sm font-bold text-[#2877eb]">MY PAGE</p>
             <h1 className="mt-2 text-[34px] font-extrabold tracking-[-1.5px]">내 정보</h1>
           </div>
-          <Link className="inline-flex h-11 items-center gap-2 rounded-lg border border-[#dce1e7] bg-white px-4 text-sm font-bold text-[#30353b] no-underline" to="/my/edit">
+          <Link className="inline-flex h-11 items-center gap-2 rounded-lg border border-[#dce1e7] bg-white px-4 text-sm font-bold text-[#30353b] no-underline" href="/my/edit">
             <img className="size-4" src="/icons/edit.svg" alt="" />
             정보 수정
           </Link>

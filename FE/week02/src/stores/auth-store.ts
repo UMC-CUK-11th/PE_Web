@@ -1,3 +1,5 @@
+"use client";
+
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
@@ -8,8 +10,10 @@ interface AuthSession {
 }
 
 interface AuthStore extends AuthSession {
+  hasHydrated: boolean;
   setSession: (session: Pick<AuthSession, "accessToken" | "nickname">) => void;
   clearSession: () => void;
+  setHasHydrated: (hasHydrated: boolean) => void;
 }
 
 const EMPTY_SESSION: AuthSession = {
@@ -37,14 +41,18 @@ export const useAuthStore = create<AuthStore>()(
   persist(
     (set) => ({
       ...EMPTY_SESSION,
+      hasHydrated: false,
       setSession: ({ accessToken, nickname }) =>
         set({ accessToken, nickname, memberId: getMemberIdFromToken(accessToken) }),
       clearSession: () => set(EMPTY_SESSION),
+      setHasHydrated: (hasHydrated) => set({ hasHydrated }),
     }),
     {
       name: "umcine-auth-store",
       storage: createJSONStorage(() => localStorage),
+      skipHydration: true,
       partialize: ({ accessToken, nickname, memberId }) => ({ accessToken, nickname, memberId }),
+      onRehydrateStorage: () => (state) => state?.setHasHydrated(true),
     },
   ),
 );

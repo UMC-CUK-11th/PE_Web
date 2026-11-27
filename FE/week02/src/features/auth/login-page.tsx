@@ -1,5 +1,7 @@
+"use client";
+
 import { useMutation } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
+import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { loginMutationOptions } from "../../api/auth-mutation-options";
 import { useAuthStore } from "../../stores/auth-store";
@@ -8,7 +10,7 @@ import { getApiErrorMessage } from "../../utils/api-error";
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function LoginPage() {
-  const navigate = useNavigate();
+  const router = useRouter();
   const setSession = useAuthStore((state) => state.setSession);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -17,7 +19,7 @@ export function LoginPage() {
     ...loginMutationOptions(),
     onSuccess: (session) => {
       setSession(session);
-      void navigate({ to: "/my" });
+      router.push("/my");
     },
     onError: async (error) => {
       setErrorMessage(await getApiErrorMessage(error, "로그인에 실패했어요. 입력 정보를 확인해 주세요."));

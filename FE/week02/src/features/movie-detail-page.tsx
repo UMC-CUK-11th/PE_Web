@@ -1,5 +1,8 @@
+"use client";
+
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, useNavigate } from "@tanstack/react-router";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { HTTPError } from "ky";
 import { adaptTmdbMovieDetails } from "../api/tmdb-adapter";
@@ -24,7 +27,7 @@ function MovieNotFound() {
         <span className="text-sm font-bold text-[#2877eb]">404</span>
         <h1 className="mt-3 text-[32px] font-extrabold">영화를 찾을 수 없어요.</h1>
         <p className="mt-3 text-sm text-[#7f8792]">주소를 다시 확인하거나 영화 목록으로 돌아가 주세요.</p>
-        <Link className="mt-8 inline-flex rounded-lg bg-[#2877eb] px-5 py-3 text-sm font-bold text-white no-underline" to="/">영화 목록으로</Link>
+        <Link className="mt-8 inline-flex rounded-lg bg-[#2877eb] px-5 py-3 text-sm font-bold text-white no-underline" href="/">영화 목록으로</Link>
       </div>
     </main>
   );
@@ -35,7 +38,7 @@ interface MovieDetailPageProps {
 }
 
 export function MovieDetailPage({ movieId }: MovieDetailPageProps) {
-  const navigate = useNavigate();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const parsedMovieId = Number(movieId);
   const isValidMovieId = Number.isInteger(parsedMovieId) && parsedMovieId > 0;
@@ -86,7 +89,7 @@ export function MovieDetailPage({ movieId }: MovieDetailPageProps) {
 
   const handleSaveRating = () => {
     if (!isLoggedIn) {
-      void navigate({ to: "/login" });
+      router.push("/login");
       return;
     }
     if (rating === 0) {
@@ -121,7 +124,7 @@ export function MovieDetailPage({ movieId }: MovieDetailPageProps) {
         <img className="absolute inset-0 size-full object-cover" src={movie.backdropPath} alt="" />
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(6,8,12,.86)_0%,rgba(6,8,12,.42)_46%,rgba(6,8,12,.08)_100%),linear-gradient(0deg,rgba(6,8,12,.72)_0%,transparent_55%)]" />
         <div className="relative mx-auto flex h-full w-[min(calc(100%-48px),1200px)] flex-col py-7 max-[420px]:w-[calc(100%-32px)]">
-          <Link className="inline-flex w-fit items-center gap-2 text-sm font-medium text-white no-underline" to="/">
+          <Link className="inline-flex w-fit items-center gap-2 text-sm font-medium text-white no-underline" href="/">
             <span aria-hidden="true">‹</span>
             영화 목록
           </Link>

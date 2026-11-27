@@ -1,5 +1,8 @@
+"use client";
+
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, useNavigate } from "@tanstack/react-router";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import type { MemberInfo } from "../../api/member-api";
 import { memberQueryKeys, myInfoQueryOptions, updateMyInfoMutationOptions } from "../../api/member-query-options";
@@ -11,7 +14,7 @@ interface MemberProfileEditFormProps {
 }
 
 function MemberProfileEditForm({ member }: MemberProfileEditFormProps) {
-  const navigate = useNavigate();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [nickname, setNickname] = useState(member.nickname);
   const [errorMessage, setErrorMessage] = useState("");
@@ -19,7 +22,7 @@ function MemberProfileEditForm({ member }: MemberProfileEditFormProps) {
     ...updateMyInfoMutationOptions(),
     onSuccess: (updatedMember) => {
       queryClient.setQueryData<MemberInfo>(memberQueryKeys.me(), updatedMember);
-      void navigate({ to: "/my" });
+      router.push("/my");
     },
     onError: async (error) => {
       setErrorMessage(await getApiErrorMessage(error, "회원 정보 수정에 실패했어요."));
@@ -63,7 +66,7 @@ function MemberProfileEditForm({ member }: MemberProfileEditFormProps) {
           {errorMessage && <p className="mt-5 rounded-lg bg-[#fff0f0] px-4 py-3 text-xs text-[#d33f49]" role="alert">{errorMessage}</p>}
 
           <div className="mt-8 flex justify-end gap-3">
-            <Link className="inline-flex h-11 items-center rounded-lg border border-[#dce1e7] px-5 text-sm font-bold text-[#525a64] no-underline" to="/my">취소</Link>
+            <Link className="inline-flex h-11 items-center rounded-lg border border-[#dce1e7] px-5 text-sm font-bold text-[#525a64] no-underline" href="/my">취소</Link>
             <button className="h-11 cursor-pointer rounded-lg border-0 bg-[#2877eb] px-6 text-sm font-bold text-white disabled:cursor-not-allowed disabled:bg-[#c9d2df]" type="submit" disabled={!isNicknameValid || updateMutation.isPending}>
               {updateMutation.isPending ? "저장 중" : "저장하기"}
             </button>
