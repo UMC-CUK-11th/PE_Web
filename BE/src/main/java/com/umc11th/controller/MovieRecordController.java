@@ -1,6 +1,7 @@
 package com.umc11th.controller;
 
 import com.umc11th.auth.LoginMember;
+import com.umc11th.config.OpenApiConfig;
 import com.umc11th.dto.ApiResponse;
 import com.umc11th.dto.CreateMovieRecordRequest;
 import com.umc11th.dto.MovieRecordResponse;
@@ -20,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Movie Records", description = "평점과 즐겨찾기를 한 트랜잭션으로 저장하는 API")
-@SecurityRequirement(name = "bearerAuth")
+@SecurityRequirement(name = OpenApiConfig.BEARER_AUTH)
 @RestController
 @RequiredArgsConstructor
 public class MovieRecordController {
@@ -38,6 +39,10 @@ public class MovieRecordController {
     @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "409",
             description = "RATING409_1 또는 FAVORITE409_1 - 중복 기록"
+    )
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "401",
+            description = "AUTH401_2/3/4 - 인증 실패"
     )
     @PostMapping("/movie-records")
     public ResponseEntity<ApiResponse<MovieRecordResponse>> create(

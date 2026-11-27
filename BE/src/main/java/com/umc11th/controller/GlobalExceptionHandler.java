@@ -75,6 +75,8 @@ public class GlobalExceptionHandler {
     }
 
     private ErrorCode resolveConstraintError(String causeMessage) {
+        causeMessage = causeMessage.toLowerCase();
+
         if (causeMessage.contains("uk_member_email")) {
             return ErrorCode.MEMBER_EMAIL_DUPLICATE;
         }

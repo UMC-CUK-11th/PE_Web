@@ -9,6 +9,7 @@ import com.umc11th.exception.ApiException;
 import com.umc11th.repository.MemberRepository;
 import com.umc11th.repository.RatingRepository;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -23,6 +24,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.never;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -82,6 +85,7 @@ class RatingServiceTest {
     }
 
     @Test
+    @DisplayName("같은 영화에 평점을 중복 등록하면 RATING409_1을 응답하고 저장하지 않는다")
     void duplicateRatingIsRejected() {
         Member member = member(1L);
         when(memberRepository.findById(1L)).thenReturn(java.util.Optional.of(member));
@@ -93,6 +97,8 @@ class RatingServiceTest {
         )).isInstanceOfSatisfying(ApiException.class, exception ->
                 assertThat(exception.getCode()).isEqualTo("RATING409_1")
         );
+
+        verify(ratingRepository, never()).save(any(Rating.class));
     }
 
     @Test
@@ -107,6 +113,7 @@ class RatingServiceTest {
     }
 
     @Test
+    @DisplayName("다른 회원의 평점을 수정하면 RATING403_1을 응답한다")
     void otherMemberCannotUpdateRating() {
         Rating rating = rating(1L, 1L);
         when(ratingRepository.findById(1L)).thenReturn(java.util.Optional.of(rating));
