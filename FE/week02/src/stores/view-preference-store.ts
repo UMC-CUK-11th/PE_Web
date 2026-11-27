@@ -1,3 +1,5 @@
+"use client";
+
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
@@ -17,6 +19,7 @@ export const useViewPreferenceStore = create<ViewPreferenceStore>()(
     {
       name: "umcine-view-preference-store",
       storage: createJSONStorage(() => localStorage),
+      skipHydration: true,
     },
   ),
 );

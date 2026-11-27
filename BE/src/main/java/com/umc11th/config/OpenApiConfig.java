@@ -10,15 +10,17 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class OpenApiConfig {
 
+    public static final String BEARER_AUTH = "bearerAuth";
+
     @Bean
     public OpenAPI openAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("UMC 영화 평점 API")
-                        .description("즐겨찾기와 영화 기록 API 문서")
+                        .title("영화 평점 서비스 API")
+                        .description("회원, 인증, 평점, 즐겨찾기와 영화 기록 API 문서")
                         .version("v1"))
                 .components(new Components().addSecuritySchemes(
-                        "bearerAuth",
+                        BEARER_AUTH,
                         new SecurityScheme()
                                 .type(SecurityScheme.Type.HTTP)
                                 .scheme("bearer")

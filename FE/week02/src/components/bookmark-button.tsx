@@ -1,5 +1,7 @@
+"use client";
+
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
+import { useRouter } from "next/navigation";
 import {
   addFavoriteMutationOptions,
   deleteFavoriteMutationOptions,
@@ -18,7 +20,7 @@ interface BookmarkButtonProps {
 }
 
 export function BookmarkButton({ movieId, movieTitle, className, useDetailStatus = false }: BookmarkButtonProps) {
-  const navigate = useNavigate();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const isLoggedIn = useAuthStore((state) => Boolean(state.accessToken));
   const favoritesQuery = useQuery(favoritesQueryOptions(isLoggedIn && !useDetailStatus));
@@ -44,7 +46,7 @@ export function BookmarkButton({ movieId, movieTitle, className, useDetailStatus
 
   const handleClick = () => {
     if (!isLoggedIn) {
-      void navigate({ to: "/login" });
+      router.push("/login");
       return;
     }
 

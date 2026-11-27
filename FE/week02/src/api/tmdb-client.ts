@@ -1,11 +1,11 @@
 import ky from "ky";
 
 const TMDB_API_BASE_URL = "https://api.themoviedb.org/3";
-const accessToken = import.meta.env.VITE_TMDB_ACCESS_TOKEN?.trim();
+const accessToken = process.env.NEXT_PUBLIC_TMDB_ACCESS_TOKEN?.trim();
 
 export function getTmdbAccessToken() {
   if (!accessToken) {
-    throw new Error("TMDB 인증 정보가 없습니다. .env에 VITE_TMDB_ACCESS_TOKEN을 설정해 주세요.");
+    throw new Error("TMDB 인증 정보가 없습니다. .env에 NEXT_PUBLIC_TMDB_ACCESS_TOKEN을 설정해 주세요.");
   }
 
   return accessToken;

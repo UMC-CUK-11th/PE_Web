@@ -1,6 +1,7 @@
 package com.umc11th.controller;
 
 import com.umc11th.auth.LoginMember;
+import com.umc11th.config.OpenApiConfig;
 import com.umc11th.dto.ApiResponse;
 import com.umc11th.dto.CreateFavoriteRequest;
 import com.umc11th.dto.FavoriteResponse;
@@ -25,8 +26,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@Tag(name = "Favorites", description = "로그인한 회원의 즐겨찾기 API")
-@SecurityRequirement(name = "bearerAuth")
+@Tag(name = "즐겨찾기", description = "로그인한 회원의 영화 즐겨찾기 API")
+@SecurityRequirement(name = OpenApiConfig.BEARER_AUTH)
 @RestController
 @RequiredArgsConstructor
 public class FavoriteController {
@@ -37,6 +38,10 @@ public class FavoriteController {
     @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "201",
             description = "COMMON201 - 등록 성공"
+    )
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "401",
+            description = "AUTH401_2/3/4 - 토큰 누락, 위조 또는 만료"
     )
     @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "409",
@@ -59,10 +64,14 @@ public class FavoriteController {
                 .body(ApiResponse.created("즐겨찾기를 등록했습니다.", response));
     }
 
-    @Operation(summary = "내 즐겨찾기 조회")
+    @Operation(summary = "내 즐겨찾기 조회", description = "토큰의 회원이 등록한 즐겨찾기를 최신순으로 조회합니다.")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
             description = "COMMON200 - 최신 등록 순 목록"
+    )
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "401",
+            description = "AUTH401_2/3/4 - 인증 실패"
     )
     @GetMapping("/favorites")
     public ResponseEntity<ApiResponse<List<FavoriteResponse>>> getMyFavorites(
@@ -74,10 +83,14 @@ public class FavoriteController {
         );
     }
 
-    @Operation(summary = "특정 영화의 즐겨찾기 여부 조회")
+    @Operation(summary = "특정 영화의 즐겨찾기 여부 조회", description = "즐겨찾기하지 않은 경우에도 200과 false를 반환합니다.")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
             description = "COMMON200 - isFavorite true 또는 false"
+    )
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "401",
+            description = "AUTH401_2/3/4 - 인증 실패"
     )
     @GetMapping("/favorites/{movieId}")
     public ResponseEntity<ApiResponse<FavoriteStatusResponse>> getStatus(
@@ -90,7 +103,7 @@ public class FavoriteController {
         );
     }
 
-    @Operation(summary = "즐겨찾기 해제")
+    @Operation(summary = "즐겨찾기 해제", description = "토큰의 회원이 등록한 영화 즐겨찾기를 삭제합니다.")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
             description = "COMMON200 - 해제 성공"
@@ -98,6 +111,10 @@ public class FavoriteController {
     @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "404",
             description = "FAVORITE404_1 - 즐겨찾기를 찾을 수 없음"
+    )
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "401",
+            description = "AUTH401_2/3/4 - 인증 실패"
     )
     @DeleteMapping("/favorites/{movieId}")
     public ResponseEntity<ApiResponse<Void>> delete(

@@ -1,3 +1,5 @@
+"use client";
+
 import ky from "ky";
 import { env } from "../config/env";
 import { useAuthStore } from "../stores/auth-store";
