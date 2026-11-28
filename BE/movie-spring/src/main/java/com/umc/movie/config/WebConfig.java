@@ -9,50 +9,40 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @RequiredArgsConstructor
-public class WebConfig
-    implements WebMvcConfigurer {
+public class WebConfig implements WebMvcConfigurer {
 
     private final AuthInterceptor authInterceptor;
 
     @Override
-    public void addCorsMappings(
-        CorsRegistry registry
-    ) {
-
-        registry
-            .addMapping("/**")
-            .allowedOrigins(
-                "http://localhost:5173"
-            )
-            .allowedMethods(
-                "GET",
-                "POST",
-                "PATCH",
-                "DELETE",
-                "OPTIONS"
-            )
-            .allowedHeaders("*");
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("http://localhost:5173")
+                .allowedMethods(
+                        "GET",
+                        "POST",
+                        "PATCH",
+                        "DELETE",
+                        "OPTIONS"
+                )
+                .allowedHeaders("*");
     }
 
     @Override
-    public void addInterceptors(
-        InterceptorRegistry registry
-    ) {
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(authInterceptor)
+                .addPathPatterns("/**")
+                .excludePathPatterns(
+                        "/auth/**",
+                        "/members",
+                        "/members/nickname/**",
+                        "/members/email/**",
+                        "/members/*/ratings",
+                        "/error",
 
-        registry
-            .addInterceptor(
-                authInterceptor
-            )
-            .addPathPatterns("/**")
-            .excludePathPatterns(
-                "/auth/**",
-                "/members",
-                "/members/nickname/**",
-                "/members/email/**",
-                "/members/*/ratings",
-                "/error",
-                "/swagger-ui/**",
-                "/v3/api-docs/**"
-            );
+                        // Swagger
+                        "/swagger-ui.html",
+                        "/swagger-ui/**",
+                        "/v3/api-docs/**"
+                );
     }
 }
