@@ -1,4 +1,7 @@
-import { Link } from "@tanstack/react-router";
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
 import type { MovieCardData } from "../utils/movies/to-movie-card";
 import { BookmarkButton } from "./bookmark-button";
 
@@ -13,13 +16,12 @@ export function MovieCard({ movie }: MovieCardProps) {
       <div className="relative aspect-[2/3] overflow-hidden rounded-[4px] bg-[#dedfe3] shadow-[0_3px_12px_rgba(23,24,28,0.08)]">
         <Link
           className="block h-full"
-          to="/movies/$movieId"
-          params={{ movieId: String(movie.id) }}
+          href={`/movies/${movie.id}`}
           aria-label={`${movie.title} 상세 정보 보기`}
         >
-          {posterUrl ? <img
+          {posterUrl ? <Image
             className="block h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.025]"
-            src={posterUrl}
+            src={posterUrl} width={224} height={336} sizes="(max-width: 640px) 45vw, 224px"
             alt={`${movie.title} 포스터`}
           /> : <div className="grid h-full w-full place-content-center bg-[#dedfe3] text-xs text-[#696c73]">이미지 없음</div>}
         </Link>
@@ -28,7 +30,7 @@ export function MovieCard({ movie }: MovieCardProps) {
 
       <div className="pt-2.5">
         <h2 className="overflow-hidden text-ellipsis whitespace-nowrap text-[13px] font-bold tracking-[-0.35px]">
-          <Link className="text-inherit no-underline" to="/movies/$movieId" params={{ movieId: String(movie.id) }}>
+          <Link className="text-inherit no-underline" href={`/movies/${movie.id}`}>
             {movie.title}
           </Link>
         </h2>

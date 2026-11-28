@@ -97,7 +97,7 @@ test("로그인 실패 재시도·진행 잠금·토큰 저장·홈 이동·새�
   await page.getByLabel("이메일", { exact: true }).fill("member@example.com");
   await page.getByLabel("비밀번호", { exact: true }).fill("Umc!1234");
   await page.getByRole("button", { name: "로그인", exact: true }).click();
-  await expect(page.getByRole("alert")).toContainText("이메일 또는 비밀번호가 올바르지 않습니다.");
+  await expect(page.getByRole("main").getByRole("alert")).toContainText("이메일 또는 비밀번호가 올바르지 않습니다.");
   await expect(page.getByLabel("비밀번호", { exact: true })).toHaveValue("Umc!1234");
   await shot(page, info.project.name, "02-login-error-mocked");
   await page.getByRole("button", { name: "로그인", exact: true }).click();
@@ -121,7 +121,7 @@ test("401 인증 만료 시 토큰 제거·로그인 이동·자동 재시도 �
   await page.route(`${api}/members/me`, (route) => { attempts++; return route.fulfill({ status: 401, json: fail("토큰이 만료되었습니다.", "AUTH401_4") }); });
   await page.goto("/mypage");
   await expect(page).toHaveURL(/\/login$/);
-  await expect(page.getByRole("alert")).toContainText("인증이 만료되었어요.");
+  await expect(page.getByRole("main").getByRole("alert")).toContainText("인증이 만료되었어요.");
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem("umcine-auth-store") ?? "null")?.state?.accessToken ?? null)).toBeNull();
   // StrictMode에서 취소된 첫 요청이 재실행될 수 있습니다. backoff 재시도는 하지 않습니다.
   expect(attempts).toBeLessThanOrEqual(2);
@@ -197,7 +197,7 @@ test("즐겨찾기 저장 실패는 상태 유지, 수동 재시도 가능", asy
   await page.goto("/movies/550");
   const add = page.getByRole("button", { name: "파이트 클럽 북마크 추가" });
   await expect(add).toBeEnabled(); await add.click();
-  await expect(page.getByRole("alert")).toContainText("즐겨찾기를 저장하지 못했습니다.");
+  await expect(page.getByRole("main").getByRole("alert")).toContainText("즐겨찾기를 저장하지 못했습니다.");
   await expect(add).toHaveAttribute("aria-pressed", "false");
   await expect(add).toBeEnabled(); await add.click();
   await expect(page.getByRole("button", { name: "파이트 클럽 북마크 해제" })).toHaveAttribute("aria-pressed", "true");
@@ -252,7 +252,9 @@ test("실제 Spring Boot/H2 로그인·프로필·즐겨찾기·평점 전체 �
   test.skip(process.env.E2E_LIVE_API !== "1", "실제 H2 백엔드 실행 후 E2E_LIVE_API=1로 실행");
   const suffix = `${Date.now().toString().slice(-8)}${info.project.name[0]}`;
   const email = `week08-${suffix}@example.com`, nickname = `u${suffix}`, changed = `v${suffix}`;
-  expect((await request.post(`${api}/members`, { data: { email, nickname, password: "Umc!1234" } })).status()).toBe(201);
+  const signup = await request.post(`${api}/members`, { data: { email, nickname, password: "Umc!1234" } });
+  expect(signup.status()).toBe(201);
+  const { memberId } = (await signup.json()).result;
   const calls: { method: string; path: string; status: number; authenticated: boolean }[] = [];
   page.on("response", (response) => {
     if (response.url().startsWith(api)) calls.push({ method: response.request().method(), path: new URL(response.url()).pathname, status: response.status(), authenticated: !!response.request().headers().authorization });
@@ -301,9 +303,8 @@ test("실제 Spring Boot/H2 로그인·프로필·즐겨찾기·평점 전체 �
   await expect(page.getByRole("button", { name: "파이트 클럽 북마크 추가" })).toBeEnabled();
   const token = await page.evaluate(() => JSON.parse(localStorage.getItem("umcine-auth-store")!).state.accessToken as string);
   const headers = { Authorization: `Bearer ${token}` };
-  const me = (await (await request.get(`${api}/members/me`, { headers })).json()).result;
   expect((await (await request.get(`${api}/favorites`, { headers })).json()).result).toEqual([]);
-  expect(await (await request.get(`${api}/members/${me.memberId}/ratings`, { headers })).json()).toEqual([]);
+  expect(await (await request.get(`${api}/members/${memberId}/ratings`, { headers })).json()).toEqual([]);
   await evidence(info.project.name, "live-network-sanitized", { database: "H2 in-memory", tmdb: "mocked fixture", tokenPersisted: !!token, profileUpdateAdditionalGET: after - before, deletionPersisted: true, calls });
   await page.getByRole("button", { name: "로그아웃" }).click();
   await page.goto("/mypage");

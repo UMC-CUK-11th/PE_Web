@@ -8,5 +8,5 @@ export default async function setup() {
     } catch { /* 서버 기동을 기다립니다. */ }
     await new Promise((resolve) => setTimeout(resolve, 250));
   }
-  throw new Error("Live API is not ready. Start BE/movie/scripts/start-e2e-backend.ps1 first.");
+  throw new Error("Live API is not ready at http://localhost:8080. Start the Spring Boot movie server first.");
 }

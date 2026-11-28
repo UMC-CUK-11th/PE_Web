@@ -1,5 +1,7 @@
+"use client";
+
 import { useRef } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "../stores/auth-store";
 import { favoriteKey, favoriteListKey, favoriteOptions, favoritesOptions } from "../api/private-query-options";
@@ -10,7 +12,7 @@ import { cn } from "../utils/cn";
 interface BookmarkButtonProps { movieId: number; movieTitle: string; variant?: "card" | "detail" | "search" }
 export function BookmarkButton({ movieId, movieTitle, variant = "card" }: BookmarkButtonProps) {
   const { accessToken, sessionVersion } = useAuthStore();
-  const navigate = useNavigate();
+  const navigate = useRouter();
   const client = useQueryClient();
   const lock = useRef(false);
   const list = useQuery({ ...favoritesOptions(sessionVersion), enabled: !!accessToken && variant !== "detail" });
@@ -26,7 +28,7 @@ export function BookmarkButton({ movieId, movieTitle, variant = "card" }: Bookma
   }, onSettled: () => { lock.current = false; } });
 
   function toggle() {
-    if (!accessToken) { void navigate({ to: "/login" }); return; }
+    if (!accessToken) { navigate.push("/login"); return; }
     if (lock.current || mutation.isPending || query.isLoading) return;
     if (query.isError) { void query.refetch(); return; }
     lock.current = true;

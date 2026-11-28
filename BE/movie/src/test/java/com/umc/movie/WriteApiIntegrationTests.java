@@ -7,6 +7,7 @@ import com.umc.movie.repository.MemberRepository;
 import com.umc.movie.repository.RatingRepository;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -86,6 +87,27 @@ class WriteApiIntegrationTests {
                         .content(signUpBody("ok@example.com", "Umc!1234" + "가".repeat(22), "moviefan")))
                 .andExpect(status().isBadRequest()).andExpect(jsonPath("$.isSuccess").value(false));
         assertEquals(0, members.count());
+    }
+
+    @Test
+    @DisplayName("토큰 없이 평점을 등록하면 401 AUTH401_2를 반환하고 저장하지 않는다")
+    void ratingCreationRequiresToken() throws Exception {
+        mvc.perform(post("/ratings").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"movieId\":550,\"score\":5}"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("AUTH401_2"));
+        assertEquals(0, ratings.count());
+    }
+
+    @Test
+    @DisplayName("발급된 토큰으로 평점을 등록하면 201 COMMON201을 반환하고 저장한다")
+    void createsRatingWithToken() throws Exception {
+        long owner = signUp("rater@example.com", "rater");
+        long ratingId = createRating(owner, 550);
+
+        var rating = ratings.findById(ratingId).orElseThrow();
+        assertEquals(550L, rating.getMovieId());
+        assertEquals(5, rating.getScore());
     }
 
     @Test

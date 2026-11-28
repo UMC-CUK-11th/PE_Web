@@ -13,9 +13,9 @@ export default defineConfig({
     { name: "mobile", use: { ...devices["Desktop Chrome"], viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true } },
   ],
   webServer: {
-    command: "npm run dev -- --host localhost --port 5173 --strictPort",
+    command: "npm run start",
     url: "http://localhost:5173/signup",
-    reuseExistingServer: !process.env.CI,
-    env: { VITE_API_BASE_URL: "http://localhost:8080", VITE_TMDB_ACCESS_TOKEN: "e2e-placeholder-not-a-real-token" },
+    reuseExistingServer: false,
+    env: { NEXT_PUBLIC_API_BASE_URL: "http://localhost:8080", NEXT_PUBLIC_TMDB_ACCESS_TOKEN: "e2e-placeholder-not-a-real-token" },
   },
 });

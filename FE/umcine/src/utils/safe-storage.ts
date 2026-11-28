@@ -11,7 +11,8 @@ export const safeLocalStorage: StateStorage = {
     try {
       const storedValue = localStorage.getItem(name);
       if (storedValue !== null) memoryStorage.set(name, storedValue);
-      return storedValue ?? memoryStorage.get(name) ?? null;
+      if (storedValue === null) memoryStorage.delete(name);
+      return storedValue;
     } catch {
       return memoryStorage.get(name) ?? null;
     }

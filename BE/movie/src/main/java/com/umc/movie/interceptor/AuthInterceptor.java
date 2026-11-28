@@ -23,7 +23,8 @@ public class AuthInterceptor implements HandlerInterceptor {
         if (method.equals("OPTIONS") || path.equals("/error")
                 || (method.equals("POST") && (path.equals("/auth/login") || path.equals("/members")))
                 || (method.equals("GET") && (path.equals("/swagger-ui.html") || path.startsWith("/swagger-ui/")
-                || path.equals("/openapi/week08.json") || path.equals("/v3/api-docs/swagger-config")
+                || path.equals("/openapi/week08.json") || path.equals("/v3/api-docs")
+                || path.equals("/v3/api-docs.yaml") || path.equals("/v3/api-docs/swagger-config")
                 || path.matches("/members/(nickname|email)/[^/]+")
                 || path.matches("/members/[^/]+/ratings")))) return true;
 

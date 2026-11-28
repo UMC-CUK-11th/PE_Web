@@ -22,6 +22,7 @@ export const useDisplayPreferencesStore = create<DisplayPreferencesStore>()(
     {
       name: "umcine-display-preferences",
       // localStorage 실패 시에도 현재 탭의 카드 크기 상태는 메모리에 유지됩니다.
+      skipHydration: true,
       storage: createJSONStorage(() => safeLocalStorage),
       merge: (persistedState, currentState) => {
         const savedState = persistedState as Partial<DisplayPreferencesStore> | undefined;
