@@ -1,75 +1,18 @@
-# React + TypeScript + Vite
+# UMCine
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+영화 목록과 검색, 상세 화면, 로그인과 프로필을 제공하는 Next.js App Router 프로젝트.
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```sh
+pnpm install
+pnpm dev
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+[http://localhost:5173](http://localhost:5173)에서 확인할 수 있습니다. Spring API의 기본 주소는 `http://localhost:8080`입니다.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+로컬 환경 변수는 `.env.local`에 설정합니다.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- `NEXT_PUBLIC_API_BASE_URL`은 Spring API 주소입니다.
+- `NEXT_PUBLIC_TMDB_API_BASE_URL`과 `NEXT_PUBLIC_TMDB_ACCESS_TOKEN`은 브라우저에서 사용하는 TMDB 설정입니다.
+- 기존 `VITE_*` 환경 변수도 같은 이름의 `NEXT_PUBLIC_*` 값이 없으면 사용합니다.
 
-```
+`pnpm lint`로 코드를 검사하고, `pnpm build`와 `pnpm start`로 프로덕션 서버를 실행합니다.

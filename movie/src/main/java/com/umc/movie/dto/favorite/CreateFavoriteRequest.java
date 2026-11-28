@@ -1,9 +1,12 @@
 package com.umc.movie.dto.favorite;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 public record CreateFavoriteRequest(
+        @Schema(description = "TMDB 영화 ID", example = "550") // [Swagger 1]
         @NotNull(message = "영화 ID는 필수입니다.")
         @Positive(message = "영화 ID는 양수여야 합니다.")
         Long movieId // [1]
@@ -15,3 +18,5 @@ public record CreateFavoriteRequest(
  * Long은 누락 시 null이 될 수 있어 @NotNull로 필수 입력을, @Positive로 양수를 검사한다.
  * 실제 요청 검증은 이후 컨트롤러의 @Valid와 연결된다.
  */
+
+// [Swagger 1] @Schema는 입력 설명과 예시를 생성된 문서에 싣는다. 실제 입력은 기존 검증 어노테이션이 검사한다.

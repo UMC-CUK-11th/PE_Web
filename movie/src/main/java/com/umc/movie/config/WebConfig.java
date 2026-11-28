@@ -32,7 +32,10 @@ public class WebConfig implements WebMvcConfigurer { // [2]
                         "/members/nickname/**",
                         "/members/email/**",
                         "/members/*/ratings",
-                        "/error"
+                        "/error",
+                        "/swagger-ui.html", // [9주차 1]
+                        "/swagger-ui/**",
+                        "/v3/api-docs/**"
                 );
     }
 }
@@ -126,3 +129,5 @@ public class WebConfig implements WebMvcConfigurer { // [2]
 //
 // 설정을 바꾼 뒤에는 Spring 서버를 재시작하고 프론트에서 다시 요청해 확인한다.
 // CORS가 해결되어도 API 경로 오류(404), DB 오류 등은 별도로 해결해야 한다.
+
+// [9주차 1] UI 진입 URL, 이동 후 화면과 정적 파일, OpenAPI JSON 경로를 인증 예외에 둔다.

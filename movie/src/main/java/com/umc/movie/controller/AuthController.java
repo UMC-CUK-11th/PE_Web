@@ -1,5 +1,8 @@
 package com.umc.movie.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import com.umc.movie.dto.auth.LoginRequest;
 import com.umc.movie.dto.common.ApiResponse;
 import com.umc.movie.dto.auth.LoginResponse;
@@ -15,10 +18,18 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
+@Tag(name = "인증", description = "로그인과 토큰 발급 API") // [Swagger 1]
 public class AuthController {
 
     private final AuthService authService;
 
+    @Operation(
+            summary = "이메일 로그인",
+            description = """
+                    이메일과 비밀번호로 로그인하고 Access Token을 발급받습니다.
+                    발급받은 토큰은 위쪽 Authorize 버튼에 넣어두면 인증이 필요한 API에 자동으로 실립니다.
+                    """
+    )
     @PostMapping("/login") // [1]
     public ResponseEntity<ApiResponse<LoginResponse>> login(
             @RequestBody @Valid LoginRequest request // [2]
@@ -42,3 +53,5 @@ public class AuthController {
  * 바깥 ResponseEntity.ok는 그 본문을 실제 HTTP 200으로 반환한다.
  * ApiResponse<LoginResponse>의 result에는 LoginResponse가 들어간다.
  */
+
+// [Swagger 1] @Tag는 Swagger UI에서 컨트롤러의 API를 묶고, @Operation은 각 요청의 목적을 설명한다.
