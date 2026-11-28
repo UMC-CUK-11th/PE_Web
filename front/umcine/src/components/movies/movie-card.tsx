@@ -1,4 +1,5 @@
-import { Link } from "@tanstack/react-router";
+import Image from "next/image";
+import Link from "next/link";
 import type { TmdbMovie } from "../../api/movies/models";
 import { getTmdbPosterUrl } from "../../utils/tmdb-image";
 import { BookmarkButton } from "./bookmark-button";
@@ -14,16 +15,16 @@ export function MovieCard({ movie, showBookmarkButton = true }: MovieCardProps) 
   return (
     <article className="min-w-0">
       <div className="relative aspect-[0.88] overflow-hidden rounded-lg bg-[#dfe2e8]">
-        <Link className="block h-full w-full" params={{ movieId: String(movie.id) }} to="/movies/$movieId">
+        <Link className="block h-full w-full" href={`/movies/${movie.id}`}>
           {posterUrl ? (
-            <img className="block h-full w-full object-cover" src={posterUrl} alt={`${movie.title} 포스터`} />
+            <Image fill sizes="(min-width: 1120px) 192px, (min-width: 768px) 20vw, (min-width: 640px) 33vw, 50vw" className="object-cover" src={posterUrl} alt={`${movie.title} 포스터`} />
           ) : (
             <span className="grid h-full place-items-center text-xs text-[#687080]">포스터 없음</span>
           )}
         </Link>
         {showBookmarkButton && <BookmarkButton movie={movie} />}
       </div>
-      <Link className="block overflow-hidden text-inherit no-underline" params={{ movieId: String(movie.id) }} to="/movies/$movieId">
+      <Link className="block overflow-hidden text-inherit no-underline" href={`/movies/${movie.id}`}>
         <h2 className="mt-1.5 overflow-hidden text-ellipsis whitespace-nowrap text-[11px] leading-[1.2] font-bold tracking-[-0.3px] text-[#222731]" title={movie.title}>{movie.title}</h2>
       </Link>
       <div className="mt-0.5 flex items-center gap-1 text-[9px] leading-[1.2] text-[#7b818c]">

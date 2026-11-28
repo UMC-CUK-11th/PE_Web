@@ -5,6 +5,7 @@ import {
 import { useAuthStore } from "../stores/auth-store";
 import { useBookmarkStore } from "../stores/bookmark-store";
 import { getMemberId } from "../utils/get-member-id";
+import { useStorageReady } from "../components/layout/app-providers";
 
 export function useFavorites() {
   const accessToken = useAuthStore((state) => state.accessToken);
@@ -19,6 +20,7 @@ export function useFavorites() {
 }
 
 export function useFavorite(movieId: number, checkStatus = false) {
+  const storageReady = useStorageReady();
   const accessToken = useAuthStore((state) => state.accessToken);
   const memberId = getMemberId(accessToken);
   const queryClient = useQueryClient();
@@ -62,10 +64,11 @@ export function useFavorite(movieId: number, checkStatus = false) {
   const favoriteInList = favorites.data?.some((item) => item.movieId === movieId) ?? false;
   const serverFavorite = checkStatus ? status.data?.isFavorite ?? favoriteInList : favoriteInList;
   const isFavorite = accessToken ? serverFavorite : localBookmark;
-  const isLoading = Boolean(accessToken) && (checkStatus ? status.isPending : favorites.isPending);
+  const isLoading = !storageReady || (Boolean(accessToken) && (checkStatus ? status.isPending : favorites.isPending));
   const queryError = checkStatus ? status.error : favorites.error;
 
   function toggle() {
+    if (!storageReady) return;
     if (!accessToken) {
       toggleLocalBookmark(movieId);
     } else if (!isLoading && !queryError && pendingMutations === 0) {

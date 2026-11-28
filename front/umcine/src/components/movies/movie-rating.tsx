@@ -1,5 +1,8 @@
+"use client";
+
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import Image from "next/image";
+import Link from "next/link";
 import { isHTTPError } from "ky";
 import { useState, type SubmitEvent } from "react";
 import {
@@ -70,7 +73,7 @@ function RatingForm({ movieId, memberId, rating }: { movieId: number; memberId: 
               checked={score === star}
               onChange={() => { setScore(star); save.reset(); remove.reset(); }}
             />
-            <img className="h-[18px] w-[18px] opacity-80 peer-focus-visible:outline-2 peer-focus-visible:outline-[#2865e7]" src={star <= score ? "/icons/star.svg" : "/icons/star-outline.svg"} alt="" />
+            <Image width={18} height={18} className="opacity-80 peer-focus-visible:outline-2 peer-focus-visible:outline-[#2865e7]" src={star <= score ? "/icons/star.svg" : "/icons/star-outline.svg"} alt="" />
             <span className="sr-only">{star}점</span>
           </label>
         ))}
@@ -113,7 +116,7 @@ export function MovieRating({ movieId }: { movieId: number }) {
     <aside className="pt-2 md:pt-[2px] md:pl-2" aria-label="내 평점">
       <h2 className="mb-2 text-[15px] font-extrabold tracking-[-0.6px] text-[#252a34]">내 평점</h2>
       {!accessToken || memberId === null ? (
-        <p className="text-[11px] text-[#667080]">평점을 남기려면 <Link className="text-[#2865e7]" to="/login">로그인</Link>해 주세요.</p>
+        <p className="text-[11px] text-[#667080]">평점을 남기려면 <Link className="text-[#2865e7]" href="/login">로그인</Link>해 주세요.</p>
       ) : ratings.isPending ? (
         <p role="status" className="text-[11px] text-[#667080]">내 평점을 불러오는 중이에요.</p>
       ) : ratings.isError ? (

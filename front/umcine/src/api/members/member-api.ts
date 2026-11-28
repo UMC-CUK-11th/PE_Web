@@ -1,4 +1,4 @@
-const MEMBER_API_BASE_URL = "http://localhost:8080";
+import { env } from "../../config/env";
 
 export interface AvailabilityResponse {
   available: boolean;
@@ -18,7 +18,7 @@ export type ApiResponse<T> =
   | { ok: false; status: number; body: unknown };
 
 async function getJson<T>(path: string): Promise<ApiResponse<T>> {
-  const response = await fetch(`${MEMBER_API_BASE_URL}${path}`, {
+  const response = await fetch(`${env.apiBaseUrl.replace(/\/+$/, "")}${path}`, {
     method: "GET",
     credentials: "omit",
   });

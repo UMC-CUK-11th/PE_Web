@@ -1,0 +1,135 @@
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { useState, type SubmitEvent } from "react";
+import { searchMovies } from "../../api/movies/search-movies";
+import type { TmdbMovieListItem } from "../../api/movies/models";
+import { TmdbFooter } from "../../components/layout/tmdb-footer";
+import { cn } from "../../utils/cn";
+import { BookmarkButton } from "../../components/movies/bookmark-button";
+import { getTmdbPosterUrl } from "../../utils/tmdb-image";
+
+interface SearchFormProps {
+  initialQuery: string;
+  hasQuery: boolean;
+}
+
+function SearchForm({ initialQuery, hasQuery }: SearchFormProps) {
+  const router = useRouter();
+  const [searchText, setSearchText] = useState(initialQuery);
+
+  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const nextQuery = searchText.trim();
+    const params = new URLSearchParams({ query: nextQuery });
+    router.push(nextQuery ? `/search?${params}` : "/search");
+  }
+
+  return (
+    <form className={cn(
+      "flex w-full items-center gap-[9px] rounded-md border border-[#abb1bb] bg-white py-1 pr-[5px] pl-[13px] shadow-[0_5px_12px_rgba(17,24,39,0.08)]",
+      hasQuery ? "h-9" : "h-[42px] max-w-[500px]",
+    )} onSubmit={handleSubmit}>
+      <Image width={18} height={18} className="opacity-65" src="/icons/search.svg" alt="" />
+      <input
+        className="h-full min-w-0 flex-1 border-0 bg-transparent text-xs text-[#252a34] outline-none placeholder:text-[#a0a5ae]"
+        aria-label="검색어"
+        placeholder="스파이더맨"
+        value={searchText}
+        onChange={(event) => setSearchText(event.target.value)}
+      />
+      <button className="h-[30px] cursor-pointer rounded-[4px] border-0 bg-[#20242b] px-[14px] text-[11px] font-bold text-white" type="submit">검색</button>
+    </form>
+  );
+}
+
+interface SearchResultsProps {
+  query: string;
+  results: TmdbMovieListItem[];
+  totalResults: number;
+  isLoading: boolean;
+  isError: boolean;
+}
+
+function SearchResults({ query, results, totalResults, isLoading, isError }: SearchResultsProps) {
+  return (
+    <section className="mt-2" aria-live="polite">
+      <div className="flex items-baseline justify-between border-b border-[#dfe2e7] pb-1.5">
+        <h2 className="text-[15px] leading-[1.2] font-extrabold tracking-[-0.6px] text-[#252a34]">‘{query}’ 검색 결과</h2>
+        {!isLoading && !isError && <p className="text-[11px] text-[#8a909a]">영화 {totalResults}편</p>}
+      </div>
+      {isLoading ? (
+        <p role="status" className="py-[68px] text-center text-sm text-[#747b86]">검색 중이에요.</p>
+      ) : isError ? (
+        <p role="alert" className="py-[68px] text-center text-sm text-[#747b86]">검색 결과를 불러오지 못했어요.</p>
+      ) : results.length === 0 ? (
+        <p className="py-[68px] text-center text-sm text-[#747b86]">검색 결과가 없어요.</p>
+      ) : (
+        <ul className="grid grid-cols-1 gap-x-7 md:grid-cols-2">
+          {results.map((movie) => {
+            const posterUrl = getTmdbPosterUrl(movie.poster_path);
+
+            return (
+              <li className="flex min-w-0 gap-[14px] border-b border-[#e2e5e9] py-4" key={movie.id}>
+                <div className="relative h-[118px] w-20 shrink-0 rounded bg-[#dfe2e8]">
+                  {posterUrl ? (
+                    <Image width={80} height={118} className="h-full w-full rounded object-cover" src={posterUrl} alt={`${movie.title} 포스터`} />
+                  ) : (
+                    <span className="grid h-full place-items-center text-center text-[10px] text-[#687080]">포스터 없음</span>
+                  )}
+                  <BookmarkButton movie={movie} className="top-1 right-1" />
+                </div>
+                <div className="min-w-0 pt-0.5">
+                  <h3 className="overflow-hidden text-ellipsis whitespace-nowrap text-[13px] font-extrabold tracking-[-0.4px] text-[#272c36]">{movie.title}</h3>
+                  <p className="text-[10px] text-[#8b919b]">{movie.original_title} · {movie.release_date ? movie.release_date.replaceAll("-", ".") : "개봉일 미정"}</p>
+                  <p className="mt-[7px] line-clamp-2 text-[10px] leading-[1.45] text-[#666d78]">{movie.overview || "줄거리 정보가 없어요."}</p>
+                  <Link className="mt-2 inline-block text-[10px] font-bold text-[#2865e7] no-underline" href={`/movies/${movie.id}`}>
+                    상세 보기 <span aria-hidden="true">→</span>
+                  </Link>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+export function SearchPage({ query }: { query: string }) {
+  const normalizedQuery = query.trim();
+  const searchQuery = useQuery({
+    queryKey: ["movies", "search", { query: normalizedQuery }],
+    queryFn: () => searchMovies({ query: normalizedQuery }),
+    enabled: normalizedQuery.length > 0,
+    retry: false,
+  });
+  const searchResults = searchQuery.data?.results ?? [];
+
+  return (
+    <div className="flex min-h-[calc(100vh-56px)] flex-col bg-[#f6f7f9]">
+      <main className={cn(
+        "mx-auto flex w-full max-w-[1120px] flex-1 flex-col px-6 pt-4 pb-16 md:px-12",
+        !normalizedQuery && "items-center justify-center pb-[160px] md:pb-[234px]",
+      )}>
+        {normalizedQuery && <h1 className="mb-2 text-[22px] leading-[1.35] font-extrabold tracking-[-1px] text-[#20252e]">영화 검색</h1>}
+        {!normalizedQuery && <h2 className="mb-[22px] text-center text-[26px] leading-[1.3] font-extrabold tracking-[-1px] text-[#252a34]">어떤 영화를 찾고 있나요?</h2>}
+        <SearchForm key={query} initialQuery={query} hasQuery={Boolean(normalizedQuery)} />
+
+        {normalizedQuery && (
+          <SearchResults
+            query={normalizedQuery}
+            results={searchResults}
+            totalResults={searchQuery.data?.total_results ?? 0}
+            isLoading={searchQuery.isPending}
+            isError={searchQuery.isError}
+          />
+        )}
+      </main>
+      <TmdbFooter />
+    </div>
+  );
+}

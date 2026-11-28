@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  font-family: Inter, Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", Arial, sans-serif;
+  font-family: Inter, Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", var(--font-geist-sans), Arial, sans-serif;
   color-scheme: light;
   color: #1b1f27;
   background: #f6f7f9;
@@ -12,8 +12,7 @@
 }
 
 html,
-body,
-#root {
+body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;

@@ -1,4 +1,3 @@
-import { env } from "../../config/env";
 import type { TmdbMovieListResponse } from "./models";
 
 type GetMoviesWithFetchResponse = TmdbMovieListResponse;
@@ -11,18 +10,10 @@ function getMoviesWithFetch(page = 1): Promise<GetMoviesWithFetchResponse> {
 
   const request = (async () => {
     const searchParams = new URLSearchParams({
-      language: "ko-KR",
       page: String(page),
     });
 
-    const response = await fetch(
-      `${env.tmdbApiBaseUrl}/movie/popular?${searchParams}`,
-      {
-        headers: {
-          Authorization: `Bearer ${env.tmdbAccessToken}`,
-        },
-      },
-    );
+    const response = await fetch(`/api/movies/popular?${searchParams}`);
 
     if (!response.ok) {
       throw new Error(`영화 목록 요청에 실패했어요: ${response.status}`);
