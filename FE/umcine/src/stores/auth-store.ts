@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { queryClient } from "../config/query-client";
+import { getQueryClient } from "../config/query-client";
 
 interface AuthStore {
   accessToken: string | null;
@@ -13,15 +13,16 @@ export const useAuthStore = create<AuthStore>()(
       accessToken: null,
       setAccessToken: (accessToken) => {
         if (accessToken !== get().accessToken || accessToken === null) {
-          queryClient.removeQueries({ queryKey: ["members", "me"] });
-          queryClient.removeQueries({ queryKey: ["favorites"] });
-          queryClient.removeQueries({ queryKey: ["ratings"] });
+          getQueryClient().removeQueries({ queryKey: ["members", "me"] });
+          getQueryClient().removeQueries({ queryKey: ["favorites"] });
+          getQueryClient().removeQueries({ queryKey: ["ratings"] });
         }
         set({ accessToken });
       },
     }),
     {
       name: "umcine-auth-store",
+      skipHydration: true,
       storage: createJSONStorage(() => localStorage),
       partialize: ({ accessToken }) => ({ accessToken }),
     },

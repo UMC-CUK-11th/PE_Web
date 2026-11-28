@@ -1,3 +1,5 @@
+"use client";
+
 import { useUiPreferenceStore } from "../../stores/ui-preference-store";
 import { cn } from "../../utils/cn";
 

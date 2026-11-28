@@ -1,7 +1,9 @@
+
 package com.umc.movie.config;
 
 import com.umc.movie.interceptor.AuthInterceptor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -13,10 +15,13 @@ public class WebConfig implements WebMvcConfigurer {
 
     private final AuthInterceptor authInterceptor;
 
+    @Value("${app.cors.allowed-origins:http://localhost:5173,http://localhost:5174}")
+    private String allowedOrigins;
+
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:5173")
+                .allowedOrigins(allowedOrigins.split(","))
                 .allowedMethods(
                         "GET",
                         "POST",

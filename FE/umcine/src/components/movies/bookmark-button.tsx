@@ -1,4 +1,7 @@
-import { useNavigate } from "@tanstack/react-router";
+"use client";
+
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useFavorite } from "../../hooks/use-favorite";
 import { useAuthStore } from "../../stores/auth-store";
 import { getRequestErrorMessage } from "../../utils/auth/request-error";
@@ -16,7 +19,7 @@ export default function BookmarkButton({
   className,
 }: BookmarkButtonProps) {
   const accessToken = useAuthStore((state) => state.accessToken);
-  const navigate = useNavigate();
+  const router = useRouter();
   const { status, toggle, isToggling } = useFavorite(movieId);
   const isBookmarked = Boolean(accessToken && status.data?.isFavorite);
   const disabled = Boolean(accessToken && (status.isLoading || isToggling));
@@ -30,7 +33,7 @@ export default function BookmarkButton({
 
   function handleClick() {
     if (!accessToken) {
-      void navigate({ to: "/login" });
+      router.push("/login");
       return;
     }
     if (status.isError) {
@@ -83,7 +86,9 @@ export default function BookmarkButton({
           className,
         )}
       >
-        <img
+        <Image
+          width={20}
+          height={20}
           src={
             isBookmarked ? "/icons/bookmark.svg" : "/icons/bookmark-outline.svg"
           }
@@ -137,7 +142,9 @@ export default function BookmarkButton({
         className,
       )}
     >
-      <img
+      <Image
+        width={20}
+        height={20}
         src={
           isBookmarked ? "/icons/bookmark.svg" : "/icons/bookmark-outline.svg"
         }

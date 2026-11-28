@@ -21,6 +21,7 @@ export const useUiPreferenceStore = create<UiPreferenceStore>()(
 
     {
       name: "umcine-ui-preferences",
+      skipHydration: true,
 
       storage: createJSONStorage(() => localStorage),
 
